@@ -83,7 +83,7 @@ export default function AuthScreen() {
               <Text style={styles.logoEmoji}>🏆</Text>
             </View>
             <Text style={styles.appName}>JOJ SuperApp</Text>
-            <Text style={styles.appTagline}>Jeux de la Francophonie · Dakar 2024</Text>
+            <Text style={styles.appTagline}>Jeux de la Francophonie · Dakar 2026</Text>
           </View>
 
           {/* Card */}

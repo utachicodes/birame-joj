@@ -142,7 +142,7 @@ export default function EventsScreen() {
                 style={StyleSheet.absoluteFill}
               />
               <Text style={styles.medalTitle}>Tableau des médailles</Text>
-              <Text style={styles.medalSub}>Jeux de la Francophonie · Dakar 2024</Text>
+              <Text style={styles.medalSub}>Jeux de la Francophonie · Dakar 2026</Text>
               <View style={styles.medalHeaderRow}>
                 {['🥇', '🥈', '🥉', 'Total'].map((m) => (
                   <Text key={m} style={styles.medalCol}>{m}</Text>

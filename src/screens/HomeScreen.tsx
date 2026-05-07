@@ -74,7 +74,7 @@ export default function HomeScreen() {
           <View style={styles.countdownContent}>
             <View>
               <Text style={styles.countdownLabel}>🏆 JEUX EN COURS</Text>
-              <Text style={styles.countdownTitle}>Dakar 2024</Text>
+              <Text style={styles.countdownTitle}>Dakar 2026</Text>
               <Text style={styles.countdownSub}>27 Jul – 06 Août · 11 disciplines</Text>
             </View>
             <View style={styles.countdownDays}>
