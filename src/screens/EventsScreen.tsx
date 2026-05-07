@@ -8,7 +8,6 @@ import {
   Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -42,7 +41,7 @@ export default function EventsScreen() {
 
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <BlurView intensity={25} tint="dark" style={StyleSheet.absoluteFill} />
+        
         <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(5,10,24,0.5)' }]} />
 
         <Text style={styles.headerTitle}>Programme JOJ</Text>
@@ -235,7 +234,7 @@ function FullLiveCard({ score }: { score: (typeof LIVE_SCORES)[0] }) {
       </View>
 
       <Pressable style={styles.watchBtn}>
-        <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
+        
         <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.glass1, borderRadius: Radius.md, borderWidth: 1, borderColor: Colors.border1 }]} />
         <Ionicons name="stats-chart-outline" size={16} color={Colors.text} />
         <Text style={styles.watchBtnText}>Statistiques détaillées</Text>

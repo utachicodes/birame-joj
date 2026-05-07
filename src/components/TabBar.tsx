@@ -7,7 +7,6 @@ import {
   Animated,
 } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Radius } from '../theme';
@@ -68,7 +67,7 @@ export default function TabBar({ state, navigation }: BottomTabBarProps) {
 
   return (
     <View style={[styles.wrapper, { paddingBottom: insets.bottom }]}>
-      <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFill} />
+      
       <View style={[StyleSheet.absoluteFill, styles.overlay]} />
       <View style={styles.border} />
       <View style={styles.content}>

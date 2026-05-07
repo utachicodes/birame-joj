@@ -9,7 +9,6 @@ import {
   ImageBackground,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -56,7 +55,7 @@ export default function HomeScreen() {
             </View>
           </View>
           <Pressable style={styles.notifBtn}>
-            <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFill} />
+            
             <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.glass2, borderRadius: 18, borderWidth: 1, borderColor: Colors.border1 }]} />
             <Ionicons name="notifications-outline" size={22} color={Colors.text} />
             <View style={styles.notifDot} />

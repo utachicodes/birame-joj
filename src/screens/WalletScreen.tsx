@@ -9,7 +9,6 @@ import {
   Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -45,7 +44,7 @@ export default function WalletScreen() {
 
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <BlurView intensity={25} tint="dark" style={StyleSheet.absoluteFill} />
+        
         <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(5,10,24,0.5)' }]} />
         <View style={styles.headerContent}>
           <Text style={styles.headerTitle}>Mon Wallet</Text>
@@ -160,7 +159,7 @@ export default function WalletScreen() {
               style={[styles.methodCard, selectedMethod === m.id && styles.methodCardActive]}
               onPress={() => setSelectedMethod(m.id)}
             >
-              <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
+              
               <View style={[
                 StyleSheet.absoluteFill,
                 {
@@ -240,7 +239,7 @@ function TopUpModal({ onClose }: { onClose: () => void }) {
             style={[styles.presetBtn, amount === p.replace(' ', '') && styles.presetBtnActive]}
             onPress={() => setAmount(p.replace(' ', ''))}
           >
-            <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
+            
             <View style={[
               StyleSheet.absoluteFill,
               {
@@ -261,7 +260,7 @@ function TopUpModal({ onClose }: { onClose: () => void }) {
       <Text style={styles.modalLabel}>MÉTHODE</Text>
       {TOP_UP_METHODS.map((m) => (
         <Pressable key={m.id} style={styles.methodRow}>
-          <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
+          
           <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.glass1, borderRadius: Radius.md, borderWidth: 1, borderColor: Colors.border1 }]} />
           <Text style={styles.methodRowIcon}>{m.icon}</Text>
           <Text style={styles.methodRowName}>{m.name}</Text>

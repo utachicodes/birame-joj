@@ -9,7 +9,6 @@ import {
   Pressable,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -88,7 +87,7 @@ export default function AuthScreen() {
 
           {/* Card */}
           <View style={styles.card}>
-            <BlurView intensity={25} tint="dark" style={StyleSheet.absoluteFill} />
+            
             <View style={[StyleSheet.absoluteFill, styles.cardOverlay]} />
 
             {/* Toggle tabs */}
@@ -181,7 +180,7 @@ export default function AuthScreen() {
                 { icon: '📘', label: 'Facebook' },
               ].map((s) => (
                 <Pressable key={s.label} style={styles.socialBtn}>
-                  <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
+                  
                   <Text style={styles.socialLabel}>{s.icon}</Text>
                 </Pressable>
               ))}

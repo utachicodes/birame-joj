@@ -8,7 +8,6 @@ import {
   Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -37,7 +36,7 @@ export default function TransportScreen() {
 
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <BlurView intensity={25} tint="dark" style={StyleSheet.absoluteFill} />
+        
         <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(5,10,24,0.5)' }]} />
         <Text style={styles.headerTitle}>Transport</Text>
         <View style={styles.tabsRow}>
@@ -181,7 +180,7 @@ function YangoTab() {
       >
         {VENUES.map((v) => (
           <Pressable key={v.name} style={styles.venueChip}>
-            <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
+            
             <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.glass2, borderRadius: Radius.md, borderWidth: 1, borderColor: Colors.border1 }]} />
             <Text style={styles.venueIcon}>{v.icon}</Text>
             <Text style={styles.venueName}>{v.name}</Text>
@@ -269,7 +268,7 @@ function TransportCard({ transport }: { transport: (typeof TRANSPORT)[0] }) {
 function StatusPill({ icon, label, status, color }: { icon: any; label: string; status: string; color: string }) {
   return (
     <View style={styles.statusPill}>
-      <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
+      
       <View style={[StyleSheet.absoluteFill, { backgroundColor: color + '10', borderRadius: Radius.md, borderWidth: 1, borderColor: color + '30' }]} />
       <Ionicons name={icon} size={20} color={color} />
       <Text style={styles.statusPillLabel}>{label}</Text>

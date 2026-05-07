@@ -9,8 +9,7 @@ import {
   View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
-import { Colors, Radius, Typography, Shadows } from '../theme';
+import { Colors, Radius, Typography } from '../theme';
 
 interface GlassButtonProps {
   title: string;
@@ -40,8 +39,8 @@ export default function GlassButton({
   fullWidth,
 }: GlassButtonProps) {
   const isPrimary = variant === 'primary';
-  const isGhost = variant === 'ghost';
   const isDanger = variant === 'danger';
+  const isGhost = variant === 'ghost';
 
   const sizeStyles = {
     sm: { height: 40, paddingHorizontal: 16, borderRadius: Radius.sm },
@@ -49,11 +48,7 @@ export default function GlassButton({
     lg: { height: 60, paddingHorizontal: 32, borderRadius: Radius.lg },
   };
 
-  const textSizes = {
-    sm: 14,
-    md: 16,
-    lg: 18,
-  };
+  const textSizes = { sm: 14, md: 16, lg: 18 };
 
   const gradientColors =
     gradient ||
@@ -69,40 +64,20 @@ export default function GlassButton({
         styles.base,
         sizeStyles[size],
         fullWidth && styles.fullWidth,
+        !isPrimary && !isDanger && styles.secondary,
         (disabled || loading) && styles.disabled,
         pressed && styles.pressed,
         style,
       ]}
     >
-      {isPrimary || isDanger ? (
+      {(isPrimary || isDanger) && (
         <LinearGradient
           colors={gradientColors}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={[StyleSheet.absoluteFill, { borderRadius: sizeStyles[size].borderRadius }]}
         />
-      ) : (
-        <BlurView
-          intensity={isGhost ? 10 : 20}
-          tint="dark"
-          style={StyleSheet.absoluteFill}
-        />
       )}
-
-      {!isPrimary && !isDanger && (
-        <View
-          style={[
-            StyleSheet.absoluteFill,
-            {
-              backgroundColor: isGhost ? 'transparent' : Colors.glass2,
-              borderRadius: sizeStyles[size].borderRadius,
-              borderWidth: 1,
-              borderColor: Colors.border2,
-            },
-          ]}
-        />
-      )}
-
       <View style={styles.row}>
         {icon && !loading && <View style={styles.icon}>{icon}</View>}
         {loading ? (
@@ -129,33 +104,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    ...Shadows.md,
   },
-  fullWidth: {
-    width: '100%',
+  fullWidth: { width: '100%' },
+  secondary: {
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  icon: {
-    marginRight: 2,
-  },
-  text: {
-    ...Typography.headline,
-    color: '#fff',
-    fontWeight: '700',
-  },
-  textGhost: {
-    color: Colors.textSecondary,
-    fontWeight: '500',
-  },
-  disabled: {
-    opacity: 0.45,
-  },
-  pressed: {
-    opacity: 0.88,
-    transform: [{ scale: 0.97 }],
-  },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  icon: { marginRight: 2 },
+  text: { ...Typography.headline, color: '#fff', fontWeight: '700' },
+  textGhost: { color: Colors.textSecondary, fontWeight: '500' },
+  disabled: { opacity: 0.45 },
+  pressed: { opacity: 0.88, transform: [{ scale: 0.97 }] },
 });

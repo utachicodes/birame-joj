@@ -9,7 +9,6 @@ import {
   Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -40,7 +39,7 @@ export default function TicketsScreen() {
 
       {/* Header */}
       <View style={[styles.headerWrap, { paddingTop: insets.top + 8 }]}>
-        <BlurView intensity={25} tint="dark" style={StyleSheet.absoluteFill} />
+        
         <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(5,10,24,0.5)' }]} />
         <View style={styles.headerContent}>
           <View>
@@ -143,7 +142,7 @@ function TicketCard({
       </LinearGradient>
 
       <View style={styles.ticketRight}>
-        <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFill} />
+        
         <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.glass2 }]} />
 
         {/* Perforations */}
@@ -238,19 +237,19 @@ function TicketModal({
 
       <View style={styles.modalActions}>
         <Pressable style={styles.modalActionBtn}>
-          <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFill} />
+          
           <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.glass2, borderRadius: Radius.md, borderWidth: 1, borderColor: Colors.border1 }]} />
           <Ionicons name="share-outline" size={20} color={Colors.text} />
           <Text style={styles.modalActionText}>Partager</Text>
         </Pressable>
         <Pressable style={styles.modalActionBtn}>
-          <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFill} />
+          
           <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.glass2, borderRadius: Radius.md, borderWidth: 1, borderColor: Colors.border1 }]} />
           <Ionicons name="download-outline" size={20} color={Colors.text} />
           <Text style={styles.modalActionText}>Sauvegarder</Text>
         </Pressable>
         <Pressable style={styles.modalActionBtn}>
-          <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFill} />
+          
           <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.glass2, borderRadius: Radius.md, borderWidth: 1, borderColor: Colors.border1 }]} />
           <Ionicons name="wifi-outline" size={20} color={Colors.text} />
           <Text style={styles.modalActionText}>NFC</Text>

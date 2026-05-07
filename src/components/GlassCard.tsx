@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  View,
-  StyleSheet,
-  ViewStyle,
-  Pressable,
-  Platform,
-} from 'react-native';
-import { BlurView } from 'expo-blur';
+import { View, StyleSheet, ViewStyle, Pressable } from 'react-native';
 import { Colors, Radius, Shadows } from '../theme';
 
 interface GlassCardProps {
@@ -23,78 +16,56 @@ export default function GlassCard({
   children,
   style,
   onPress,
-  intensity = 20,
   variant = 'default',
   borderGlow,
   disabled,
 }: GlassCardProps) {
-  const glassStyle = [
+  const cardStyle = [
     styles.card,
     variant === 'strong' && styles.cardStrong,
     variant === 'subtle' && styles.cardSubtle,
     variant === 'accent' && styles.cardAccent,
-    borderGlow && { borderColor: borderGlow + '40', ...Shadows.glow(borderGlow) },
+    borderGlow && { borderColor: borderGlow + '40' },
     style,
   ];
-
-  const Inner = (
-    <BlurView
-      intensity={intensity}
-      tint="dark"
-      style={StyleSheet.absoluteFill}
-    />
-  );
 
   if (onPress) {
     return (
       <Pressable
         onPress={onPress}
         disabled={disabled}
-        style={({ pressed }) => [
-          ...glassStyle,
-          pressed && styles.pressed,
-        ]}
+        style={({ pressed }) => [...cardStyle, pressed && styles.pressed]}
       >
-        {Platform.OS === 'ios' && Inner}
-        <View style={styles.content}>{children}</View>
+        {children}
       </Pressable>
     );
   }
 
-  return (
-    <View style={glassStyle}>
-      {Platform.OS === 'ios' && Inner}
-      <View style={styles.content}>{children}</View>
-    </View>
-  );
+  return <View style={cardStyle}>{children}</View>;
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.glass2,
+    backgroundColor: 'rgba(255,255,255,0.08)',
     borderRadius: Radius.lg,
     borderWidth: 1,
-    borderColor: Colors.border1,
+    borderColor: 'rgba(255,255,255,0.12)',
     overflow: 'hidden',
-    ...Shadows.md,
   },
   cardStrong: {
-    backgroundColor: Colors.glass3,
-    borderColor: Colors.border2,
+    backgroundColor: 'rgba(255,255,255,0.13)',
+    borderColor: 'rgba(255,255,255,0.18)',
   },
   cardSubtle: {
-    backgroundColor: Colors.glass1,
-    borderColor: Colors.border1,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   cardAccent: {
     backgroundColor: 'rgba(255,107,53,0.12)',
-    borderColor: 'rgba(255,107,53,0.3)',
-  },
-  content: {
-    // Ensures content sits above BlurView
+    borderColor: 'rgba(255,107,53,0.30)',
   },
   pressed: {
-    opacity: 0.85,
+    opacity: 0.82,
     transform: [{ scale: 0.98 }],
   },
 });
