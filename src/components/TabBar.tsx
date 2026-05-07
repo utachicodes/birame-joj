@@ -1,22 +1,16 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   Text,
   Pressable,
   StyleSheet,
-  Platform,
+  Animated,
 } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Radius } from '../theme';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
 
 type TabConfig = {
   name: string;
@@ -42,35 +36,26 @@ function TabItem({
   isFocused: boolean;
   onPress: () => void;
 }) {
-  const scale = useSharedValue(1);
-  const animStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+  const scale = useRef(new Animated.Value(1)).current;
 
   const handlePress = () => {
-    scale.value = withSpring(0.85, { damping: 15 }, () => {
-      scale.value = withSpring(1, { damping: 12 });
-    });
+    Animated.sequence([
+      Animated.timing(scale, { toValue: 0.85, duration: 80, useNativeDriver: true }),
+      Animated.spring(scale, { toValue: 1, useNativeDriver: true }),
+    ]).start();
     onPress();
   };
 
   return (
     <Pressable style={styles.tab} onPress={handlePress}>
-      <Animated.View style={[styles.tabInner, animStyle]}>
-        {isFocused && (
-          <View style={styles.activePill} />
-        )}
+      <Animated.View style={[styles.tabInner, { transform: [{ scale }] }]}>
+        {isFocused && <View style={styles.activePill} />}
         <Ionicons
           name={isFocused ? config.iconActive : config.icon}
           size={24}
           color={isFocused ? Colors.orange : Colors.textTertiary}
         />
-        <Text
-          style={[
-            styles.tabLabel,
-            isFocused && styles.tabLabelActive,
-          ]}
-        >
+        <Text style={[styles.tabLabel, isFocused && styles.tabLabelActive]}>
           {config.label}
         </Text>
       </Animated.View>
@@ -90,16 +75,13 @@ export default function TabBar({ state, navigation }: BottomTabBarProps) {
         {state.routes.map((route, index) => {
           const config = TAB_CONFIG.find((t) => t.name === route.name) || TAB_CONFIG[0];
           const isFocused = state.index === index;
-
           return (
             <TabItem
               key={route.key}
               config={config}
               isFocused={isFocused}
               onPress={() => {
-                if (!isFocused) {
-                  navigation.navigate(route.name);
-                }
+                if (!isFocused) navigation.navigate(route.name);
               }}
             />
           );
@@ -138,7 +120,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
-    position: 'relative',
   },
   activePill: {
     position: 'absolute',

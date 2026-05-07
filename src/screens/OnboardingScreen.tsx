@@ -6,6 +6,7 @@ import {
   Dimensions,
   FlatList,
   Pressable,
+  Animated,
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from 'react-native';
@@ -13,14 +14,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  interpolate,
-  withSpring,
-} from 'react-native-reanimated';
 import GlassButton from '../components/GlassButton';
-import { Colors, Spacing, Typography, Radius } from '../theme';
+import { Colors, Typography, Radius } from '../theme';
 
 const { width, height } = Dimensions.get('window');
 
@@ -44,7 +39,7 @@ const SLIDES = [
   {
     id: '3',
     emoji: '⚡',
-    title: 'Scores en direct\n& résultats\ninstantanés',
+    title: 'Scores en direct\net résultats\ninstantanés',
     subtitle: 'Suivez tous les sports JOJ en temps réel avec statistiques et tableau des médailles.',
     gradient: ['#1A0A0E', '#2E0F1A', '#1A0A0E'] as const,
     accent: Colors.pink,
@@ -64,13 +59,18 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const flatListRef = useRef<FlatList>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const scrollX = useSharedValue(0);
+  const scrollX = useRef(new Animated.Value(0)).current;
 
-  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    scrollX.value = e.nativeEvent.contentOffset.x;
-    const idx = Math.round(e.nativeEvent.contentOffset.x / width);
-    setActiveIndex(idx);
-  };
+  const handleScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+    {
+      useNativeDriver: false,
+      listener: (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const idx = Math.round(e.nativeEvent.contentOffset.x / width);
+        setActiveIndex(idx);
+      },
+    }
+  );
 
   const handleNext = () => {
     if (activeIndex < SLIDES.length - 1) {
@@ -78,10 +78,6 @@ export default function OnboardingScreen() {
     } else {
       router.replace('/auth');
     }
-  };
-
-  const handleSkip = () => {
-    router.replace('/auth');
   };
 
   return (
@@ -103,43 +99,51 @@ export default function OnboardingScreen() {
       />
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
-        {/* Dots */}
         <View style={styles.dots}>
-          {SLIDES.map((_, i) => (
-            <Pressable
-              key={i}
-              onPress={() => flatListRef.current?.scrollToIndex({ index: i, animated: true })}
-            >
-              <View
-                style={[
-                  styles.dot,
-                  i === activeIndex && [
-                    styles.dotActive,
-                    { backgroundColor: SLIDES[activeIndex].accent },
-                  ],
-                ]}
-              />
-            </Pressable>
-          ))}
+          {SLIDES.map((_, i) => {
+            const inputRange = [(i - 1) * width, i * width, (i + 1) * width];
+            const dotWidth = scrollX.interpolate({
+              inputRange,
+              outputRange: [8, 24, 8],
+              extrapolate: 'clamp',
+            });
+            const opacity = scrollX.interpolate({
+              inputRange,
+              outputRange: [0.4, 1, 0.4],
+              extrapolate: 'clamp',
+            });
+            return (
+              <Pressable
+                key={i}
+                onPress={() => flatListRef.current?.scrollToIndex({ index: i, animated: true })}
+              >
+                <Animated.View
+                  style={[
+                    styles.dot,
+                    {
+                      width: dotWidth,
+                      opacity,
+                      backgroundColor: SLIDES[activeIndex].accent,
+                    },
+                  ]}
+                />
+              </Pressable>
+            );
+          })}
         </View>
 
-        {/* Buttons */}
         <View style={styles.buttons}>
           <GlassButton
             title={activeIndex === SLIDES.length - 1 ? 'Commencer' : 'Suivant'}
             onPress={handleNext}
             fullWidth
             size="lg"
-            gradient={
-              activeIndex === SLIDES.length - 1
-                ? [Colors.orange, Colors.orangeLight]
-                : [SLIDES[activeIndex].accent, SLIDES[activeIndex].accent + 'CC']
-            }
+            gradient={[SLIDES[activeIndex].accent, SLIDES[activeIndex].accent + 'CC'] as any}
           />
           {activeIndex < SLIDES.length - 1 && (
             <GlassButton
               title="Passer"
-              onPress={handleSkip}
+              onPress={() => router.replace('/auth')}
               variant="ghost"
               fullWidth
               size="md"
@@ -158,22 +162,28 @@ function SlideItem({
 }: {
   item: (typeof SLIDES)[0];
   index: number;
-  scrollX: Animated.SharedValue<number>;
+  scrollX: Animated.Value;
 }) {
-  const animStyle = useAnimatedStyle(() => {
-    const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
-    const opacity = interpolate(scrollX.value, inputRange, [0.3, 1, 0.3]);
-    const translateY = interpolate(scrollX.value, inputRange, [40, 0, 40]);
-    return { opacity, transform: [{ translateY }] };
+  const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
+
+  const opacity = scrollX.interpolate({
+    inputRange,
+    outputRange: [0.3, 1, 0.3],
+    extrapolate: 'clamp',
+  });
+
+  const translateY = scrollX.interpolate({
+    inputRange,
+    outputRange: [40, 0, 40],
+    extrapolate: 'clamp',
   });
 
   return (
     <LinearGradient colors={item.gradient} style={styles.slide}>
-      {/* Decorative blobs */}
-      <View style={[styles.blob, styles.blob1, { backgroundColor: item.accent + '20' }]} />
-      <View style={[styles.blob, styles.blob2, { backgroundColor: item.accent + '15' }]} />
+      <View style={[styles.blob1, { backgroundColor: item.accent + '20' }]} />
+      <View style={[styles.blob2, { backgroundColor: item.accent + '15' }]} />
 
-      <Animated.View style={[styles.slideContent, animStyle]}>
+      <Animated.View style={[styles.slideContent, { opacity, transform: [{ translateY }] }]}>
         <View style={[styles.emojiContainer, { borderColor: item.accent + '40' }]}>
           <Text style={styles.emoji}>{item.emoji}</Text>
         </View>
@@ -181,7 +191,6 @@ function SlideItem({
         <Text style={styles.slideTitle}>{item.title}</Text>
         <Text style={styles.slideSubtitle}>{item.subtitle}</Text>
 
-        {/* Accent line */}
         <View style={[styles.accentLine, { backgroundColor: item.accent }]} />
       </Animated.View>
     </LinearGradient>
@@ -201,19 +210,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     paddingBottom: 200,
   },
-  blob: {
-    position: 'absolute',
-    borderRadius: 999,
-  },
   blob1: {
+    position: 'absolute',
     width: 300,
     height: 300,
-    top: '15%',
+    borderRadius: 150,
+    top: '10%',
     right: -80,
   },
   blob2: {
+    position: 'absolute',
     width: 250,
     height: 250,
+    borderRadius: 125,
     bottom: '20%',
     left: -60,
   },
@@ -266,15 +275,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 8,
+    alignItems: 'center',
   },
   dot: {
-    width: 8,
     height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.textDim,
-  },
-  dotActive: {
-    width: 24,
     borderRadius: 4,
   },
   buttons: {
