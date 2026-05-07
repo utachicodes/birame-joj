@@ -1,0 +1,38 @@
+{
+  "name": "joj-superapp",
+  "version": "1.0.0",
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@expo/vector-icons": "^15.0.2",
+    "@react-navigation/bottom-tabs": "^7.15.5",
+    "@react-navigation/native": "^7.1.33",
+    "@react-navigation/stack": "^6.4.1",
+    "expo": "^55.0.23",
+    "expo-blur": "~55.0.14",
+    "expo-haptics": "~55.0.14",
+    "expo-linear-gradient": "~55.0.13",
+    "expo-linking": "~55.0.15",
+    "expo-router": "~55.0.0",
+    "expo-splash-screen": "~55.0.20",
+    "expo-status-bar": "~55.0.6",
+    "expo-symbols": "~55.0.8",
+    "react": "19.2.0",
+    "react-native": "0.83.6",
+    "react-native-gesture-handler": "~2.30.0",
+    "react-native-reanimated": "4.2.1",
+    "react-native-safe-area-context": "~5.6.2",
+    "react-native-screens": "~4.23.0",
+    "react-native-svg": "15.15.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@types/react": "~19.2.10",
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,0 +1,163 @@
+import React from 'react';
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  Platform,
+} from 'react-native';
+import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { BlurView } from 'expo-blur';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { Colors, Radius } from '../theme';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
+
+type TabConfig = {
+  name: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  iconActive: keyof typeof Ionicons.glyphMap;
+  label: string;
+};
+
+const TAB_CONFIG: TabConfig[] = [
+  { name: 'index', icon: 'home-outline', iconActive: 'home', label: 'Home' },
+  { name: 'tickets', icon: 'ticket-outline', iconActive: 'ticket', label: 'Tickets' },
+  { name: 'events', icon: 'calendar-outline', iconActive: 'calendar', label: 'Events' },
+  { name: 'transport', icon: 'car-outline', iconActive: 'car', label: 'Transport' },
+  { name: 'profile', icon: 'person-outline', iconActive: 'person', label: 'Profile' },
+];
+
+function TabItem({
+  config,
+  isFocused,
+  onPress,
+}: {
+  config: TabConfig;
+  isFocused: boolean;
+  onPress: () => void;
+}) {
+  const scale = useSharedValue(1);
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePress = () => {
+    scale.value = withSpring(0.85, { damping: 15 }, () => {
+      scale.value = withSpring(1, { damping: 12 });
+    });
+    onPress();
+  };
+
+  return (
+    <Pressable style={styles.tab} onPress={handlePress}>
+      <Animated.View style={[styles.tabInner, animStyle]}>
+        {isFocused && (
+          <View style={styles.activePill} />
+        )}
+        <Ionicons
+          name={isFocused ? config.iconActive : config.icon}
+          size={24}
+          color={isFocused ? Colors.orange : Colors.textTertiary}
+        />
+        <Text
+          style={[
+            styles.tabLabel,
+            isFocused && styles.tabLabelActive,
+          ]}
+        >
+          {config.label}
+        </Text>
+      </Animated.View>
+    </Pressable>
+  );
+}
+
+export default function TabBar({ state, navigation }: BottomTabBarProps) {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <View style={[styles.wrapper, { paddingBottom: insets.bottom }]}>
+      <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFill} />
+      <View style={[StyleSheet.absoluteFill, styles.overlay]} />
+      <View style={styles.border} />
+      <View style={styles.content}>
+        {state.routes.map((route, index) => {
+          const config = TAB_CONFIG.find((t) => t.name === route.name) || TAB_CONFIG[0];
+          const isFocused = state.index === index;
+
+          return (
+            <TabItem
+              key={route.key}
+              config={config}
+              isFocused={isFocused}
+              onPress={() => {
+                if (!isFocused) {
+                  navigation.navigate(route.name);
+                }
+              }}
+            />
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  wrapper: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'transparent',
+  },
+  overlay: {
+    backgroundColor: 'rgba(5,10,24,0.75)',
+  },
+  border: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: Colors.border1,
+  },
+  content: {
+    flexDirection: 'row',
+    height: 56,
+    paddingHorizontal: 8,
+  },
+  tab: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabInner: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+    position: 'relative',
+  },
+  activePill: {
+    position: 'absolute',
+    top: -8,
+    left: '50%',
+    marginLeft: -16,
+    width: 32,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: Colors.orange,
+  },
+  tabLabel: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: Colors.textTertiary,
+    letterSpacing: 0.2,
+  },
+  tabLabelActive: {
+    color: Colors.orange,
+    fontWeight: '600',
+  },
+});

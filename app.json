@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "JOJ SuperApp",
+    "slug": "joj-superapp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#050A18"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.joj.superapp"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#050A18"
+      },
+      "package": "com.joj.superapp"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#050A18",
+          "image": "./assets/splash-icon.png"
+        }
+      ]
+    ],
+    "scheme": "joj",
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
