@@ -12,16 +12,34 @@ import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import GlassCard from '../components/GlassCard';
-import GlassButton from '../components/GlassButton';
-import { Colors, Typography, Radius, Shadows } from '../theme';
+import CountryBadge from '../components/CountryBadge';
+import { Colors, Typography, Radius } from '../theme';
 import { USER } from '../data/mock';
 
 const LANGUAGES = [
-  { code: 'FR', label: 'Français', active: true },
-  { code: 'EN', label: 'English', active: false },
-  { code: 'AR', label: 'العربية', active: false },
-  { code: 'WO', label: 'Wolof', active: false },
+  { code: 'FR', label: 'Français' },
+  { code: 'EN', label: 'English' },
+  { code: 'AR', label: 'العربية' },
+  { code: 'WO', label: 'Wolof' },
+];
+
+const STATS = [
+  { id: 'tickets', icon: 'ticket-outline' as const, label: 'Billets', value: '4', color: Colors.brand },
+  { id: 'transport', icon: 'car-outline' as const, label: 'Trajets', value: '12', color: Colors.teal },
+  { id: 'spending', icon: 'wallet-outline' as const, label: 'Dépenses', value: '24K', color: Colors.gold },
+];
+
+const MENU_ITEMS: Array<{
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  color: string;
+}> = [
+  { icon: 'person-circle-outline', label: 'Modifier mon profil', color: Colors.purple },
+  { icon: 'shield-checkmark-outline', label: 'Sécurité & biométrie', color: Colors.blue },
+  { icon: 'card-outline', label: 'Moyens de paiement', color: Colors.gold },
+  { icon: 'location-outline', label: 'Accès & zones', color: Colors.teal },
+  { icon: 'help-circle-outline', label: 'Aide & support', color: Colors.brand },
+  { icon: 'document-text-outline', label: 'Mentions légales', color: Colors.textTertiary },
 ];
 
 export default function ProfileScreen() {
@@ -36,72 +54,48 @@ export default function ProfileScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      <LinearGradient
-        colors={['#050A18', '#0D0B2E', '#050A18']}
-        style={StyleSheet.absoluteFill}
-      />
-      <View style={styles.blob1} />
+      <LinearGradient colors={[Colors.bg, Colors.bgElevated, Colors.bg]} style={StyleSheet.absoluteFill} />
 
-      {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(5,10,24,0.5)' }]} />
-        <View style={styles.headerContent}>
+        <View style={styles.headerRow}>
           <Text style={styles.headerTitle}>Profil</Text>
-          <Pressable style={styles.editBtn}>
+          <Pressable style={styles.iconBtn}>
             <Ionicons name="create-outline" size={20} color={Colors.text} />
           </Pressable>
         </View>
-        <View style={styles.headerBorder} />
       </View>
 
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 100 }]}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Identity card */}
-        <GlassCard style={styles.idCard} variant="strong">
-          <LinearGradient
-            colors={['rgba(123,94,167,0.35)', 'rgba(61,142,245,0.15)']}
-            style={StyleSheet.absoluteFill}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          />
-          <View style={styles.idContent}>
-            <View style={styles.avatarWrap}>
-              <LinearGradient
-                colors={[Colors.orange, Colors.orangeLight]}
-                style={styles.avatar}
-              >
-                <Text style={styles.avatarInitial}>
-                  {USER.name.split(' ').map((n) => n[0]).join('')}
-                </Text>
-              </LinearGradient>
-              <View style={styles.avatarBadge}>
-                <Text style={styles.avatarBadgeText}>✓</Text>
+      <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 100 }]} showsVerticalScrollIndicator={false}>
+        <View style={styles.idCard}>
+          <LinearGradient colors={[Colors.brand, Colors.brandDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+          <View style={styles.idTop}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>
+                {USER.name.split(' ').map((n) => n[0]).join('')}
+              </Text>
+              <View style={styles.avatarVerified}>
+                <Ionicons name="checkmark" size={10} color="#fff" />
               </View>
             </View>
-
-            <View style={styles.idInfo}>
+            <View style={{ flex: 1 }}>
               <Text style={styles.idName}>{USER.name}</Text>
-              <View style={styles.idRow}>
-                <Text style={styles.idFlag}>{USER.flag}</Text>
+              <View style={styles.idMeta}>
+                <CountryBadge code={USER.countryCode} size="sm" />
                 <Text style={styles.idCountry}>{USER.country}</Text>
               </View>
               <View style={styles.idRoleBadge}>
+                <Ionicons name="person-outline" size={11} color="#fff" />
                 <Text style={styles.idRole}>{USER.role}</Text>
               </View>
             </View>
-
             <Pressable style={styles.qrBtn}>
-              <Ionicons name="qr-code-outline" size={28} color={Colors.text} />
+              <Ionicons name="qr-code-outline" size={26} color="#fff" />
             </Pressable>
           </View>
-
+          <View style={styles.idDivider} />
           <View style={styles.idBottom}>
-            <View style={styles.idNumWrap}>
-              <Text style={styles.idNumLabel}>N° ACCRÉDITATION</Text>
+            <View>
+              <Text style={styles.idLabel}>N° ACCRÉDITATION</Text>
               <Text style={styles.idNum}>{USER.accreditation}</Text>
             </View>
             <View style={styles.idStatus}>
@@ -109,142 +103,76 @@ export default function ProfileScreen() {
               <Text style={styles.idStatusText}>VÉRIFIÉ</Text>
             </View>
           </View>
-        </GlassCard>
-
-        {/* Stats */}
-        <View style={styles.statsRow}>
-          <StatItem label="Événements" value="3" icon="🎫" />
-          <StatItem label="Transport" value="2" icon="🚗" />
-          <StatItem label="Dépenses" value="24K" icon="💳" />
         </View>
 
-        {/* Language */}
+        <View style={styles.statsRow}>
+          {STATS.map((s) => (
+            <View key={s.id} style={styles.statCard}>
+              <View style={[styles.statIcon, { backgroundColor: s.color + '15', borderColor: s.color + '30' }]}>
+                <Ionicons name={s.icon} size={18} color={s.color} />
+              </View>
+              <Text style={styles.statValue}>{s.value}</Text>
+              <Text style={styles.statLabel}>{s.label}</Text>
+            </View>
+          ))}
+        </View>
+
         <Text style={styles.sectionLabel}>LANGUE D'INTERFACE</Text>
-        <GlassCard style={styles.langCard} variant="subtle">
-          <View style={styles.langGrid}>
-            {LANGUAGES.map((l) => (
-              <Pressable
-                key={l.code}
-                style={[styles.langChip, l.code === activeLang && styles.langChipActive]}
-                onPress={() => setActiveLang(l.code)}
-              >
-                {l.code === activeLang && (
-                  <LinearGradient
-                    colors={[Colors.purple, Colors.purpleLight]}
-                    style={StyleSheet.absoluteFill}
-                  />
-                )}
-                <Text style={[styles.langChipCode, l.code === activeLang && { color: '#fff' }]}>
-                  {l.code}
-                </Text>
-                <Text style={[styles.langChipLabel, l.code === activeLang && { color: 'rgba(255,255,255,0.8)' }]}>
-                  {l.label}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </GlassCard>
+        <View style={styles.langGrid}>
+          {LANGUAGES.map((l) => (
+            <Pressable key={l.code} onPress={() => setActiveLang(l.code)} style={[styles.langChip, l.code === activeLang && styles.langChipActive]}>
+              <Text style={[styles.langCode, l.code === activeLang && styles.langCodeActive]}>{l.code}</Text>
+              <Text style={[styles.langLabel, l.code === activeLang && styles.langLabelActive]}>{l.label}</Text>
+            </Pressable>
+          ))}
+        </View>
 
-        {/* Notifications */}
         <Text style={styles.sectionLabel}>NOTIFICATIONS</Text>
-        <GlassCard style={styles.settingsCard} variant="subtle">
-          <ToggleRow
-            icon="notifications-outline"
-            label="Notifications push"
-            sub="Alertes événements & changements"
-            value={notifPush}
-            onChange={setNotifPush}
-            color={Colors.orange}
-          />
+        <View style={styles.settingsCard}>
+          <ToggleRow icon="notifications-outline" label="Notifications push" sub="Alertes événements & changements" value={notifPush} onChange={setNotifPush} />
           <View style={styles.divider} />
-          <ToggleRow
-            icon="chatbubble-outline"
-            label="SMS d'alerte"
-            sub="Urgences et annulations"
-            value={notifSms}
-            onChange={setNotifSms}
-            color={Colors.teal}
-          />
+          <ToggleRow icon="chatbox-outline" label="SMS d'alerte" sub="Urgences et annulations" value={notifSms} onChange={setNotifSms} />
           <View style={styles.divider} />
-          <ToggleRow
-            icon="flash-outline"
-            label="Scores en direct"
-            sub="Résultats et finales"
-            value={notifLive}
-            onChange={setNotifLive}
-            color={Colors.error}
-          />
-        </GlassCard>
+          <ToggleRow icon="flash-outline" label="Scores en direct" sub="Résultats et finales" value={notifLive} onChange={setNotifLive} />
+        </View>
 
-        {/* Accessibility */}
         <Text style={styles.sectionLabel}>ACCESSIBILITÉ</Text>
-        <GlassCard style={styles.settingsCard} variant="subtle">
-          <ToggleRow
-            icon="contrast-outline"
-            label="Mode contraste élevé"
-            sub="Améliore la lisibilité"
-            value={highContrast}
-            onChange={setHighContrast}
-            color={Colors.blue}
-          />
-        </GlassCard>
+        <View style={styles.settingsCard}>
+          <ToggleRow icon="contrast-outline" label="Contraste élevé" sub="Améliore la lisibilité" value={highContrast} onChange={setHighContrast} />
+        </View>
 
-        {/* Menu items */}
         <Text style={styles.sectionLabel}>MON COMPTE</Text>
-        <GlassCard style={styles.menuCard} variant="subtle">
-          {MENU_ITEMS.map((item, i) => (
-            <View key={item.label}>
-              <MenuRow item={item} />
+        <View style={styles.settingsCard}>
+          {MENU_ITEMS.map((m, i) => (
+            <View key={m.label}>
+              <Pressable style={styles.menuRow}>
+                <View style={[styles.menuIcon, { backgroundColor: m.color + '18', borderColor: m.color + '25' }]}>
+                  <Ionicons name={m.icon} size={18} color={m.color} />
+                </View>
+                <Text style={styles.menuLabel}>{m.label}</Text>
+                <Ionicons name="chevron-forward" size={16} color={Colors.textTertiary} />
+              </Pressable>
               {i < MENU_ITEMS.length - 1 && <View style={styles.divider} />}
             </View>
           ))}
-        </GlassCard>
+        </View>
 
-        {/* Logout */}
-        <GlassButton
-          title="Se déconnecter"
-          onPress={() => router.replace('/auth')}
-          variant="danger"
-          fullWidth
-          size="lg"
-          icon={<Ionicons name="log-out-outline" size={20} color="#fff" />}
-        />
+        <Pressable style={styles.logoutBtn} onPress={() => router.replace('/auth')}>
+          <Ionicons name="log-out-outline" size={20} color={Colors.error} />
+          <Text style={styles.logoutText}>Se déconnecter</Text>
+        </Pressable>
 
-        <Text style={styles.version}>JOJ SuperApp v1.0.0 · Jeux de la Francophonie</Text>
+        <Text style={styles.version}>JOJ SuperApp v1.0.0  ·  Dakar 2026</Text>
       </ScrollView>
     </View>
   );
 }
 
-function StatItem({ label, value, icon }: { label: string; value: string; icon: string }) {
-  return (
-    <GlassCard style={styles.statCard} variant="subtle">
-      <Text style={styles.statIcon}>{icon}</Text>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </GlassCard>
-  );
-}
-
-function ToggleRow({
-  icon,
-  label,
-  sub,
-  value,
-  onChange,
-  color,
-}: {
-  icon: any;
-  label: string;
-  sub: string;
-  value: boolean;
-  onChange: (v: boolean) => void;
-  color: string;
-}) {
+function ToggleRow({ icon, label, sub, value, onChange }: { icon: any; label: string; sub: string; value: boolean; onChange: (v: boolean) => void }) {
   return (
     <View style={styles.toggleRow}>
-      <View style={[styles.toggleIcon, { backgroundColor: color + '20' }]}>
-        <Ionicons name={icon} size={20} color={color} />
+      <View style={styles.toggleIcon}>
+        <Ionicons name={icon} size={18} color={Colors.textSecondary} />
       </View>
       <View style={styles.toggleInfo}>
         <Text style={styles.toggleLabel}>{label}</Text>
@@ -253,86 +181,70 @@ function ToggleRow({
       <Switch
         value={value}
         onValueChange={onChange}
-        trackColor={{ false: Colors.glass3, true: color + '80' }}
-        thumbColor={value ? color : Colors.textTertiary}
+        trackColor={{ false: Colors.surface3, true: Colors.brand }}
+        thumbColor="#fff"
+        ios_backgroundColor={Colors.surface3}
       />
     </View>
   );
 }
 
-function MenuRow({ item }: { item: (typeof MENU_ITEMS)[0] }) {
-  return (
-    <Pressable style={styles.menuRow}>
-      <View style={[styles.menuIcon, { backgroundColor: item.color + '20' }]}>
-        <Ionicons name={item.icon as any} size={18} color={item.color} />
-      </View>
-      <Text style={styles.menuLabel}>{item.label}</Text>
-      <Ionicons name="chevron-forward" size={16} color={Colors.textTertiary} />
-    </Pressable>
-  );
-}
-
-const MENU_ITEMS = [
-  { icon: 'person-circle-outline', label: 'Modifier mon profil', color: Colors.purple },
-  { icon: 'shield-checkmark-outline', label: 'Sécurité & biométrie', color: Colors.blue },
-  { icon: 'card-outline', label: 'Mes moyens de paiement', color: Colors.gold },
-  { icon: 'location-outline', label: 'Accès & zones', color: Colors.teal },
-  { icon: 'help-circle-outline', label: 'Aide & support', color: Colors.orange },
-  { icon: 'document-text-outline', label: 'Mentions légales', color: Colors.textTertiary },
-];
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.bg },
-  blob1: { position: 'absolute', width: 300, height: 300, borderRadius: 150, backgroundColor: Colors.purple + '10', top: 80, right: -60 },
-  header: { overflow: 'hidden' },
-  headerContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 14 },
+  header: { paddingHorizontal: 20, paddingBottom: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: Colors.border1 },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerTitle: { ...Typography.title2, fontWeight: '800' },
-  editBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: Colors.glass2, borderWidth: 1, borderColor: Colors.border1, alignItems: 'center', justifyContent: 'center' },
-  headerBorder: { height: StyleSheet.hairlineWidth, backgroundColor: Colors.border1 },
+  iconBtn: { width: 36, height: 36, borderRadius: 12, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, alignItems: 'center', justifyContent: 'center' },
   scroll: { padding: 20, gap: 12 },
-  idCard: { overflow: 'hidden', padding: 20, gap: 16 },
-  idContent: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  avatarWrap: { position: 'relative' },
-  avatar: { width: 64, height: 64, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  avatarInitial: { fontSize: 24, fontWeight: '800', color: '#fff' },
-  avatarBadge: { position: 'absolute', bottom: -4, right: -4, width: 20, height: 20, borderRadius: 10, backgroundColor: Colors.success, borderWidth: 2, borderColor: Colors.bg, alignItems: 'center', justifyContent: 'center' },
-  avatarBadgeText: { fontSize: 10, color: '#fff', fontWeight: '700' },
-  idInfo: { flex: 1, gap: 4 },
-  idName: { ...Typography.title3, fontWeight: '800' },
-  idRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  idFlag: { fontSize: 16 },
-  idCountry: { ...Typography.footnote, color: Colors.textSecondary },
-  idRoleBadge: { alignSelf: 'flex-start', backgroundColor: Colors.purple + '25', borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 3, borderWidth: 1, borderColor: Colors.purple + '40' },
-  idRole: { ...Typography.caption, color: Colors.purpleLight, fontWeight: '700' },
-  qrBtn: { width: 48, height: 48, borderRadius: 14, backgroundColor: Colors.glass2, borderWidth: 1, borderColor: Colors.border1, alignItems: 'center', justifyContent: 'center' },
-  idBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: Colors.border1 },
-  idNumWrap: { gap: 2 },
-  idNumLabel: { fontSize: 9, fontWeight: '700', letterSpacing: 1, color: Colors.textTertiary, textTransform: 'uppercase' },
-  idNum: { ...Typography.footnote, color: Colors.textSecondary, fontFamily: 'monospace' },
-  idStatus: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  idStatusDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.success },
-  idStatusText: { fontSize: 10, fontWeight: '700', color: Colors.success, letterSpacing: 0.5 },
+
+  idCard: { borderRadius: Radius.xl, padding: 20, gap: 16, overflow: 'hidden' },
+  idTop: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  avatar: { width: 64, height: 64, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.20)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.30)' },
+  avatarText: { fontSize: 24, fontWeight: '800', color: '#fff' },
+  avatarVerified: { position: 'absolute', bottom: -3, right: -3, width: 20, height: 20, borderRadius: 10, backgroundColor: Colors.success, borderWidth: 2, borderColor: Colors.brand, alignItems: 'center', justifyContent: 'center' },
+  idName: { fontSize: 18, fontWeight: '800', color: '#fff' },
+  idMeta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
+  idCountry: { fontSize: 12, color: 'rgba(255,255,255,0.85)' },
+  idRoleBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', marginTop: 6, backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: Radius.full, paddingHorizontal: 8, paddingVertical: 3 },
+  idRole: { fontSize: 11, fontWeight: '700', color: '#fff' },
+  qrBtn: { width: 48, height: 48, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' },
+  idDivider: { height: StyleSheet.hairlineWidth, backgroundColor: 'rgba(255,255,255,0.20)' },
+  idBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  idLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1, color: 'rgba(255,255,255,0.7)' },
+  idNum: { fontSize: 13, color: '#fff', fontFamily: 'monospace', marginTop: 2, letterSpacing: 0.5 },
+  idStatus: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  idStatusDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#5BFF8E' },
+  idStatusText: { fontSize: 10, fontWeight: '800', color: '#5BFF8E', letterSpacing: 0.5 },
+
   statsRow: { flexDirection: 'row', gap: 10 },
-  statCard: { flex: 1, alignItems: 'center', paddingVertical: 16, gap: 4 },
-  statIcon: { fontSize: 22 },
-  statValue: { ...Typography.title2, fontWeight: '900' },
-  statLabel: { ...Typography.caption, color: Colors.textTertiary, textAlign: 'center' },
-  sectionLabel: { ...Typography.label, color: Colors.textTertiary, marginTop: 4 },
-  langCard: { padding: 14 },
-  langGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  langChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: Radius.md, borderWidth: 1, borderColor: Colors.border1, backgroundColor: Colors.glass1, overflow: 'hidden', alignItems: 'center', gap: 2 },
-  langChipCode: { ...Typography.footnote, fontWeight: '800', color: Colors.textSecondary },
-  langChipLabel: { ...Typography.caption, color: Colors.textTertiary },
-  settingsCard: { gap: 0 },
-  menuCard: { gap: 0 },
-  divider: { height: StyleSheet.hairlineWidth, backgroundColor: Colors.border1, marginHorizontal: 16 },
-  toggleRow: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 12 },
-  toggleIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  statCard: { flex: 1, alignItems: 'center', backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.lg, padding: 14, gap: 6 },
+  statIcon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  statValue: { fontSize: 20, fontWeight: '900' },
+  statLabel: { ...Typography.caption, color: Colors.textTertiary },
+
+  sectionLabel: { ...Typography.label, marginTop: 8, marginBottom: 4 },
+
+  langGrid: { flexDirection: 'row', gap: 8 },
+  langChip: { flex: 1, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.md, padding: 12, alignItems: 'center', gap: 4 },
+  langChipActive: { backgroundColor: Colors.brand + '15', borderColor: Colors.brand + '50' },
+  langCode: { fontSize: 14, fontWeight: '800', color: Colors.textSecondary },
+  langCodeActive: { color: Colors.brand },
+  langLabel: { fontSize: 11, color: Colors.textTertiary },
+  langLabelActive: { color: Colors.text },
+
+  settingsCard: { backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.lg, overflow: 'hidden' },
+  divider: { height: StyleSheet.hairlineWidth, backgroundColor: Colors.border1, marginHorizontal: 14 },
+  toggleRow: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 },
+  toggleIcon: { width: 36, height: 36, borderRadius: 10, backgroundColor: Colors.surface3, borderWidth: 1, borderColor: Colors.border1, alignItems: 'center', justifyContent: 'center' },
   toggleInfo: { flex: 1, gap: 2 },
   toggleLabel: { ...Typography.callout, fontWeight: '600' },
   toggleSub: { ...Typography.caption, color: Colors.textTertiary },
-  menuRow: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 12 },
-  menuIcon: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+
+  menuRow: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 },
+  menuIcon: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   menuLabel: { ...Typography.callout, fontWeight: '500', flex: 1 },
+
+  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 52, borderRadius: Radius.lg, backgroundColor: Colors.error + '12', borderWidth: 1, borderColor: Colors.error + '25', marginTop: 8 },
+  logoutText: { ...Typography.callout, fontWeight: '700', color: Colors.error },
   version: { ...Typography.caption, color: Colors.textDim, textAlign: 'center', marginTop: 8 },
 });

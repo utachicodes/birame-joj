@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -6,18 +6,33 @@ import {
   ScrollView,
   Pressable,
   Dimensions,
-  ImageBackground,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import GlassCard from '../components/GlassCard';
-import { Colors, Spacing, Typography, Radius, Shadows } from '../theme';
+import CountryBadge from '../components/CountryBadge';
+import SportIcon from '../components/SportIcon';
+import { Colors, Typography, Radius, Shadows } from '../theme';
 import { USER, LIVE_SCORES, EVENTS, TICKETS } from '../data/mock';
 
 const { width } = Dimensions.get('window');
+const QUICK_W = (width - 40 - 24) / 3;
+
+const QUICK_ACTIONS: Array<{
+  id: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  route: string;
+}> = [
+  { id: '1', icon: 'ticket-outline', label: 'Mes Billets', route: '/tickets' },
+  { id: '2', icon: 'map-outline', label: 'Carte', route: '/map' },
+  { id: '3', icon: 'bus-outline', label: 'Transport', route: '/transport' },
+  { id: '4', icon: 'restaurant-outline', label: 'Commander', route: '/food' },
+  { id: '5', icon: 'medal-outline', label: 'Médailles', route: '/events' },
+  { id: '6', icon: 'wallet-outline', label: 'Wallet', route: '/wallet' },
+];
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -27,14 +42,10 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <StatusBar style="light" />
       <LinearGradient
-        colors={['#050A18', '#0D0B2E', '#1A0A0E', '#050A18']}
+        colors={[Colors.bg, Colors.bgElevated, Colors.bg]}
         style={StyleSheet.absoluteFill}
-        locations={[0, 0.3, 0.7, 1]}
       />
-
-      {/* Decorative elements */}
-      <View style={styles.blobTop} />
-      <View style={styles.blobMid} />
+      <View style={styles.glow} />
 
       <ScrollView
         style={{ flex: 1 }}
@@ -44,649 +55,271 @@ export default function HomeScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>Bonjour 👋</Text>
+          <View style={styles.headerLeft}>
+            <Text style={styles.greeting}>Bonjour,</Text>
             <Text style={styles.userName}>{USER.name}</Text>
-            <View style={styles.countryRow}>
-              <Text style={styles.flag}>{USER.flag}</Text>
-              <Text style={styles.country}>{USER.country} · {USER.role}</Text>
+            <View style={styles.userMeta}>
+              <CountryBadge code={USER.countryCode} size="sm" />
+              <Text style={styles.userMetaText}>
+                {USER.country}  ·  {USER.role}
+              </Text>
             </View>
           </View>
-          <Pressable style={styles.notifBtn}>
-            
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.glass2, borderRadius: 18, borderWidth: 1, borderColor: Colors.border1 }]} />
-            <Ionicons name="notifications-outline" size={22} color={Colors.text} />
-            <View style={styles.notifDot} />
+          <Pressable style={styles.iconBtn}>
+            <Ionicons name="notifications-outline" size={20} color={Colors.text} />
+            <View style={styles.dot} />
           </Pressable>
         </View>
 
-        {/* Event countdown banner */}
-        <GlassCard style={styles.countdownCard}>
+        <Pressable style={styles.hero}>
           <LinearGradient
-            colors={['rgba(255,107,53,0.3)', 'rgba(201,168,76,0.15)']}
-            style={StyleSheet.absoluteFill}
+            colors={[Colors.brand, Colors.brandDark]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
           />
-          <View style={styles.countdownContent}>
-            <View>
-              <Text style={styles.countdownLabel}>🏆 JEUX EN COURS</Text>
-              <Text style={styles.countdownTitle}>Dakar 2026</Text>
-              <Text style={styles.countdownSub}>27 Jul – 06 Août · 11 disciplines</Text>
-            </View>
-            <View style={styles.countdownDays}>
-              <Text style={styles.countdownNum}>J+2</Text>
-              <Text style={styles.countdownDayLabel}>JOUR</Text>
-            </View>
-          </View>
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: '18%' }]} />
-          </View>
-        </GlassCard>
-
-        {/* Quick actions */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Accès rapide</Text>
-        </View>
-        <View style={styles.quickGrid}>
-          {QUICK_ACTIONS.map((action) => (
-            <Pressable
-              key={action.id}
-              style={styles.quickItem}
-              onPress={() => router.push(action.route as any)}
-            >
-              <LinearGradient
-                colors={action.gradient}
-                style={styles.quickGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
+          <View style={styles.heroPattern}>
+            {[0, 1, 2].map((i) => (
+              <View
+                key={i}
+                style={[
+                  styles.heroCircle,
+                  {
+                    width: 180 + i * 80,
+                    height: 180 + i * 80,
+                    borderRadius: (180 + i * 80) / 2,
+                    right: -60 - i * 30,
+                    top: -40 - i * 20,
+                  },
+                ]}
               />
-              <View style={[StyleSheet.absoluteFill, styles.quickOverlay]} />
-              <Text style={styles.quickIcon}>{action.icon}</Text>
-              <Text style={styles.quickLabel}>{action.label}</Text>
+            ))}
+          </View>
+          <View style={styles.heroContent}>
+            <View>
+              <Text style={styles.heroLabel}>JEUX EN COURS</Text>
+              <Text style={styles.heroTitle}>Dakar 2026</Text>
+              <Text style={styles.heroSub}>27 Jul — 06 Août  ·  11 disciplines</Text>
+            </View>
+            <View style={styles.heroDay}>
+              <Text style={styles.heroDayNum}>J+2</Text>
+              <Text style={styles.heroDayLabel}>JOUR</Text>
+            </View>
+          </View>
+          <View style={styles.heroBar}>
+            <View style={[styles.heroBarFill, { width: '18%' }]} />
+          </View>
+        </Pressable>
+
+        <Pressable style={styles.walletRow} onPress={() => router.push('/wallet' as any)}>
+          <View style={styles.walletIcon}>
+            <Ionicons name="wallet-outline" size={22} color={Colors.gold} />
+          </View>
+          <View style={styles.walletText}>
+            <Text style={styles.walletLabel}>Solde JOJ Wallet</Text>
+            <Text style={styles.walletValue}>
+              {USER.walletBalance.toLocaleString('fr-FR')}
+              <Text style={styles.walletCcy}>  XOF</Text>
+            </Text>
+          </View>
+          <View style={styles.walletCta}>
+            <Text style={styles.walletCtaText}>Recharger</Text>
+            <Ionicons name="arrow-forward" size={14} color={Colors.brand} />
+          </View>
+        </Pressable>
+
+        <SectionHeader title="Accès rapide" />
+        <View style={styles.quickGrid}>
+          {QUICK_ACTIONS.map((a) => (
+            <Pressable key={a.id} style={styles.quickItem} onPress={() => router.push(a.route as any)}>
+              <View style={styles.quickIconBox}>
+                <Ionicons name={a.icon} size={22} color={Colors.text} />
+              </View>
+              <Text style={styles.quickLabel}>{a.label}</Text>
             </Pressable>
           ))}
         </View>
 
-        {/* Live scores */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>🔴 En direct</Text>
-          <Pressable onPress={() => router.push('/events')}>
-            <Text style={styles.seeAll}>Tout voir</Text>
-          </Pressable>
-        </View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.horizontalList}
-        >
-          {LIVE_SCORES.map((score) => (
-            <LiveScoreCard key={score.id} score={score} />
-          ))}
+        <SectionHeader title="En direct" dot right="Tout voir" onRight={() => router.push('/events')} />
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.hScroll}>
+          {LIVE_SCORES.map((s) => <LiveCard key={s.id} score={s} />)}
         </ScrollView>
 
-        {/* Next ticket */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Prochain événement</Text>
-          <Pressable onPress={() => router.push('/tickets')}>
-            <Text style={styles.seeAll}>Mes billets</Text>
-          </Pressable>
-        </View>
-        <NextTicketCard ticket={TICKETS[0]} />
+        <SectionHeader title="Prochain événement" right="Mes billets" onRight={() => router.push('/tickets')} />
+        <NextTicket ticket={TICKETS[0]} />
 
-        {/* Upcoming events */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Programme du jour</Text>
-          <Pressable onPress={() => router.push('/events')}>
-            <Text style={styles.seeAll}>Voir tout</Text>
-          </Pressable>
-        </View>
-        {EVENTS.slice(0, 3).map((event) => (
-          <EventRow key={event.id} event={event} />
-        ))}
-
-        {/* Wallet widget */}
-        <WalletWidget balance={USER.walletBalance} />
+        <SectionHeader title="Programme du jour" right="Voir tout" onRight={() => router.push('/events')} />
+        {EVENTS.slice(0, 3).map((e) => <EventRow key={e.id} event={e} />)}
       </ScrollView>
     </View>
   );
 }
 
-function LiveScoreCard({ score }: { score: (typeof LIVE_SCORES)[0] }) {
+function SectionHeader({ title, right, onRight, dot }: { title: string; right?: string; onRight?: () => void; dot?: boolean }) {
   return (
-    <GlassCard style={styles.liveCard} variant="strong">
-      <LinearGradient
-        colors={[score.color + '20', 'transparent']}
-        style={StyleSheet.absoluteFill}
-      />
-      <View style={styles.liveBadge}>
-        <View style={styles.liveDot} />
-        <Text style={styles.liveText}>LIVE</Text>
+    <View style={styles.sectionHeader}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        {dot && <View style={styles.liveDot} />}
+        <Text style={styles.sectionTitle}>{title}</Text>
       </View>
-      <Text style={styles.liveSport}>{score.sport}</Text>
-      <View style={styles.scoreRow}>
-        <View style={styles.teamCol}>
-          <Text style={styles.teamFlag}>{score.homeFlag}</Text>
-          <Text style={styles.teamName}>{score.homeTeam}</Text>
-        </View>
-        <View style={styles.scoreMid}>
-          <Text style={styles.scoreNum}>{score.homeScore}</Text>
-          <Text style={styles.scoreDash}>–</Text>
-          <Text style={styles.scoreNum}>{score.awayScore}</Text>
-        </View>
-        <View style={styles.teamCol}>
-          <Text style={styles.teamFlag}>{score.awayFlag}</Text>
-          <Text style={styles.teamName}>{score.awayTeam}</Text>
-        </View>
-      </View>
-      <Text style={styles.scorePeriod}>{score.period}</Text>
-    </GlassCard>
+      {right && (
+        <Pressable onPress={onRight}>
+          <Text style={styles.sectionAction}>{right}</Text>
+        </Pressable>
+      )}
+    </View>
   );
 }
 
-function NextTicketCard({ ticket }: { ticket: (typeof TICKETS)[0] }) {
+function LiveCard({ score }: { score: (typeof LIVE_SCORES)[0] }) {
   return (
-    <GlassCard style={styles.nextTicket}>
-      <LinearGradient
-        colors={ticket.gradient}
-        style={styles.ticketAccentBar}
-      />
-      <View style={styles.ticketContent}>
-        <View style={styles.ticketLeft}>
-          <Text style={styles.ticketType}>{ticket.type}</Text>
-          <Text style={styles.ticketEvent}>{ticket.event}</Text>
-          <Text style={styles.ticketVenue}>{ticket.venue}</Text>
-          <View style={styles.ticketMeta}>
-            <Ionicons name="time-outline" size={13} color={Colors.textTertiary} />
-            <Text style={styles.ticketMetaText}>{ticket.date} · {ticket.time}</Text>
-          </View>
+    <View style={styles.liveCard}>
+      <View style={styles.liveCardHeader}>
+        <View style={styles.liveBadge}>
+          <View style={styles.liveBadgeDot} />
+          <Text style={styles.liveBadgeText}>LIVE</Text>
         </View>
-        <View style={styles.ticketQrPlaceholder}>
-          <View style={styles.qrDots}>
-            {[...Array(16)].map((_, i) => (
-              <View
-                key={i}
-                style={[styles.qrDot, { opacity: Math.random() > 0.4 ? 1 : 0.2 }]}
-              />
-            ))}
-          </View>
+        <Text style={styles.liveSport}>{score.sport}</Text>
+      </View>
+      <View style={styles.liveTeams}>
+        <View style={styles.liveTeam}>
+          <CountryBadge code={score.homeCode} size="md" />
+          <Text style={styles.liveTeamName}>{score.homeTeam}</Text>
+        </View>
+        <View style={styles.liveScore}>
+          <Text style={styles.liveScoreNum}>{score.homeScore}</Text>
+          <Text style={styles.liveScoreSep}>:</Text>
+          <Text style={styles.liveScoreNum}>{score.awayScore}</Text>
+        </View>
+        <View style={styles.liveTeam}>
+          <CountryBadge code={score.awayCode} size="md" />
+          <Text style={styles.liveTeamName}>{score.awayTeam}</Text>
         </View>
       </View>
-    </GlassCard>
+      <Text style={styles.livePeriod}>{score.period}</Text>
+    </View>
+  );
+}
+
+function NextTicket({ ticket }: { ticket: (typeof TICKETS)[0] }) {
+  return (
+    <Pressable style={styles.ticket}>
+      <View style={styles.ticketIconWrap}>
+        <Ionicons name={ticket.icon} size={22} color={Colors.brand} />
+      </View>
+      <View style={styles.ticketBody}>
+        <View style={styles.ticketTopRow}>
+          <Text style={styles.ticketCat}>{ticket.type}</Text>
+          <View style={styles.ticketStatus}>
+            <View style={styles.ticketStatusDot} />
+            <Text style={styles.ticketStatusText}>Actif</Text>
+          </View>
+        </View>
+        <Text style={styles.ticketEvent}>{ticket.event}</Text>
+        <Text style={styles.ticketVenue}>{ticket.venue}</Text>
+        <View style={styles.ticketMeta}>
+          <Ionicons name="time-outline" size={13} color={Colors.textTertiary} />
+          <Text style={styles.ticketMetaText}>{ticket.date}  ·  {ticket.time}</Text>
+        </View>
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={Colors.textTertiary} />
+    </Pressable>
   );
 }
 
 function EventRow({ event }: { event: (typeof EVENTS)[0] }) {
   return (
-    <GlassCard style={styles.eventRow} onPress={() => {}}>
-      <View style={[styles.eventAccent, { backgroundColor: event.color }]} />
-      <Text style={styles.eventIcon}>{event.icon}</Text>
+    <Pressable style={styles.eventRow}>
+      <SportIcon sport={event.sport} size={20} />
       <View style={styles.eventInfo}>
         <Text style={styles.eventMatch}>{event.match}</Text>
-        <Text style={styles.eventVenue}>{event.venue}</Text>
+        <Text style={styles.eventVenue}>{event.venue}  ·  {event.category}</Text>
       </View>
       <View style={styles.eventTime}>
-        {event.status === 'live' && (
-          <View style={styles.liveChip}>
-            <View style={styles.liveDot} />
-            <Text style={styles.liveChipText}>LIVE</Text>
+        {event.status === 'live' ? (
+          <View style={styles.liveBadge}>
+            <View style={styles.liveBadgeDot} />
+            <Text style={styles.liveBadgeText}>LIVE</Text>
           </View>
+        ) : (
+          <Text style={styles.eventTimeText}>{event.time}</Text>
         )}
-        <Text style={styles.eventTimeText}>{event.time}</Text>
       </View>
-    </GlassCard>
+    </Pressable>
   );
 }
-
-function WalletWidget({ balance }: { balance: number }) {
-  const router = useRouter();
-  return (
-    <GlassCard style={styles.walletWidget} onPress={() => router.push('/wallet' as any)}>
-      <LinearGradient
-        colors={['rgba(201,168,76,0.25)', 'rgba(201,168,76,0.08)']}
-        style={StyleSheet.absoluteFill}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      />
-      <View style={styles.walletContent}>
-        <View>
-          <Text style={styles.walletLabel}>💳 Mon Wallet JOJ</Text>
-          <Text style={styles.walletBalance}>
-            {balance.toLocaleString('fr-FR')} <Text style={styles.walletCurrency}>XOF</Text>
-          </Text>
-        </View>
-        <Pressable style={styles.topUpBtn} onPress={() => router.push('/wallet' as any)}>
-          <LinearGradient colors={[Colors.gold, Colors.goldLight]} style={StyleSheet.absoluteFill} />
-          <Text style={styles.topUpText}>Recharger</Text>
-        </Pressable>
-      </View>
-    </GlassCard>
-  );
-}
-
-const QUICK_ACTIONS = [
-  { id: '1', icon: '🎫', label: 'Mes Billets', route: '/tickets', gradient: ['rgba(255,107,53,0.4)', 'rgba(255,107,53,0.15)'] as const },
-  { id: '2', icon: '🗺️', label: 'Carte', route: '/map', gradient: ['rgba(78,205,196,0.4)', 'rgba(78,205,196,0.15)'] as const },
-  { id: '3', icon: '🚌', label: 'Transport', route: '/transport', gradient: ['rgba(123,94,167,0.4)', 'rgba(123,94,167,0.15)'] as const },
-  { id: '4', icon: '🍔', label: 'Commander', route: '/food', gradient: ['rgba(201,168,76,0.4)', 'rgba(201,168,76,0.15)'] as const },
-  { id: '5', icon: '🏅', label: 'Médailles', route: '/events', gradient: ['rgba(61,142,245,0.4)', 'rgba(61,142,245,0.15)'] as const },
-  { id: '6', icon: '📣', label: 'Alertes', route: '/', gradient: ['rgba(224,111,168,0.4)', 'rgba(224,111,168,0.15)'] as const },
-];
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.bg,
-  },
-  blobTop: {
-    position: 'absolute',
-    width: 350,
-    height: 350,
-    borderRadius: 175,
-    backgroundColor: Colors.orange + '08',
-    top: -100,
-    right: -80,
-  },
-  blobMid: {
-    position: 'absolute',
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    backgroundColor: Colors.purple + '10',
-    top: 400,
-    left: -60,
-  },
-  scroll: {
-    paddingHorizontal: 20,
-    gap: 8,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-    paddingBottom: 8,
-  },
-  greeting: {
-    ...Typography.callout,
-    color: Colors.textSecondary,
-  },
-  userName: {
-    ...Typography.title1,
-    fontWeight: '800',
-    marginTop: 2,
-  },
-  countryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 4,
-  },
-  flag: {
-    fontSize: 16,
-  },
-  country: {
-    ...Typography.footnote,
-    color: Colors.textSecondary,
-  },
-  notifBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  notifDot: {
-    position: 'absolute',
-    top: 9,
-    right: 9,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.orange,
-    borderWidth: 1.5,
-    borderColor: Colors.bg,
-  },
-  countdownCard: {
-    padding: 20,
-    marginTop: 8,
-    overflow: 'hidden',
-    gap: 12,
-  },
-  countdownContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  countdownLabel: {
-    ...Typography.label,
-    color: Colors.orange,
-    marginBottom: 4,
-  },
-  countdownTitle: {
-    ...Typography.title2,
-    fontWeight: '800',
-  },
-  countdownSub: {
-    ...Typography.footnote,
-    color: Colors.textSecondary,
-    marginTop: 2,
-  },
-  countdownDays: {
-    alignItems: 'center',
-    backgroundColor: Colors.glass2,
-    borderRadius: Radius.md,
-    borderWidth: 1,
-    borderColor: Colors.border1,
-    padding: 12,
-    minWidth: 64,
-  },
-  countdownNum: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: Colors.orange,
-  },
-  countdownDayLabel: {
-    ...Typography.label,
-    color: Colors.textTertiary,
-    fontSize: 9,
-  },
-  progressBar: {
-    height: 4,
-    backgroundColor: Colors.glass1,
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: 4,
-    backgroundColor: Colors.orange,
-    borderRadius: 2,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 4,
-  },
-  sectionTitle: {
-    ...Typography.title3,
-    fontWeight: '700',
-  },
-  seeAll: {
-    ...Typography.footnote,
-    color: Colors.orange,
-    fontWeight: '600',
-  },
-  quickGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginTop: 4,
-  },
-  quickItem: {
-    width: (width - 40 - 24) / 3,
-    aspectRatio: 1,
-    borderRadius: Radius.lg,
-    borderWidth: 1,
-    borderColor: Colors.border1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    gap: 8,
-    ...Shadows.sm,
-  },
-  quickGradient: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  quickOverlay: {
-    backgroundColor: Colors.glass1,
-    borderRadius: Radius.lg,
-  },
-  quickIcon: {
-    fontSize: 28,
-  },
-  quickLabel: {
-    ...Typography.caption,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-    textAlign: 'center',
-  },
-  horizontalList: {
-    paddingHorizontal: 0,
-    gap: 12,
-    paddingBottom: 4,
-  },
-  liveCard: {
-    width: 200,
-    padding: 16,
-    gap: 8,
-    overflow: 'hidden',
-  },
-  liveBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    alignSelf: 'flex-start',
-    backgroundColor: Colors.error + '25',
-    borderRadius: Radius.full,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
-  liveDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: Colors.error,
-  },
-  liveText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: Colors.error,
-    letterSpacing: 0.5,
-  },
-  liveSport: {
-    ...Typography.caption,
-    color: Colors.textSecondary,
-    fontWeight: '600',
-  },
-  scoreRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 4,
-  },
-  teamCol: {
-    alignItems: 'center',
-    flex: 1,
-    gap: 4,
-  },
-  teamFlag: {
-    fontSize: 22,
-  },
-  teamName: {
-    ...Typography.caption,
-    color: Colors.textSecondary,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  scoreMid: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 8,
-  },
-  scoreNum: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: Colors.text,
-  },
-  scoreDash: {
-    ...Typography.headline,
-    color: Colors.textTertiary,
-  },
-  scorePeriod: {
-    ...Typography.caption,
-    color: Colors.textTertiary,
-    textAlign: 'center',
-    marginTop: 4,
-  },
-  nextTicket: {
-    overflow: 'hidden',
-    marginTop: 4,
-  },
-  ticketAccentBar: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 4,
-  },
-  ticketContent: {
-    flexDirection: 'row',
-    padding: 16,
-    paddingLeft: 20,
-    gap: 12,
-    alignItems: 'center',
-  },
-  ticketLeft: {
-    flex: 1,
-    gap: 4,
-  },
-  ticketType: {
-    ...Typography.label,
-    color: Colors.orange,
-  },
-  ticketEvent: {
-    ...Typography.headline,
-    fontWeight: '700',
-  },
-  ticketVenue: {
-    ...Typography.footnote,
-    color: Colors.textSecondary,
-  },
-  ticketMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 2,
-  },
-  ticketMetaText: {
-    ...Typography.caption,
-    color: Colors.textTertiary,
-  },
-  ticketQrPlaceholder: {
-    width: 64,
-    height: 64,
-    backgroundColor: Colors.glass2,
-    borderRadius: 10,
-    overflow: 'hidden',
-    padding: 6,
-  },
-  qrDots: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 3,
-  },
-  qrDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 2,
-    backgroundColor: Colors.text,
-  },
-  eventRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 14,
-    gap: 12,
-    marginBottom: 8,
-    overflow: 'hidden',
-  },
-  eventAccent: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 3,
-    borderRadius: 2,
-  },
-  eventIcon: {
-    fontSize: 24,
-    marginLeft: 8,
-  },
-  eventInfo: {
-    flex: 1,
-    gap: 2,
-  },
-  eventMatch: {
-    ...Typography.callout,
-    fontWeight: '600',
-  },
-  eventVenue: {
-    ...Typography.caption,
-    color: Colors.textTertiary,
-  },
-  eventTime: {
-    alignItems: 'flex-end',
-    gap: 4,
-  },
-  liveChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: Colors.error + '20',
-    borderRadius: Radius.full,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  liveChipText: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: Colors.error,
-    letterSpacing: 0.5,
-  },
-  eventTimeText: {
-    ...Typography.footnote,
-    fontWeight: '700',
-    color: Colors.text,
-  },
-  walletWidget: {
-    marginTop: 16,
-    overflow: 'hidden',
-  },
-  walletContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 20,
-  },
-  walletLabel: {
-    ...Typography.footnote,
-    color: Colors.textSecondary,
-    marginBottom: 4,
-  },
-  walletBalance: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: Colors.text,
-  },
-  walletCurrency: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: Colors.textSecondary,
-  },
-  topUpBtn: {
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: Radius.md,
-    overflow: 'hidden',
-  },
-  topUpText: {
-    ...Typography.callout,
-    fontWeight: '700',
-    color: Colors.bg,
-  },
+  container: { flex: 1, backgroundColor: Colors.bg },
+  glow: { position: 'absolute', width: 400, height: 400, borderRadius: 200, backgroundColor: Colors.brand + '08', top: -120, right: -100 },
+  scroll: { paddingHorizontal: 20 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
+  headerLeft: { gap: 4 },
+  greeting: { ...Typography.subheadline, color: Colors.textSecondary },
+  userName: { ...Typography.title1, fontWeight: '800' },
+  userMeta: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
+  userMetaText: { ...Typography.caption, color: Colors.textSecondary, fontWeight: '500' },
+  iconBtn: { width: 42, height: 42, borderRadius: 14, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, alignItems: 'center', justifyContent: 'center' },
+  dot: { position: 'absolute', top: 10, right: 10, width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.brand, borderWidth: 1.5, borderColor: Colors.bg },
+  hero: { height: 132, borderRadius: Radius.xl, overflow: 'hidden', marginBottom: 14, ...Shadows.md },
+  heroPattern: { position: 'absolute', right: 0, top: 0 },
+  heroCircle: { position: 'absolute', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)' },
+  heroContent: { flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20 },
+  heroLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, color: 'rgba(255,255,255,0.85)', marginBottom: 6 },
+  heroTitle: { fontSize: 26, fontWeight: '900', color: '#fff', letterSpacing: -0.5 },
+  heroSub: { fontSize: 12, color: 'rgba(255,255,255,0.85)', marginTop: 4 },
+  heroDay: { backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: Radius.md, paddingHorizontal: 14, paddingVertical: 8, alignItems: 'center' },
+  heroDayNum: { fontSize: 22, fontWeight: '900', color: '#fff' },
+  heroDayLabel: { fontSize: 9, fontWeight: '700', color: 'rgba(255,255,255,0.85)', letterSpacing: 1 },
+  heroBar: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 3, backgroundColor: 'rgba(0,0,0,0.25)' },
+  heroBarFill: { height: 3, backgroundColor: '#fff' },
+  walletRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.lg, padding: 16, gap: 14 },
+  walletIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: Colors.gold + '20', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Colors.gold + '30' },
+  walletText: { flex: 1 },
+  walletLabel: { ...Typography.caption, color: Colors.textTertiary, fontWeight: '600' },
+  walletValue: { fontSize: 20, fontWeight: '800', color: Colors.text, marginTop: 2 },
+  walletCcy: { fontSize: 12, fontWeight: '500', color: Colors.textSecondary },
+  walletCta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  walletCtaText: { ...Typography.footnote, color: Colors.brand, fontWeight: '700' },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 24, marginBottom: 12 },
+  sectionTitle: { ...Typography.title3 },
+  sectionAction: { ...Typography.footnote, color: Colors.brand, fontWeight: '600' },
+  liveDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.liveDot },
+  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  quickItem: { width: QUICK_W, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.lg, padding: 14, alignItems: 'center', gap: 10 },
+  quickIconBox: { width: 44, height: 44, borderRadius: 12, backgroundColor: Colors.surface3, borderWidth: 1, borderColor: Colors.border2, alignItems: 'center', justifyContent: 'center' },
+  quickLabel: { ...Typography.footnote, fontWeight: '600', color: Colors.textSecondary, textAlign: 'center' },
+  hScroll: { gap: 12, paddingBottom: 4 },
+  liveCard: { width: 230, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.lg, padding: 16, gap: 12 },
+  liveCardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  liveBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: Colors.liveDot + '20', borderRadius: Radius.full, paddingHorizontal: 8, paddingVertical: 3 },
+  liveBadgeDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.liveDot },
+  liveBadgeText: { fontSize: 10, fontWeight: '800', color: Colors.liveDot, letterSpacing: 0.6 },
+  liveSport: { ...Typography.caption2, color: Colors.textSecondary, fontWeight: '600' },
+  liveTeams: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  liveTeam: { alignItems: 'center', gap: 6, flex: 1 },
+  liveTeamName: { ...Typography.caption, color: Colors.textSecondary, fontWeight: '600', textAlign: 'center' },
+  liveScore: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8 },
+  liveScoreNum: { fontSize: 26, fontWeight: '900', color: Colors.text },
+  liveScoreSep: { fontSize: 18, color: Colors.textTertiary },
+  livePeriod: { ...Typography.caption, color: Colors.textTertiary, textAlign: 'center' },
+  ticket: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.lg, padding: 16, gap: 14 },
+  ticketIconWrap: { width: 48, height: 48, borderRadius: 14, backgroundColor: Colors.brand + '15', borderWidth: 1, borderColor: Colors.brand + '30', alignItems: 'center', justifyContent: 'center' },
+  ticketBody: { flex: 1, gap: 4 },
+  ticketTopRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  ticketCat: { ...Typography.caption2, fontWeight: '800', letterSpacing: 1, color: Colors.brand },
+  ticketStatus: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: Colors.success + '20', borderRadius: Radius.full, paddingHorizontal: 7, paddingVertical: 2 },
+  ticketStatusDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: Colors.success },
+  ticketStatusText: { fontSize: 10, fontWeight: '700', color: Colors.success },
+  ticketEvent: { ...Typography.callout, fontWeight: '700' },
+  ticketVenue: { ...Typography.footnote, color: Colors.textSecondary },
+  ticketMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  ticketMetaText: { ...Typography.caption, color: Colors.textTertiary },
+  eventRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.lg, padding: 14, gap: 12, marginBottom: 8 },
+  eventInfo: { flex: 1, gap: 2 },
+  eventMatch: { ...Typography.callout, fontWeight: '600' },
+  eventVenue: { ...Typography.caption, color: Colors.textTertiary },
+  eventTime: { alignItems: 'flex-end' },
+  eventTimeText: { ...Typography.callout, fontWeight: '700', color: Colors.text },
 });

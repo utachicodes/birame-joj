@@ -13,44 +13,41 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import GlassButton from '../components/GlassButton';
 import { Colors, Typography, Radius } from '../theme';
 
 const { width, height } = Dimensions.get('window');
 
-const SLIDES = [
+const SLIDES: Array<{
+  id: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  title: string;
+  subtitle: string;
+}> = [
   {
     id: '1',
-    emoji: '🏆',
-    title: 'Bienvenue aux\nJeux de la\nFrancophonie',
-    subtitle: 'Votre compagnon officiel pour vivre l\'événement sportif et culturel de l\'année.',
-    gradient: ['#0D0B2E', '#1A0E3D', '#0E1F45'] as const,
-    accent: Colors.orange,
+    icon: 'trophy-outline',
+    title: 'Bienvenue aux\nJeux de la Francophonie',
+    subtitle: "Votre compagnon officiel pour vivre l'événement sportif et culturel de l'année à Dakar.",
   },
   {
     id: '2',
-    emoji: '🎫',
-    title: 'Tous vos titres\nen un seul\nendroit',
+    icon: 'ticket-outline',
+    title: 'Tous vos titres\nen un seul endroit',
     subtitle: 'Billets, accréditations, pass transport — tout dans votre wallet numérique sécurisé.',
-    gradient: ['#051A2E', '#0A2E45', '#051A2E'] as const,
-    accent: Colors.teal,
   },
   {
     id: '3',
-    emoji: '⚡',
-    title: 'Scores en direct\net résultats\ninstantanés',
-    subtitle: 'Suivez tous les sports JOJ en temps réel avec statistiques et tableau des médailles.',
-    gradient: ['#1A0A0E', '#2E0F1A', '#1A0A0E'] as const,
-    accent: Colors.pink,
+    icon: 'pulse-outline',
+    title: 'Scores en direct\net résultats instantanés',
+    subtitle: "Suivez tous les sports JOJ en temps réel avec statistiques détaillées et tableau des médailles.",
   },
   {
     id: '4',
-    emoji: '💳',
-    title: 'Paiement\ncashless dans\ntout le site',
+    icon: 'wallet-outline',
+    title: 'Paiement cashless\ndans tout le site',
     subtitle: 'Rechargez avec Orange Money, Wave, carte ou Apple Pay. Payez partout en XOF.',
-    gradient: ['#0D1A0A', '#152E12', '#0D1A0A'] as const,
-    accent: Colors.gold,
   },
 ];
 
@@ -83,6 +80,21 @@ export default function OnboardingScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
+      <LinearGradient colors={[Colors.bg, Colors.bgElevated, Colors.bgDeep]} style={StyleSheet.absoluteFill} />
+      <View style={styles.glow1} />
+      <View style={styles.glow2} />
+
+      <View style={[styles.topBar, { paddingTop: insets.top + 16 }]}>
+        <View style={styles.brandRow}>
+          <View style={styles.brandLogo}>
+            <Ionicons name="trophy" size={16} color={Colors.brand} />
+          </View>
+          <Text style={styles.brandText}>JOJ Dakar 2026</Text>
+        </View>
+        <Pressable onPress={() => router.replace('/auth')} style={styles.skipBtn}>
+          <Text style={styles.skipText}>Passer</Text>
+        </Pressable>
+      </View>
 
       <FlatList
         ref={flatListRef}
@@ -93,195 +105,82 @@ export default function OnboardingScreen() {
         onScroll={handleScroll}
         scrollEventThrottle={16}
         keyExtractor={(item) => item.id}
-        renderItem={({ item, index }) => (
-          <SlideItem item={item} index={index} scrollX={scrollX} />
-        )}
+        renderItem={({ item, index }) => <Slide item={item} index={index} scrollX={scrollX} />}
       />
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom + 24 }]}>
         <View style={styles.dots}>
           {SLIDES.map((_, i) => {
             const inputRange = [(i - 1) * width, i * width, (i + 1) * width];
             const dotWidth = scrollX.interpolate({
               inputRange,
-              outputRange: [8, 24, 8],
+              outputRange: [8, 28, 8],
               extrapolate: 'clamp',
             });
-            const opacity = scrollX.interpolate({
-              inputRange,
-              outputRange: [0.4, 1, 0.4],
-              extrapolate: 'clamp',
-            });
-            return (
-              <Pressable
-                key={i}
-                onPress={() => flatListRef.current?.scrollToIndex({ index: i, animated: true })}
-              >
-                <Animated.View
-                  style={[
-                    styles.dot,
-                    {
-                      width: dotWidth,
-                      opacity,
-                      backgroundColor: SLIDES[activeIndex].accent,
-                    },
-                  ]}
-                />
-              </Pressable>
-            );
+            return <Animated.View key={i} style={[styles.dot, { width: dotWidth }]} />;
           })}
         </View>
 
-        <View style={styles.buttons}>
-          <GlassButton
-            title={activeIndex === SLIDES.length - 1 ? 'Commencer' : 'Suivant'}
-            onPress={handleNext}
-            fullWidth
-            size="lg"
-            gradient={[SLIDES[activeIndex].accent, SLIDES[activeIndex].accent + 'CC'] as any}
-          />
-          {activeIndex < SLIDES.length - 1 && (
-            <GlassButton
-              title="Passer"
-              onPress={() => router.replace('/auth')}
-              variant="ghost"
-              fullWidth
-              size="md"
-            />
-          )}
-        </View>
+        <Pressable style={styles.cta} onPress={handleNext}>
+          <LinearGradient colors={[Colors.brand, Colors.brandDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+          <Text style={styles.ctaText}>
+            {activeIndex === SLIDES.length - 1 ? 'Commencer' : 'Suivant'}
+          </Text>
+          <Ionicons name="arrow-forward" size={18} color="#fff" />
+        </Pressable>
       </View>
     </View>
   );
 }
 
-function SlideItem({
-  item,
-  index,
-  scrollX,
-}: {
-  item: (typeof SLIDES)[0];
-  index: number;
-  scrollX: Animated.Value;
-}) {
+function Slide({ item, index, scrollX }: { item: (typeof SLIDES)[0]; index: number; scrollX: Animated.Value }) {
   const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
-
-  const opacity = scrollX.interpolate({
-    inputRange,
-    outputRange: [0.3, 1, 0.3],
-    extrapolate: 'clamp',
-  });
-
-  const translateY = scrollX.interpolate({
-    inputRange,
-    outputRange: [40, 0, 40],
-    extrapolate: 'clamp',
-  });
+  const opacity = scrollX.interpolate({ inputRange, outputRange: [0.3, 1, 0.3], extrapolate: 'clamp' });
+  const translateY = scrollX.interpolate({ inputRange, outputRange: [40, 0, 40], extrapolate: 'clamp' });
+  const iconScale = scrollX.interpolate({ inputRange, outputRange: [0.8, 1, 0.8], extrapolate: 'clamp' });
 
   return (
-    <LinearGradient colors={item.gradient} style={styles.slide}>
-      <View style={[styles.blob1, { backgroundColor: item.accent + '20' }]} />
-      <View style={[styles.blob2, { backgroundColor: item.accent + '15' }]} />
-
+    <View style={styles.slide}>
       <Animated.View style={[styles.slideContent, { opacity, transform: [{ translateY }] }]}>
-        <View style={[styles.emojiContainer, { borderColor: item.accent + '40' }]}>
-          <Text style={styles.emoji}>{item.emoji}</Text>
-        </View>
+        <Animated.View style={[styles.iconContainer, { transform: [{ scale: iconScale }] }]}>
+          <View style={styles.iconRingOuter}>
+            <View style={styles.iconRingInner}>
+              <Ionicons name={item.icon} size={48} color={Colors.brand} />
+            </View>
+          </View>
+        </Animated.View>
 
-        <Text style={styles.slideTitle}>{item.title}</Text>
-        <Text style={styles.slideSubtitle}>{item.subtitle}</Text>
-
-        <View style={[styles.accentLine, { backgroundColor: item.accent }]} />
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.subtitle}>{item.subtitle}</Text>
       </Animated.View>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.bg,
-  },
-  slide: {
-    width,
-    height,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-    paddingBottom: 200,
-  },
-  blob1: {
-    position: 'absolute',
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    top: '10%',
-    right: -80,
-  },
-  blob2: {
-    position: 'absolute',
-    width: 250,
-    height: 250,
-    borderRadius: 125,
-    bottom: '20%',
-    left: -60,
-  },
-  slideContent: {
-    alignItems: 'center',
-    gap: 20,
-  },
-  emojiContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 28,
-    borderWidth: 1.5,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emoji: {
-    fontSize: 52,
-  },
-  slideTitle: {
-    fontSize: 38,
-    fontWeight: '800',
-    color: Colors.text,
-    textAlign: 'center',
-    lineHeight: 44,
-    letterSpacing: -1,
-  },
-  slideSubtitle: {
-    ...Typography.body,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
-    maxWidth: 300,
-  },
-  accentLine: {
-    width: 40,
-    height: 3,
-    borderRadius: 2,
-    marginTop: 8,
-  },
-  footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 24,
-    gap: 20,
-  },
-  dots: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-    alignItems: 'center',
-  },
-  dot: {
-    height: 8,
-    borderRadius: 4,
-  },
-  buttons: {
-    gap: 8,
-  },
+  container: { flex: 1, backgroundColor: Colors.bg },
+  glow1: { position: 'absolute', width: 400, height: 400, borderRadius: 200, backgroundColor: Colors.brand + '12', top: -100, right: -100 },
+  glow2: { position: 'absolute', width: 350, height: 350, borderRadius: 175, backgroundColor: Colors.brand + '08', bottom: 100, left: -100 },
+
+  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 12 },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  brandLogo: { width: 32, height: 32, borderRadius: 10, backgroundColor: Colors.brand + '15', borderWidth: 1, borderColor: Colors.brand + '30', alignItems: 'center', justifyContent: 'center' },
+  brandText: { ...Typography.callout, fontWeight: '700' },
+  skipBtn: { paddingHorizontal: 12, paddingVertical: 6 },
+  skipText: { ...Typography.footnote, color: Colors.textSecondary, fontWeight: '600' },
+
+  slide: { width, flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
+  slideContent: { alignItems: 'center', gap: 28 },
+  iconContainer: { padding: 8 },
+  iconRingOuter: { width: 160, height: 160, borderRadius: 50, backgroundColor: Colors.brand + '08', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Colors.brand + '15' },
+  iconRingInner: { width: 120, height: 120, borderRadius: 38, backgroundColor: Colors.brand + '12', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Colors.brand + '30' },
+  title: { fontSize: 30, fontWeight: '900', color: Colors.text, textAlign: 'center', lineHeight: 36, letterSpacing: -0.6 },
+  subtitle: { ...Typography.body, color: Colors.textSecondary, textAlign: 'center', lineHeight: 23, maxWidth: 320 },
+
+  footer: { paddingHorizontal: 24, gap: 24 },
+  dots: { flexDirection: 'row', justifyContent: 'center', gap: 6, alignItems: 'center' },
+  dot: { height: 8, borderRadius: 4, backgroundColor: Colors.brand },
+
+  cta: { height: 56, borderRadius: Radius.lg, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, overflow: 'hidden' },
+  ctaText: { fontSize: 16, fontWeight: '800', color: '#fff', letterSpacing: -0.2 },
 });

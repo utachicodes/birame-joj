@@ -12,183 +12,136 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import GlassCard from '../components/GlassCard';
-import GlassButton from '../components/GlassButton';
-import { Colors, Typography, Radius, Shadows } from '../theme';
+import { Colors, Typography, Radius } from '../theme';
 import { USER, TRANSACTIONS } from '../data/mock';
 
 const { width } = Dimensions.get('window');
-const CARD_W = width - 48;
+const CARD_W = width - 40;
 
-const TOP_UP_METHODS = [
-  { id: 'orange', name: 'Orange Money', icon: '🟠', color: '#FF6B00' },
-  { id: 'wave', name: 'Wave', icon: '🌊', color: '#1DC7FF' },
-  { id: 'card', name: 'Carte bancaire', icon: '💳', color: Colors.blue },
-  { id: 'apple', name: 'Apple Pay', icon: '🍎', color: '#fff' },
+const TOP_UP_METHODS: Array<{
+  id: string;
+  name: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  color: string;
+}> = [
+  { id: 'orange', name: 'Orange Money', icon: 'phone-portrait-outline', color: '#FF6B00' },
+  { id: 'wave', name: 'Wave', icon: 'water-outline', color: '#1DC7FF' },
+  { id: 'card', name: 'Carte bancaire', icon: 'card-outline', color: Colors.blue },
+  { id: 'apple', name: 'Apple Pay', icon: 'logo-apple', color: '#fff' },
+];
+
+const QUICK_ACTIONS: Array<{
+  id: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  color: string;
+}> = [
+  { id: 'top-up', icon: 'add-outline', label: 'Recharger', color: Colors.gold },
+  { id: 'send', icon: 'arrow-up-outline', label: 'Envoyer', color: Colors.teal },
+  { id: 'pay', icon: 'qr-code-outline', label: 'Payer', color: Colors.brand },
+  { id: 'receive', icon: 'arrow-down-outline', label: 'Recevoir', color: Colors.blue },
 ];
 
 export default function WalletScreen() {
   const insets = useSafeAreaInsets();
   const [showTopUp, setShowTopUp] = useState(false);
-  const [selectedMethod, setSelectedMethod] = useState('orange');
 
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      <LinearGradient
-        colors={['#050A18', '#1A1200', '#050A18']}
-        style={StyleSheet.absoluteFill}
-        locations={[0, 0.5, 1]}
-      />
-      <View style={styles.blobGold} />
+      <LinearGradient colors={[Colors.bg, Colors.bgElevated, Colors.bg]} style={StyleSheet.absoluteFill} />
 
-      {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(5,10,24,0.5)' }]} />
-        <View style={styles.headerContent}>
+        <View style={styles.headerRow}>
           <Text style={styles.headerTitle}>Mon Wallet</Text>
-          <Pressable style={styles.historyBtn}>
-            <Ionicons name="document-text-outline" size={20} color={Colors.text} />
+          <Pressable style={styles.iconBtn}>
+            <Ionicons name="receipt-outline" size={20} color={Colors.text} />
           </Pressable>
         </View>
-        <View style={styles.headerBorder} />
       </View>
 
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 100 }]}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Balance card */}
-        <View style={styles.cardWrap}>
-          <LinearGradient
-            colors={['#C9A84C', '#8B6914', '#C9A84C']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.balanceCard}
-          >
-            {/* Card pattern overlay */}
-            <View style={styles.cardPattern}>
-              {[...Array(6)].map((_, i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.cardCircle,
-                    {
-                      width: 80 + i * 40,
-                      height: 80 + i * 40,
-                      borderRadius: (80 + i * 40) / 2,
-                      borderColor: 'rgba(255,255,255,0.08)',
-                      right: -20 - i * 20,
-                      top: -20 - i * 10,
-                    },
-                  ]}
-                />
-              ))}
+      <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 100 }]} showsVerticalScrollIndicator={false}>
+        {/* Card */}
+        <View style={styles.card}>
+          <LinearGradient colors={[Colors.gold, '#A88A2C', Colors.gold]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+          <View style={styles.cardPattern}>
+            {[0, 1, 2, 3].map((i) => (
+              <View key={i} style={[styles.cardCircle, { width: 100 + i * 50, height: 100 + i * 50, borderRadius: (100 + i * 50) / 2, right: -30 - i * 20, top: -20 - i * 10 }]} />
+            ))}
+          </View>
+          <View style={styles.cardTop}>
+            <View>
+              <Text style={styles.cardLabel}>JOJ WALLET</Text>
+              <Text style={styles.cardName}>{USER.name}</Text>
             </View>
-
-            <View style={styles.cardTop}>
-              <View>
-                <Text style={styles.cardLabel}>JOJ WALLET</Text>
-                <Text style={styles.cardName}>{USER.name}</Text>
-              </View>
-              <Text style={styles.cardChip}>◉</Text>
+            <Ionicons name="card" size={26} color="rgba(255,255,255,0.6)" />
+          </View>
+          <View>
+            <Text style={styles.cardBalanceLabel}>Solde disponible</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
+              <Text style={styles.cardBalance}>{USER.walletBalance.toLocaleString('fr-FR')}</Text>
+              <Text style={styles.cardCcy}>XOF</Text>
             </View>
-
-            <View style={styles.cardBottom}>
-              <View>
-                <Text style={styles.balanceLabel}>Solde disponible</Text>
-                <Text style={styles.balance}>
-                  {USER.walletBalance.toLocaleString('fr-FR')}
-                  <Text style={styles.balanceCurrency}> XOF</Text>
-                </Text>
-              </View>
-              <View style={styles.cardNfc}>
-                <Ionicons name="wifi-outline" size={22} color="rgba(255,255,255,0.6)" style={{ transform: [{ rotate: '90deg' }] }} />
-              </View>
+          </View>
+          <View style={styles.cardFooter}>
+            <Text style={styles.cardNum}>•••• •••• ••••  8421</Text>
+            <View style={styles.cardNfc}>
+              <Ionicons name="wifi-outline" size={18} color="rgba(255,255,255,0.7)" style={{ transform: [{ rotate: '90deg' }] }} />
             </View>
-          </LinearGradient>
-
-          {/* Card glow */}
-          <View style={styles.cardGlow} />
+          </View>
         </View>
 
         {/* Quick actions */}
-        <View style={styles.actionsRow}>
-          {[
-            { icon: 'add-circle-outline', label: 'Recharger', action: () => setShowTopUp(true), color: Colors.gold },
-            { icon: 'send-outline', label: 'Envoyer', action: () => {}, color: Colors.teal },
-            { icon: 'qr-code-outline', label: 'Payer', action: () => {}, color: Colors.orange },
-            { icon: 'download-outline', label: 'Retrait', action: () => {}, color: Colors.blue },
-          ].map((a) => (
-            <Pressable key={a.label} style={styles.actionItem} onPress={a.action}>
-              <LinearGradient
-                colors={[a.color + '30', a.color + '10']}
-                style={styles.actionIcon}
-              >
-                <Ionicons name={a.icon as any} size={24} color={a.color} />
-              </LinearGradient>
+        <View style={styles.actions}>
+          {QUICK_ACTIONS.map((a) => (
+            <Pressable
+              key={a.id}
+              style={styles.actionItem}
+              onPress={() => a.id === 'top-up' && setShowTopUp(true)}
+            >
+              <View style={[styles.actionIconBox, { backgroundColor: a.color + '18', borderColor: a.color + '30' }]}>
+                <Ionicons name={a.icon} size={22} color={a.color} />
+              </View>
               <Text style={styles.actionLabel}>{a.label}</Text>
             </Pressable>
           ))}
         </View>
 
-        {/* QR Pay */}
-        <GlassCard style={styles.qrPayCard} variant="strong" onPress={() => {}}>
-          <LinearGradient
-            colors={['rgba(255,107,53,0.2)', 'rgba(255,107,53,0.05)']}
-            style={StyleSheet.absoluteFill}
-          />
-          <View style={styles.qrPayContent}>
-            <Ionicons name="qr-code-outline" size={36} color={Colors.orange} />
-            <View style={{ flex: 1, gap: 4 }}>
-              <Text style={styles.qrPayTitle}>Paiement QR</Text>
-              <Text style={styles.qrPaySub}>Scannez pour payer dans toutes les zones JOJ</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={Colors.textTertiary} />
+        {/* QR pay */}
+        <Pressable style={styles.qrPay}>
+          <View style={styles.qrPayIcon}>
+            <Ionicons name="qr-code-outline" size={28} color={Colors.brand} />
           </View>
-        </GlassCard>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.qrPayTitle}>Paiement par QR code</Text>
+            <Text style={styles.qrPaySub}>Scannez pour payer dans toutes les zones JOJ</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={Colors.textTertiary} />
+        </Pressable>
 
-        {/* Top-up methods */}
         <Text style={styles.sectionLabel}>MOYENS DE PAIEMENT</Text>
-        <View style={styles.methodsGrid}>
+        <View style={styles.methodsList}>
           {TOP_UP_METHODS.map((m) => (
-            <Pressable
-              key={m.id}
-              style={[styles.methodCard, selectedMethod === m.id && styles.methodCardActive]}
-              onPress={() => setSelectedMethod(m.id)}
-            >
-              
-              <View style={[
-                StyleSheet.absoluteFill,
-                {
-                  backgroundColor: selectedMethod === m.id ? m.color + '20' : Colors.glass1,
-                  borderRadius: Radius.md,
-                  borderWidth: 1,
-                  borderColor: selectedMethod === m.id ? m.color + '50' : Colors.border1,
-                }
-              ]} />
-              <Text style={styles.methodIcon}>{m.icon}</Text>
+            <Pressable key={m.id} style={styles.methodRow}>
+              <View style={[styles.methodIconBox, { backgroundColor: m.color + '20', borderColor: m.color + '30' }]}>
+                <Ionicons name={m.icon} size={20} color={m.color === '#fff' ? Colors.text : m.color} />
+              </View>
               <Text style={styles.methodName}>{m.name}</Text>
+              <Ionicons name="chevron-forward" size={16} color={Colors.textTertiary} />
             </Pressable>
           ))}
         </View>
 
-        {/* Transactions */}
-        <Text style={styles.sectionLabel}>HISTORIQUE</Text>
-        {TRANSACTIONS.map((tx) => (
-          <TransactionRow key={tx.id} tx={tx} />
-        ))}
+        <View style={styles.txHeader}>
+          <Text style={styles.sectionLabel}>HISTORIQUE</Text>
+          <Pressable>
+            <Text style={styles.txAll}>Voir tout</Text>
+          </Pressable>
+        </View>
+        {TRANSACTIONS.map((tx) => <TransactionRow key={tx.id} tx={tx} />)}
       </ScrollView>
 
-      {/* Top up modal */}
-      <Modal
-        visible={showTopUp}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setShowTopUp(false)}
-      >
+      <Modal visible={showTopUp} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowTopUp(false)}>
         <TopUpModal onClose={() => setShowTopUp(false)} />
       </Modal>
     </View>
@@ -198,191 +151,153 @@ export default function WalletScreen() {
 function TransactionRow({ tx }: { tx: (typeof TRANSACTIONS)[0] }) {
   const isCredit = tx.type === 'credit';
   return (
-    <GlassCard style={styles.txCard} variant="subtle">
-      <View style={styles.txContent}>
-        <View style={styles.txIconWrap}>
-          <Text style={styles.txEmoji}>{tx.icon}</Text>
-        </View>
-        <View style={styles.txInfo}>
-          <Text style={styles.txLabel}>{tx.label}</Text>
-          <Text style={styles.txDate}>{tx.date}</Text>
-        </View>
-        <Text style={[styles.txAmount, isCredit ? styles.txCredit : styles.txDebit]}>
-          {isCredit ? '+' : '-'}
-          {tx.amount.toLocaleString('fr-FR')} XOF
-        </Text>
+    <View style={styles.tx}>
+      <View style={[styles.txIcon, { backgroundColor: isCredit ? Colors.success + '15' : Colors.surface3 }]}>
+        <Ionicons name={tx.icon} size={18} color={isCredit ? Colors.success : Colors.textSecondary} />
       </View>
-    </GlassCard>
+      <View style={styles.txInfo}>
+        <Text style={styles.txLabel}>{tx.label}</Text>
+        <Text style={styles.txDate}>{tx.date}</Text>
+      </View>
+      <Text style={[styles.txAmount, isCredit ? styles.txCredit : styles.txDebit]}>
+        {isCredit ? '+' : '−'}
+        {tx.amount.toLocaleString('fr-FR')}  XOF
+      </Text>
+    </View>
   );
 }
 
 function TopUpModal({ onClose }: { onClose: () => void }) {
-  const [amount, setAmount] = useState('10000');
-  const PRESETS = ['5 000', '10 000', '25 000', '50 000'];
+  const [amount, setAmount] = useState(10000);
+  const [method, setMethod] = useState('orange');
+  const PRESETS = [5000, 10000, 25000, 50000];
 
   return (
-    <LinearGradient colors={['#050A18', '#0D0B2E']} style={styles.modal}>
+    <View style={styles.modal}>
+      <LinearGradient colors={[Colors.bg, Colors.bgDeep]} style={StyleSheet.absoluteFill} />
       <View style={styles.modalHandle} />
-      <View style={styles.modalHeaderRow}>
+      <View style={styles.modalHeader}>
         <Text style={styles.modalTitle}>Recharger le Wallet</Text>
-        <Pressable onPress={onClose} style={styles.closeBtn}>
-          <Ionicons name="close" size={22} color={Colors.text} />
+        <Pressable onPress={onClose} style={styles.iconBtn}>
+          <Ionicons name="close" size={20} color={Colors.text} />
         </Pressable>
       </View>
 
-      {/* Amount presets */}
-      <Text style={styles.modalLabel}>MONTANT</Text>
-      <View style={styles.presetGrid}>
-        {PRESETS.map((p) => (
-          <Pressable
-            key={p}
-            style={[styles.presetBtn, amount === p.replace(' ', '') && styles.presetBtnActive]}
-            onPress={() => setAmount(p.replace(' ', ''))}
-          >
-            
-            <View style={[
-              StyleSheet.absoluteFill,
-              {
-                borderRadius: Radius.md,
-                borderWidth: 1,
-                backgroundColor: amount === p.replace(' ', '') ? Colors.gold + '25' : Colors.glass1,
-                borderColor: amount === p.replace(' ', '') ? Colors.gold + '50' : Colors.border1,
-              }
-            ]} />
-            <Text style={[styles.presetText, amount === p.replace(' ', '') && { color: Colors.gold }]}>
-              {p} XOF
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+      <ScrollView contentContainerStyle={styles.modalScroll}>
+        <Text style={styles.sectionLabel}>MONTANT</Text>
+        <View style={styles.amountDisplay}>
+          <Text style={styles.amountValue}>{amount.toLocaleString('fr-FR')}</Text>
+          <Text style={styles.amountCcy}>XOF</Text>
+        </View>
 
-      {/* Method selection */}
-      <Text style={styles.modalLabel}>MÉTHODE</Text>
-      {TOP_UP_METHODS.map((m) => (
-        <Pressable key={m.id} style={styles.methodRow}>
-          
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.glass1, borderRadius: Radius.md, borderWidth: 1, borderColor: Colors.border1 }]} />
-          <Text style={styles.methodRowIcon}>{m.icon}</Text>
-          <Text style={styles.methodRowName}>{m.name}</Text>
-          <Ionicons name="chevron-forward" size={16} color={Colors.textTertiary} />
-        </Pressable>
-      ))}
+        <View style={styles.presetGrid}>
+          {PRESETS.map((p) => (
+            <Pressable key={p} onPress={() => setAmount(p)} style={[styles.presetBtn, amount === p && styles.presetBtnActive]}>
+              <Text style={[styles.presetText, amount === p && styles.presetTextActive]}>
+                {p.toLocaleString('fr-FR')}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        <Text style={[styles.sectionLabel, { marginTop: 16 }]}>MÉTHODE DE PAIEMENT</Text>
+        <View style={styles.methodsList}>
+          {TOP_UP_METHODS.map((m) => (
+            <Pressable key={m.id} onPress={() => setMethod(m.id)} style={[styles.methodRow, method === m.id && styles.methodRowActive]}>
+              <View style={[styles.methodIconBox, { backgroundColor: m.color + '20', borderColor: m.color + '30' }]}>
+                <Ionicons name={m.icon} size={20} color={m.color === '#fff' ? Colors.text : m.color} />
+              </View>
+              <Text style={styles.methodName}>{m.name}</Text>
+              {method === m.id ? (
+                <Ionicons name="checkmark-circle" size={20} color={Colors.brand} />
+              ) : (
+                <View style={styles.methodCheck} />
+              )}
+            </Pressable>
+          ))}
+        </View>
+      </ScrollView>
 
       <View style={styles.modalFooter}>
-        <GlassButton
-          title={`Recharger ${Number(amount).toLocaleString('fr-FR')} XOF`}
-          onPress={onClose}
-          fullWidth
-          size="lg"
-          gradient={[Colors.gold, Colors.goldLight]}
-        />
+        <Pressable style={styles.confirmBtn} onPress={onClose}>
+          <LinearGradient colors={[Colors.gold, '#A88A2C']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+          <Text style={styles.confirmText}>Recharger {amount.toLocaleString('fr-FR')} XOF</Text>
+        </Pressable>
       </View>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.bg },
-  blobGold: {
-    position: 'absolute',
-    width: 350,
-    height: 350,
-    borderRadius: 175,
-    backgroundColor: Colors.gold + '08',
-    top: 80,
-    right: -100,
-  },
-  header: { overflow: 'hidden' },
-  headerContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 14 },
+  header: { paddingHorizontal: 20, paddingBottom: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: Colors.border1 },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerTitle: { ...Typography.title2, fontWeight: '800' },
-  historyBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: Colors.glass2, borderWidth: 1, borderColor: Colors.border1, alignItems: 'center', justifyContent: 'center' },
-  headerBorder: { height: StyleSheet.hairlineWidth, backgroundColor: Colors.border1 },
-  scroll: { padding: 20, gap: 12 },
-  cardWrap: { alignItems: 'center', marginVertical: 8 },
-  balanceCard: {
-    width: CARD_W,
-    height: CARD_W * 0.6,
-    borderRadius: Radius.xl,
-    padding: 24,
-    justifyContent: 'space-between',
-    overflow: 'hidden',
-    ...Shadows.lg,
-  },
+  iconBtn: { width: 36, height: 36, borderRadius: 12, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, alignItems: 'center', justifyContent: 'center' },
+  scroll: { padding: 20, gap: 14 },
+
+  // Card
+  card: { width: CARD_W, height: CARD_W * 0.58, borderRadius: Radius.xl, padding: 22, justifyContent: 'space-between', overflow: 'hidden' },
   cardPattern: { position: 'absolute', right: 0, top: 0 },
-  cardCircle: { position: 'absolute', borderWidth: 1 },
+  cardCircle: { position: 'absolute', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)' },
   cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  cardLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 2, color: 'rgba(255,255,255,0.7)', marginBottom: 4 },
-  cardName: { ...Typography.callout, fontWeight: '700', color: '#fff' },
-  cardChip: { fontSize: 28, color: 'rgba(255,255,255,0.4)' },
-  cardBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  balanceLabel: { fontSize: 11, color: 'rgba(255,255,255,0.7)', marginBottom: 4, letterSpacing: 0.5 },
-  balance: { fontSize: 32, fontWeight: '900', color: '#fff' },
-  balanceCurrency: { fontSize: 16, fontWeight: '500' },
-  cardNfc: { padding: 8, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 10 },
-  cardGlow: {
-    position: 'absolute',
-    bottom: -16,
-    left: '10%',
-    right: '10%',
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: Colors.gold,
-    opacity: 0.25,
-    ...Shadows.glow(Colors.gold),
-  },
-  actionsRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 },
+  cardLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 1.6, color: 'rgba(255,255,255,0.85)', marginBottom: 6 },
+  cardName: { fontSize: 15, fontWeight: '700', color: '#fff' },
+  cardBalanceLabel: { fontSize: 11, color: 'rgba(255,255,255,0.7)', letterSpacing: 0.5, marginBottom: 4 },
+  cardBalance: { fontSize: 30, fontWeight: '900', color: '#fff' },
+  cardCcy: { fontSize: 14, fontWeight: '600', color: 'rgba(255,255,255,0.85)' },
+  cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  cardNum: { fontSize: 13, color: 'rgba(255,255,255,0.85)', fontFamily: 'monospace', letterSpacing: 1 },
+  cardNfc: { width: 32, height: 32, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' },
+
+  // Actions
+  actions: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
   actionItem: { flex: 1, alignItems: 'center', gap: 8 },
-  actionIcon: { width: 56, height: 56, borderRadius: 18, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Colors.border1 },
+  actionIconBox: { width: 52, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   actionLabel: { ...Typography.caption, fontWeight: '600', color: Colors.textSecondary },
-  qrPayCard: { overflow: 'hidden' },
-  qrPayContent: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 16 },
+
+  // QR pay
+  qrPay: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.brand + '15', borderWidth: 1, borderColor: Colors.brand + '30', borderRadius: Radius.lg, padding: 16, gap: 14 },
+  qrPayIcon: { width: 48, height: 48, borderRadius: 14, backgroundColor: Colors.brand + '20', alignItems: 'center', justifyContent: 'center' },
   qrPayTitle: { ...Typography.callout, fontWeight: '700' },
-  qrPaySub: { ...Typography.caption, color: Colors.textSecondary, lineHeight: 16 },
-  sectionLabel: { ...Typography.label, color: Colors.textTertiary, marginTop: 4 },
-  methodsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  methodCard: {
-    width: (width - 40 - 10) / 2,
-    height: 72,
-    borderRadius: Radius.md,
-    overflow: 'hidden',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    gap: 10,
-  },
-  methodCardActive: {},
-  methodIcon: { fontSize: 22 },
+  qrPaySub: { ...Typography.caption, color: Colors.textSecondary, marginTop: 2 },
+
+  sectionLabel: { ...Typography.label, marginTop: 6, marginBottom: 4 },
+  txHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 },
+  txAll: { ...Typography.footnote, color: Colors.brand, fontWeight: '600' },
+
+  methodsList: { backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.lg, overflow: 'hidden' },
+  methodRow: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: Colors.border1 },
+  methodRowActive: { backgroundColor: Colors.surface3 },
+  methodIconBox: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   methodName: { ...Typography.callout, fontWeight: '600', flex: 1 },
-  txCard: { marginBottom: 6 },
-  txContent: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 },
-  txIconWrap: { width: 44, height: 44, borderRadius: 14, backgroundColor: Colors.glass2, borderWidth: 1, borderColor: Colors.border1, alignItems: 'center', justifyContent: 'center' },
-  txEmoji: { fontSize: 20 },
-  txInfo: { flex: 1, gap: 3 },
+  methodCheck: { width: 20, height: 20, borderRadius: 10, borderWidth: 1.5, borderColor: Colors.border2 },
+
+  // Tx
+  tx: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface1, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.md, padding: 14, gap: 12, marginBottom: 6 },
+  txIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  txInfo: { flex: 1, gap: 2 },
   txLabel: { ...Typography.callout, fontWeight: '600' },
   txDate: { ...Typography.caption, color: Colors.textTertiary },
   txAmount: { ...Typography.callout, fontWeight: '700' },
   txCredit: { color: Colors.success },
   txDebit: { color: Colors.text },
+
   // Modal
-  modal: { flex: 1, padding: 24, gap: 16 },
-  modalHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: Colors.border2, alignSelf: 'center', marginBottom: 8 },
-  modalHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  modal: { flex: 1, paddingHorizontal: 20, paddingTop: 12 },
+  modalHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border2, alignSelf: 'center', marginBottom: 14 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   modalTitle: { ...Typography.title2, fontWeight: '800' },
-  closeBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: Colors.glass2, alignItems: 'center', justifyContent: 'center' },
-  modalLabel: { ...Typography.label, color: Colors.textTertiary },
-  presetGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  presetBtn: {
-    width: (width - 48 - 10) / 2,
-    height: 52,
-    borderRadius: Radius.md,
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  presetBtnActive: {},
-  presetText: { ...Typography.callout, fontWeight: '700', color: Colors.text },
-  methodRow: { height: 56, borderRadius: Radius.md, overflow: 'hidden', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, gap: 12 },
-  methodRowIcon: { fontSize: 22 },
-  methodRowName: { ...Typography.callout, fontWeight: '600', flex: 1 },
-  modalFooter: { position: 'absolute', bottom: 40, left: 24, right: 24 },
+  modalScroll: { paddingBottom: 100, gap: 6 },
+  amountDisplay: { alignItems: 'center', paddingVertical: 24, gap: 4, flexDirection: 'row', justifyContent: 'center', alignItems: 'baseline' },
+  amountValue: { fontSize: 48, fontWeight: '900', color: Colors.text, letterSpacing: -1 },
+  amountCcy: { fontSize: 18, fontWeight: '700', color: Colors.textSecondary, marginLeft: 4 },
+  presetGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  presetBtn: { flex: 1, minWidth: '47%', height: 50, borderRadius: Radius.md, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, alignItems: 'center', justifyContent: 'center' },
+  presetBtnActive: { backgroundColor: Colors.gold + '20', borderColor: Colors.gold + '50' },
+  presetText: { ...Typography.callout, fontWeight: '700' },
+  presetTextActive: { color: Colors.gold },
+  modalFooter: { paddingVertical: 16 },
+  confirmBtn: { height: 56, borderRadius: Radius.lg, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  confirmText: { fontSize: 15, fontWeight: '800', color: '#fff' },
 });

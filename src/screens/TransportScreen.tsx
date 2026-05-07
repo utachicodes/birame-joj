@@ -5,424 +5,369 @@ import {
   StyleSheet,
   ScrollView,
   Pressable,
-  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import GlassCard from '../components/GlassCard';
-import GlassButton from '../components/GlassButton';
-import { Colors, Typography, Radius, Shadows } from '../theme';
+import { Colors, Typography, Radius } from '../theme';
 import { TRANSPORT } from '../data/mock';
 
-const { width } = Dimensions.get('window');
+type Tab = 'overview' | 'yango' | 'shuttles';
 
-type TransportTab = 'overview' | 'yango' | 'navettes';
+const VENUES = [
+  { name: 'Stade LSS', icon: 'football-outline' as const, dist: '7.8 km' },
+  { name: 'Dakar Arena', icon: 'basketball-outline' as const, dist: '4.2 km' },
+  { name: 'AIBD', icon: 'airplane-outline' as const, dist: '45 km' },
+  { name: 'Village JOJ', icon: 'home-outline' as const, dist: '2.1 km' },
+  { name: 'Médias', icon: 'newspaper-outline' as const, dist: '5.5 km' },
+];
+
+const SHUTTLE_ROUTES = [
+  { id: 'S1', name: 'Route A — Centre', from: 'AIBD', to: 'Dakar Centre', available: 24, departures: ['14:35', '15:05', '15:35', '16:05'] },
+  { id: 'S2', name: 'Route B — Stade LSS', from: 'Village JOJ', to: 'Stade LSS', available: 8, departures: ['15:00', '15:30', '16:00', '16:30'] },
+  { id: 'S3', name: 'Route C — Arena', from: 'Hôtel Roi du Lac', to: 'Dakar Arena', available: 18, departures: ['13:45', '14:15', '14:45'] },
+];
 
 export default function TransportScreen() {
   const insets = useSafeAreaInsets();
-  const [tab, setTab] = useState<TransportTab>('overview');
+  const [tab, setTab] = useState<Tab>('overview');
 
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      <LinearGradient
-        colors={['#050A18', '#0A0D2E', '#050A18']}
-        style={StyleSheet.absoluteFill}
-      />
-      <View style={styles.blob1} />
-      <View style={styles.blob2} />
+      <LinearGradient colors={[Colors.bg, Colors.bgElevated, Colors.bg]} style={StyleSheet.absoluteFill} />
 
-      {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(5,10,24,0.5)' }]} />
         <Text style={styles.headerTitle}>Transport</Text>
-        <View style={styles.tabsRow}>
-          {(['overview', 'yango', 'navettes'] as TransportTab[]).map((t) => (
-            <Pressable
-              key={t}
-              onPress={() => setTab(t)}
-              style={[styles.tabPill, t === tab && styles.tabPillActive]}
-            >
-              <Text style={[styles.tabPillText, t === tab && styles.tabPillTextActive]}>
-                {t === 'overview' ? '🗺️ Vue' : t === 'yango' ? '🚗 Yango' : '🚌 Navettes'}
-              </Text>
-            </Pressable>
-          ))}
+        <View style={styles.tabs}>
+          <TabBtn active={tab === 'overview'} onPress={() => setTab('overview')} icon="grid-outline" label="Vue" />
+          <TabBtn active={tab === 'yango'} onPress={() => setTab('yango')} icon="car-outline" label="Yango" />
+          <TabBtn active={tab === 'shuttles'} onPress={() => setTab('shuttles')} icon="bus-outline" label="Navettes" />
         </View>
-        <View style={styles.headerBorder} />
       </View>
 
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 100 }]}
-        showsVerticalScrollIndicator={false}
-      >
-        {tab === 'overview' && <OverviewTab />}
+      <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 100 }]} showsVerticalScrollIndicator={false}>
+        {tab === 'overview' && <Overview />}
         {tab === 'yango' && <YangoTab />}
-        {tab === 'navettes' && <NavettesTab />}
+        {tab === 'shuttles' && <ShuttlesTab />}
       </ScrollView>
     </View>
   );
 }
 
-function OverviewTab() {
+function TabBtn({ active, onPress, icon, label }: { active: boolean; onPress: () => void; icon: any; label: string }) {
+  return (
+    <Pressable onPress={onPress} style={[styles.tabBtn, active && styles.tabBtnActive]}>
+      <Ionicons name={icon} size={15} color={active ? Colors.text : Colors.textTertiary} />
+      <Text style={[styles.tabBtnText, active && styles.tabBtnTextActive]}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function Overview() {
   return (
     <>
-      {/* Map placeholder */}
-      <GlassCard style={styles.mapCard} variant="strong">
-        <LinearGradient
-          colors={['rgba(61,142,245,0.2)', 'rgba(78,205,196,0.1)']}
-          style={StyleSheet.absoluteFill}
-        />
+      <View style={styles.mapCard}>
+        <LinearGradient colors={[Colors.teal + '30', Colors.blue + '15']} style={StyleSheet.absoluteFill} />
         <View style={styles.mapContent}>
-          <Ionicons name="map-outline" size={48} color={Colors.textTertiary} />
+          <View style={styles.mapIconRing}>
+            <Ionicons name="map-outline" size={36} color={Colors.teal} />
+          </View>
           <Text style={styles.mapTitle}>Carte des transports</Text>
-          <Text style={styles.mapSub}>Venues · Navettes · Itinéraires</Text>
-          <GlassButton
-            title="Ouvrir la carte"
-            onPress={() => {}}
-            size="md"
-            gradient={[Colors.blue, Colors.blueLight]}
-            icon={<Ionicons name="navigate-outline" size={16} color="#fff" />}
-          />
+          <Text style={styles.mapSub}>Toutes les options en un coup d'œil</Text>
+          <Pressable style={styles.mapBtn}>
+            <Ionicons name="navigate" size={14} color="#fff" />
+            <Text style={styles.mapBtnText}>Ouvrir la carte</Text>
+          </Pressable>
         </View>
-      </GlassCard>
+      </View>
 
-      {/* Status pills */}
-      <View style={styles.statusRow}>
+      <View style={styles.statusGrid}>
         <StatusPill icon="bus-outline" label="Navettes" status="EN SERVICE" color={Colors.success} />
         <StatusPill icon="car-outline" label="Yango" status="DISPONIBLE" color={Colors.teal} />
         <StatusPill icon="airplane-outline" label="AIBD" status="NORMAL" color={Colors.blue} />
       </View>
 
       <Text style={styles.sectionLabel}>OPTIONS DE TRANSPORT</Text>
-      {TRANSPORT.map((t) => (
-        <TransportCard key={t.id} transport={t} />
-      ))}
+      {TRANSPORT.map((t) => <TransportRow key={t.id} t={t} />)}
 
-      {/* Emergency */}
-      <GlassCard style={styles.emergCard}>
-        <LinearGradient
-          colors={['rgba(255,82,112,0.2)', 'rgba(255,82,112,0.05)']}
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={styles.emergContent}>
-          <Ionicons name="alert-circle-outline" size={28} color={Colors.error} />
-          <View style={{ flex: 1, gap: 2 }}>
-            <Text style={styles.emergTitle}>Transport d'urgence</Text>
-            <Text style={styles.emergSub}>Médical, sécurité, évacuation</Text>
-          </View>
-          <GlassButton title="Appeler" onPress={() => {}} size="sm" variant="danger" />
+      <View style={styles.emergency}>
+        <View style={styles.emergencyIcon}>
+          <Ionicons name="warning-outline" size={20} color={Colors.error} />
         </View>
-      </GlassCard>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.emergencyTitle}>Transport d'urgence</Text>
+          <Text style={styles.emergencySub}>Médical · Sécurité · Évacuation</Text>
+        </View>
+        <Pressable style={styles.emergencyBtn}>
+          <Ionicons name="call" size={14} color="#fff" />
+          <Text style={styles.emergencyBtnText}>Appeler</Text>
+        </Pressable>
+      </View>
     </>
   );
 }
 
-function YangoTab() {
-  const [destination, setDestination] = useState('');
-
+function TransportRow({ t }: { t: (typeof TRANSPORT)[0] }) {
   return (
-    <>
-      {/* Yango hero */}
-      <GlassCard style={styles.yangoHero} variant="strong">
-        <LinearGradient
-          colors={['rgba(255,107,53,0.3)', 'rgba(255,107,53,0.08)']}
-          style={StyleSheet.absoluteFill}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        />
-        <View style={styles.yangoLogoRow}>
-          <Text style={styles.yangoLogo}>🚗</Text>
-          <View>
-            <Text style={styles.yangoTitle}>Yango Ride</Text>
-            <Text style={styles.yangoSub}>Partenaire officiel JOJ</Text>
-          </View>
-          <View style={styles.yangoBadge}>
-            <Text style={styles.yangoBadgeText}>ACTIF</Text>
-          </View>
-        </View>
-      </GlassCard>
-
-      {/* Route input */}
-      <GlassCard style={styles.routeCard} variant="strong">
-        <View style={styles.routeRow}>
-          <View style={styles.routeDots}>
-            <View style={styles.routeDotTop} />
-            <View style={styles.routeLine} />
-            <View style={styles.routeDotBot} />
-          </View>
-          <View style={styles.routeInputs}>
-            <Pressable style={styles.routeInput}>
-              <Text style={styles.routeInputLabel}>De</Text>
-              <Text style={styles.routeInputValue}>Ma position actuelle 📍</Text>
-            </Pressable>
-            <View style={styles.routeDivider} />
-            <Pressable style={styles.routeInput}>
-              <Text style={styles.routeInputLabel}>À</Text>
-              <Text style={[styles.routeInputValue, { color: Colors.textTertiary }]}>
-                Choisir destination...
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-      </GlassCard>
-
-      {/* Venue shortcuts */}
-      <Text style={styles.sectionLabel}>DESTINATIONS RAPIDES</Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.venueList}
-      >
-        {VENUES.map((v) => (
-          <Pressable key={v.name} style={styles.venueChip}>
-            
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.glass2, borderRadius: Radius.md, borderWidth: 1, borderColor: Colors.border1 }]} />
-            <Text style={styles.venueIcon}>{v.icon}</Text>
-            <Text style={styles.venueName}>{v.name}</Text>
-            <Text style={styles.venueDist}>{v.dist}</Text>
-          </Pressable>
-        ))}
-      </ScrollView>
-
-      {/* Ride estimate */}
-      <GlassCard style={styles.estimateCard} variant="strong">
-        <View style={styles.estimateRow}>
-          <View style={styles.estimateItem}>
-            <Text style={styles.estimateValue}>8 min</Text>
-            <Text style={styles.estimateLabel}>Attente estimée</Text>
-          </View>
-          <View style={styles.estimateDivider} />
-          <View style={styles.estimateItem}>
-            <Text style={styles.estimateValue}>2 500 XOF</Text>
-            <Text style={styles.estimateLabel}>Tarif estimé</Text>
-          </View>
-          <View style={styles.estimateDivider} />
-          <View style={styles.estimateItem}>
-            <Text style={styles.estimateValue}>3 🌟</Text>
-            <Text style={styles.estimateLabel}>Chauffeurs dispo.</Text>
-          </View>
-        </View>
-        <GlassButton
-          title="Réserver un Yango"
-          onPress={() => {}}
-          fullWidth
-          size="lg"
-          gradient={[Colors.orange, Colors.orangeLight]}
-          icon={<Ionicons name="car-outline" size={18} color="#fff" />}
-        />
-      </GlassCard>
-    </>
-  );
-}
-
-function NavettesTab() {
-  return (
-    <>
-      <GlassCard style={styles.navInfo} variant="strong">
-        <LinearGradient
-          colors={['rgba(78,205,196,0.2)', 'transparent']}
-          style={StyleSheet.absoluteFill}
-        />
-        <Text style={styles.navInfoTitle}>🚌 Navettes officielles JOJ</Text>
-        <Text style={styles.navInfoSub}>
-          Service gratuit pour tous les accrédités. Fréquence renforcée lors des finales.
-        </Text>
-      </GlassCard>
-
-      {SHUTTLE_ROUTES.map((route) => (
-        <ShuttleCard key={route.id} route={route} />
-      ))}
-    </>
-  );
-}
-
-function TransportCard({ transport }: { transport: (typeof TRANSPORT)[0] }) {
-  return (
-    <GlassCard style={styles.transportCard} onPress={() => {}}>
-      <View style={[styles.transportIcon, { backgroundColor: transport.color + '20' }]}>
-        <Ionicons name={transport.icon as any} size={24} color={transport.color} />
+    <Pressable style={styles.transportRow}>
+      <View style={styles.transportIcon}>
+        <Ionicons name={t.icon} size={22} color={Colors.brand} />
       </View>
       <View style={styles.transportInfo}>
-        <Text style={styles.transportName}>{transport.name}</Text>
+        <Text style={styles.transportName}>{t.name}</Text>
         <View style={styles.transportRoute}>
-          <Text style={styles.transportFrom}>{transport.from}</Text>
-          <Ionicons name="arrow-forward" size={12} color={Colors.textTertiary} />
-          <Text style={styles.transportTo}>{transport.to}</Text>
+          <Text style={styles.transportRouteText} numberOfLines={1}>{t.from}</Text>
+          <Ionicons name="arrow-forward" size={11} color={Colors.textTertiary} />
+          <Text style={styles.transportRouteText} numberOfLines={1}>{t.to}</Text>
         </View>
         <Text style={styles.transportDetail}>
-          {transport.type === 'yango'
-            ? `${transport.estimate} · ${transport.price}`
-            : `Prochain: ${transport.nextDeparture} · ${transport.duration}`}
+          {t.type === 'yango' ? `${(t as any).estimate}  ·  ${(t as any).price}` : `Prochain ${(t as any).nextDeparture}  ·  ${(t as any).duration}`}
         </Text>
       </View>
       <Ionicons name="chevron-forward" size={16} color={Colors.textTertiary} />
-    </GlassCard>
+    </Pressable>
   );
 }
 
 function StatusPill({ icon, label, status, color }: { icon: any; label: string; status: string; color: string }) {
   return (
-    <View style={styles.statusPill}>
-      
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: color + '10', borderRadius: Radius.md, borderWidth: 1, borderColor: color + '30' }]} />
-      <Ionicons name={icon} size={20} color={color} />
+    <View style={[styles.statusPill, { borderColor: color + '30' }]}>
+      <View style={[styles.statusPillIcon, { backgroundColor: color + '18' }]}>
+        <Ionicons name={icon} size={16} color={color} />
+      </View>
       <Text style={styles.statusPillLabel}>{label}</Text>
       <Text style={[styles.statusPillStatus, { color }]}>{status}</Text>
     </View>
   );
 }
 
-function ShuttleCard({ route }: { route: (typeof SHUTTLE_ROUTES)[0] }) {
+function YangoTab() {
   return (
-    <GlassCard style={styles.shuttleCard} variant="strong">
+    <>
+      <View style={styles.yangoHero}>
+        <LinearGradient colors={[Colors.brand, Colors.brandDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+        <View style={styles.yangoHeroContent}>
+          <View style={styles.yangoHeroIcon}>
+            <Ionicons name="car-sport" size={28} color="#fff" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.yangoTitle}>Yango Ride</Text>
+            <Text style={styles.yangoSub}>Partenaire officiel JOJ 2026</Text>
+          </View>
+          <View style={styles.yangoBadge}>
+            <View style={styles.yangoDot} />
+            <Text style={styles.yangoBadgeText}>ACTIF</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.routeCard}>
+        <View style={styles.routeIndicator}>
+          <View style={[styles.routePoint, { backgroundColor: Colors.brand }]} />
+          <View style={styles.routeLine} />
+          <View style={[styles.routePoint, { backgroundColor: Colors.teal }]} />
+        </View>
+        <View style={styles.routeInputs}>
+          <Pressable style={styles.routeInput}>
+            <Text style={styles.routeInputLabel}>Départ</Text>
+            <Text style={styles.routeInputValue}>Ma position actuelle</Text>
+          </Pressable>
+          <View style={styles.routeDivider} />
+          <Pressable style={styles.routeInput}>
+            <Text style={styles.routeInputLabel}>Destination</Text>
+            <Text style={[styles.routeInputValue, { color: Colors.textTertiary }]}>Choisir une destination</Text>
+          </Pressable>
+        </View>
+      </View>
+
+      <Text style={styles.sectionLabel}>DESTINATIONS RAPIDES</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingBottom: 4 }}>
+        {VENUES.map((v) => (
+          <Pressable key={v.name} style={styles.venueChip}>
+            <View style={styles.venueIconBox}>
+              <Ionicons name={v.icon} size={20} color={Colors.text} />
+            </View>
+            <Text style={styles.venueName}>{v.name}</Text>
+            <Text style={styles.venueDist}>{v.dist}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+
+      <View style={styles.estimate}>
+        <View style={styles.estimateRow}>
+          <EstimateItem label="Attente" value="8 min" />
+          <View style={styles.estimateDivider} />
+          <EstimateItem label="Tarif estimé" value="2 500 XOF" />
+          <View style={styles.estimateDivider} />
+          <EstimateItem label="Disponibles" value="3" />
+        </View>
+        <Pressable style={styles.bookBtn}>
+          <LinearGradient colors={[Colors.brand, Colors.brandLight]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+          <Ionicons name="car" size={18} color="#fff" />
+          <Text style={styles.bookBtnText}>Réserver un Yango</Text>
+        </Pressable>
+      </View>
+    </>
+  );
+}
+
+function EstimateItem({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.estimateItem}>
+      <Text style={styles.estimateValue}>{value}</Text>
+      <Text style={styles.estimateLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function ShuttlesTab() {
+  return (
+    <>
+      <View style={styles.shuttleInfo}>
+        <View style={styles.shuttleInfoIcon}>
+          <Ionicons name="information-circle" size={20} color={Colors.teal} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.shuttleInfoTitle}>Navettes officielles</Text>
+          <Text style={styles.shuttleInfoSub}>Service gratuit pour tous les accrédités. Fréquence renforcée lors des finales.</Text>
+        </View>
+      </View>
+
+      {SHUTTLE_ROUTES.map((r) => <ShuttleCard key={r.id} route={r} />)}
+    </>
+  );
+}
+
+function ShuttleCard({ route }: { route: (typeof SHUTTLE_ROUTES)[0] }) {
+  const seats = route.available > 10 ? 'good' : 'low';
+  return (
+    <View style={styles.shuttleCard}>
       <View style={styles.shuttleHeader}>
-        <View style={[styles.shuttleIconWrap, { backgroundColor: route.color + '20' }]}>
-          <Ionicons name="bus-outline" size={22} color={route.color} />
+        <View style={styles.shuttleIconBox}>
+          <Ionicons name="bus-outline" size={20} color={Colors.brand} />
         </View>
-        <View style={{ flex: 1, gap: 2 }}>
+        <View style={{ flex: 1 }}>
           <Text style={styles.shuttleName}>{route.name}</Text>
-          <Text style={styles.shuttleRoute}>{route.from} → {route.to}</Text>
+          <View style={styles.shuttleRoute}>
+            <Text style={styles.shuttleRouteText}>{route.from}</Text>
+            <Ionicons name="arrow-forward" size={10} color={Colors.textTertiary} />
+            <Text style={styles.shuttleRouteText}>{route.to}</Text>
+          </View>
         </View>
-        <View style={[styles.availBadge, { backgroundColor: route.available > 10 ? Colors.success + '20' : Colors.warning + '20', borderColor: route.available > 10 ? Colors.success + '40' : Colors.warning + '40' }]}>
-          <Text style={[styles.availText, { color: route.available > 10 ? Colors.success : Colors.warning }]}>
-            {route.available} places
-          </Text>
+        <View style={[styles.seatsBadge, seats === 'good' ? styles.seatsGood : styles.seatsLow]}>
+          <Ionicons name="people-outline" size={11} color={seats === 'good' ? Colors.success : Colors.warning} />
+          <Text style={[styles.seatsText, { color: seats === 'good' ? Colors.success : Colors.warning }]}>{route.available}</Text>
         </View>
       </View>
       <View style={styles.deptRow}>
         {route.departures.map((d, i) => (
           <Pressable key={i} style={[styles.deptChip, i === 0 && styles.deptChipNext]}>
-            {i === 0 && (
-              <LinearGradient colors={[route.color, route.color + '80']} style={StyleSheet.absoluteFill} />
-            )}
             <Text style={[styles.deptTime, i === 0 && { color: '#fff' }]}>{d}</Text>
             {i === 0 && <Text style={styles.deptNext}>PROCHAIN</Text>}
           </Pressable>
         ))}
       </View>
-    </GlassCard>
+    </View>
   );
 }
 
-const VENUES = [
-  { name: 'Dakar Arena', icon: '🏟️', dist: '4.2 km' },
-  { name: 'Stade LSS', icon: '⚽', dist: '7.8 km' },
-  { name: 'AIBD', icon: '✈️', dist: '45 km' },
-  { name: 'Village JOJ', icon: '🏘️', dist: '2.1 km' },
-  { name: 'Média Centre', icon: '📡', dist: '5.5 km' },
-];
-
-const SHUTTLE_ROUTES = [
-  {
-    id: 'S1',
-    name: 'Route A — Centre',
-    from: 'AIBD',
-    to: 'Dakar Centre',
-    available: 24,
-    color: Colors.teal,
-    departures: ['14:35', '15:05', '15:35', '16:05'],
-  },
-  {
-    id: 'S2',
-    name: 'Route B — Arènes',
-    from: 'Village JOJ',
-    to: 'Stade LSS',
-    available: 8,
-    color: Colors.orange,
-    departures: ['15:00', '15:30', '16:00', '16:30'],
-  },
-  {
-    id: 'S3',
-    name: 'Route C — Arena',
-    from: 'Hôtel Roi du Lac',
-    to: 'Dakar Arena',
-    available: 18,
-    color: Colors.blue,
-    departures: ['13:45', '14:15', '14:45'],
-  },
-];
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.bg },
-  blob1: { position: 'absolute', width: 300, height: 300, borderRadius: 150, backgroundColor: Colors.purple + '08', top: 100, right: -80 },
-  blob2: { position: 'absolute', width: 240, height: 240, borderRadius: 120, backgroundColor: Colors.teal + '08', bottom: 200, left: -50 },
-  header: { overflow: 'hidden' },
-  headerTitle: { ...Typography.title2, fontWeight: '800', paddingHorizontal: 20, paddingBottom: 14 },
-  tabsRow: { flexDirection: 'row', paddingHorizontal: 16, paddingBottom: 12, gap: 8 },
-  tabPill: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: Radius.full, borderWidth: 1, borderColor: Colors.border1, backgroundColor: Colors.glass1 },
-  tabPillActive: { backgroundColor: Colors.glass3, borderColor: Colors.border2 },
-  tabPillText: { ...Typography.footnote, color: Colors.textTertiary, fontWeight: '600' },
-  tabPillTextActive: { color: Colors.text },
-  headerBorder: { height: StyleSheet.hairlineWidth, backgroundColor: Colors.border1 },
-  scroll: { padding: 16, gap: 12 },
-  sectionLabel: { ...Typography.label, color: Colors.textTertiary, marginTop: 4 },
-  mapCard: { padding: 0, overflow: 'hidden' },
-  mapContent: { height: 180, alignItems: 'center', justifyContent: 'center', gap: 12 },
+  header: { paddingHorizontal: 20, paddingBottom: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: Colors.border1, gap: 12 },
+  headerTitle: { ...Typography.title2, fontWeight: '800' },
+  tabs: { flexDirection: 'row', gap: 6 },
+  tabBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 8, borderRadius: Radius.full, backgroundColor: Colors.surface1, borderWidth: 1, borderColor: Colors.border1 },
+  tabBtnActive: { backgroundColor: Colors.surface3, borderColor: Colors.border2 },
+  tabBtnText: { fontSize: 13, fontWeight: '600', color: Colors.textTertiary },
+  tabBtnTextActive: { color: Colors.text },
+  scroll: { padding: 16, gap: 10 },
+
+  mapCard: { borderRadius: Radius.lg, overflow: 'hidden', backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, marginBottom: 4 },
+  mapContent: { alignItems: 'center', justifyContent: 'center', padding: 24, gap: 10 },
+  mapIconRing: { width: 64, height: 64, borderRadius: 20, backgroundColor: Colors.surface3, borderWidth: 1, borderColor: Colors.teal + '30', alignItems: 'center', justifyContent: 'center' },
   mapTitle: { ...Typography.title3, fontWeight: '700' },
   mapSub: { ...Typography.footnote, color: Colors.textSecondary },
-  statusRow: { flexDirection: 'row', gap: 10 },
-  statusPill: { flex: 1, borderRadius: Radius.md, overflow: 'hidden', alignItems: 'center', paddingVertical: 12, gap: 4 },
+  mapBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 16, paddingVertical: 9, borderRadius: Radius.full, backgroundColor: Colors.teal, marginTop: 6 },
+  mapBtnText: { fontSize: 13, fontWeight: '700', color: '#fff' },
+
+  statusGrid: { flexDirection: 'row', gap: 10 },
+  statusPill: { flex: 1, alignItems: 'center', padding: 12, borderRadius: Radius.md, backgroundColor: Colors.surface2, borderWidth: 1, gap: 6 },
+  statusPillIcon: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   statusPillLabel: { ...Typography.caption, fontWeight: '700', color: Colors.textSecondary },
-  statusPillStatus: { fontSize: 9, fontWeight: '700', letterSpacing: 0.5 },
-  transportCard: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 },
-  transportIcon: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  statusPillStatus: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
+
+  sectionLabel: { ...Typography.label, marginTop: 8, marginBottom: 4 },
+
+  transportRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.lg, padding: 14, gap: 12 },
+  transportIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: Colors.brand + '15', borderWidth: 1, borderColor: Colors.brand + '25', alignItems: 'center', justifyContent: 'center' },
   transportInfo: { flex: 1, gap: 4 },
   transportName: { ...Typography.callout, fontWeight: '700' },
-  transportRoute: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  transportFrom: { ...Typography.caption, color: Colors.textSecondary },
-  transportTo: { ...Typography.caption, color: Colors.textSecondary },
+  transportRoute: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  transportRouteText: { ...Typography.caption, color: Colors.textSecondary, flexShrink: 1 },
   transportDetail: { ...Typography.caption, color: Colors.textTertiary },
-  emergCard: { overflow: 'hidden' },
-  emergContent: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 12 },
-  emergTitle: { ...Typography.callout, fontWeight: '700' },
-  emergSub: { ...Typography.caption, color: Colors.textSecondary },
-  yangoHero: { padding: 20, overflow: 'hidden', gap: 4 },
-  yangoLogoRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  yangoLogo: { fontSize: 32 },
-  yangoTitle: { ...Typography.title3, fontWeight: '800' },
-  yangoSub: { ...Typography.footnote, color: Colors.textSecondary },
-  yangoBadge: { marginLeft: 'auto', backgroundColor: Colors.success + '25', borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: Colors.success + '50' },
-  yangoBadgeText: { fontSize: 10, fontWeight: '700', color: Colors.success, letterSpacing: 0.5 },
-  routeCard: { padding: 0, overflow: 'hidden' },
-  routeRow: { flexDirection: 'row', padding: 16, gap: 12 },
-  routeDots: { alignItems: 'center', paddingTop: 20, gap: 0 },
-  routeDotTop: { width: 10, height: 10, borderRadius: 5, backgroundColor: Colors.orange, borderWidth: 2, borderColor: Colors.orange + '50' },
-  routeLine: { width: 2, flex: 1, backgroundColor: Colors.border2, marginVertical: 4 },
-  routeDotBot: { width: 10, height: 10, borderRadius: 5, backgroundColor: Colors.teal, borderWidth: 2, borderColor: Colors.teal + '50' },
-  routeInputs: { flex: 1, gap: 0 },
-  routeInput: { paddingVertical: 14, gap: 2 },
-  routeInputLabel: { ...Typography.caption, color: Colors.textTertiary, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
+
+  emergency: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.error + '12', borderWidth: 1, borderColor: Colors.error + '25', borderRadius: Radius.lg, padding: 14, gap: 12, marginTop: 8 },
+  emergencyIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: Colors.error + '20', alignItems: 'center', justifyContent: 'center' },
+  emergencyTitle: { ...Typography.callout, fontWeight: '700' },
+  emergencySub: { ...Typography.caption, color: Colors.textSecondary },
+  emergencyBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 8, borderRadius: Radius.full, backgroundColor: Colors.error },
+  emergencyBtnText: { fontSize: 12, fontWeight: '800', color: '#fff' },
+
+  // Yango
+  yangoHero: { borderRadius: Radius.lg, overflow: 'hidden' },
+  yangoHeroContent: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 18 },
+  yangoHeroIcon: { width: 52, height: 52, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' },
+  yangoTitle: { fontSize: 17, fontWeight: '800', color: '#fff' },
+  yangoSub: { fontSize: 12, color: 'rgba(255,255,255,0.85)' },
+  yangoBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(255,255,255,0.20)', borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 5 },
+  yangoDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.success },
+  yangoBadgeText: { fontSize: 10, fontWeight: '800', color: '#fff', letterSpacing: 0.5 },
+
+  routeCard: { flexDirection: 'row', backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.lg, padding: 16, gap: 12 },
+  routeIndicator: { alignItems: 'center', paddingTop: 18 },
+  routePoint: { width: 10, height: 10, borderRadius: 5, borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)' },
+  routeLine: { width: 2, flex: 1, backgroundColor: Colors.border2, marginVertical: 4, minHeight: 28 },
+  routeInputs: { flex: 1 },
+  routeInput: { paddingVertical: 12, gap: 2 },
+  routeInputLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 0.8, color: Colors.textTertiary, textTransform: 'uppercase' },
   routeInputValue: { ...Typography.callout, fontWeight: '600' },
   routeDivider: { height: StyleSheet.hairlineWidth, backgroundColor: Colors.border1 },
-  venueList: { gap: 10, paddingBottom: 4 },
-  venueChip: { width: 100, height: 90, borderRadius: Radius.md, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', gap: 6 },
-  venueIcon: { fontSize: 24 },
+
+  venueChip: { width: 110, height: 100, borderRadius: Radius.md, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, padding: 12, gap: 6, alignItems: 'center', justifyContent: 'center' },
+  venueIconBox: { width: 36, height: 36, borderRadius: 10, backgroundColor: Colors.surface3, alignItems: 'center', justifyContent: 'center' },
   venueName: { ...Typography.caption, fontWeight: '700', textAlign: 'center' },
-  venueDist: { ...Typography.caption, color: Colors.textTertiary, fontSize: 10 },
-  estimateCard: { padding: 20, gap: 16, overflow: 'hidden' },
+  venueDist: { fontSize: 10, color: Colors.textTertiary },
+
+  estimate: { backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.lg, padding: 18, gap: 14, marginTop: 4 },
   estimateRow: { flexDirection: 'row', alignItems: 'center' },
   estimateItem: { flex: 1, alignItems: 'center', gap: 4 },
-  estimateDivider: { width: StyleSheet.hairlineWidth, height: 40, backgroundColor: Colors.border1 },
+  estimateDivider: { width: StyleSheet.hairlineWidth, height: 36, backgroundColor: Colors.border1 },
   estimateValue: { ...Typography.title3, fontWeight: '800' },
   estimateLabel: { ...Typography.caption, color: Colors.textTertiary, textAlign: 'center' },
-  navInfo: { padding: 20, gap: 8, overflow: 'hidden' },
-  navInfoTitle: { ...Typography.title3, fontWeight: '700' },
-  navInfoSub: { ...Typography.callout, color: Colors.textSecondary, lineHeight: 22 },
-  shuttleCard: { padding: 20, gap: 16, overflow: 'hidden' },
+  bookBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 50, borderRadius: Radius.md, overflow: 'hidden' },
+  bookBtnText: { fontSize: 15, fontWeight: '700', color: '#fff' },
+
+  // Shuttles
+  shuttleInfo: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: Colors.teal + '10', borderWidth: 1, borderColor: Colors.teal + '25', borderRadius: Radius.lg, padding: 14, gap: 12 },
+  shuttleInfoIcon: { width: 36, height: 36, borderRadius: 10, backgroundColor: Colors.teal + '20', alignItems: 'center', justifyContent: 'center' },
+  shuttleInfoTitle: { ...Typography.callout, fontWeight: '700' },
+  shuttleInfoSub: { ...Typography.caption, color: Colors.textSecondary, lineHeight: 17 },
+
+  shuttleCard: { backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.lg, padding: 16, gap: 14 },
   shuttleHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  shuttleIconWrap: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  shuttleIconBox: { width: 40, height: 40, borderRadius: 12, backgroundColor: Colors.brand + '15', borderWidth: 1, borderColor: Colors.brand + '25', alignItems: 'center', justifyContent: 'center' },
   shuttleName: { ...Typography.callout, fontWeight: '700' },
-  shuttleRoute: { ...Typography.footnote, color: Colors.textSecondary },
-  availBadge: { borderRadius: Radius.full, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1 },
-  availText: { fontSize: 10, fontWeight: '700' },
+  shuttleRoute: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
+  shuttleRouteText: { ...Typography.caption, color: Colors.textSecondary },
+  seatsBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: Radius.full, borderWidth: 1 },
+  seatsGood: { backgroundColor: Colors.success + '15', borderColor: Colors.success + '30' },
+  seatsLow: { backgroundColor: Colors.warning + '15', borderColor: Colors.warning + '30' },
+  seatsText: { fontSize: 11, fontWeight: '800' },
   deptRow: { flexDirection: 'row', gap: 8 },
-  deptChip: { flex: 1, height: 52, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.glass1, borderWidth: 1, borderColor: Colors.border1, overflow: 'hidden', gap: 2 },
-  deptChipNext: { borderWidth: 0 },
+  deptChip: { flex: 1, height: 50, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.surface1, borderWidth: 1, borderColor: Colors.border1, gap: 2 },
+  deptChipNext: { backgroundColor: Colors.brand, borderColor: Colors.brand },
   deptTime: { ...Typography.callout, fontWeight: '800', color: Colors.text },
-  deptNext: { fontSize: 8, fontWeight: '700', color: 'rgba(255,255,255,0.7)', letterSpacing: 0.5 },
+  deptNext: { fontSize: 8, fontWeight: '800', color: 'rgba(255,255,255,0.85)', letterSpacing: 0.5 },
 });
