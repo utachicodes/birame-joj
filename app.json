@@ -33,9 +33,6 @@
         }
       ]
     ],
-    "scheme": "joj",
-    "experiments": {
-      "typedRoutes": true
-    }
+    "scheme": "joj"
   }
 }
