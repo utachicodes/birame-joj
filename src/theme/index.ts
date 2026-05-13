@@ -1,5 +1,7 @@
 import { Platform } from 'react-native';
 
+export type ThemeMode = 'dark' | 'light';
+
 export const Colors = {
   // Background
   bg: '#0A0E1A',
@@ -149,6 +151,50 @@ export const Typography = {
     color: Colors.textTertiary,
   },
 };
+
+export const LightColors = {
+  bg: '#F5F6FA',
+  bgDeep: '#ECEEF5',
+  bgElevated: '#FFFFFF',
+  surface1: 'rgba(0,0,0,0.03)',
+  surface2: 'rgba(0,0,0,0.05)',
+  surface3: 'rgba(0,0,0,0.08)',
+  glass1: 'rgba(0,0,0,0.03)',
+  glass2: 'rgba(0,0,0,0.05)',
+  glass3: 'rgba(0,0,0,0.08)',
+  glassHover: 'rgba(0,0,0,0.12)',
+  border1: 'rgba(0,0,0,0.06)',
+  border2: 'rgba(0,0,0,0.10)',
+  border3: 'rgba(0,0,0,0.16)',
+  brand: '#D94E18',
+  brandLight: '#E86B3A',
+  brandDark: '#B83D0E',
+  orange: '#D94E18',
+  orangeLight: '#E86B3A',
+  gold: '#9A7320',
+  goldLight: '#B89040',
+  teal: '#1A8C86',
+  tealDark: '#147570',
+  blue: '#2663C4',
+  blueLight: '#4A82D8',
+  purple: '#5B3F90',
+  purpleLight: '#7B5FC8',
+  pink: '#A03878',
+  green: '#1A8C52',
+  text: '#0D1117',
+  textSecondary: 'rgba(13,17,23,0.60)',
+  textTertiary: 'rgba(13,17,23,0.38)',
+  textDim: 'rgba(13,17,23,0.22)',
+  success: '#1A8C52',
+  warning: '#C47A00',
+  error: '#C42B2B',
+  info: '#2663C4',
+  liveDot: '#C42B2B',
+};
+
+export function getColors(mode: ThemeMode) {
+  return mode === 'dark' ? Colors : LightColors;
+}
 
 export const Shadows = {
   sm: {

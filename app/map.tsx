@@ -1,140 +1,448 @@
-import React from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useState, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  TextInput,
+  ScrollView,
+  Animated,
+  Dimensions,
+} from 'react-native';
+import MapView, { Marker, Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Colors, Typography, Radius } from '../src/theme';
+import { useApp } from '../src/context/AppContext';
+import { useTranslation } from '../src/i18n';
+import { getColors, Radius } from '../src/theme';
 
-const VENUES: Array<{
-  name: string;
-  type: string;
-  capacity: string;
-  sport: string;
-  icon: keyof typeof Ionicons.glyphMap;
-}> = [
-  { name: 'Stade Léopold Sédar Senghor', type: 'Stade', capacity: '60 000 places', sport: 'Football · Athlétisme · Cérémonies', icon: 'football-outline' },
-  { name: 'Dakar Arena', type: 'Arène', capacity: '15 000 places', sport: 'Basketball · Handball', icon: 'basketball-outline' },
-  { name: 'Piscine Olympique', type: 'Piscine', capacity: '5 000 places', sport: 'Natation', icon: 'water-outline' },
-  { name: 'Palais des Sports', type: 'Palais', capacity: '8 000 places', sport: 'Judo · Lutte · Taekwondo', icon: 'body-outline' },
-  { name: 'Stade Iba Mar Diop', type: 'Stade', capacity: '12 000 places', sport: 'Athlétisme', icon: 'walk-outline' },
-  { name: 'Village JOJ', type: 'Village', capacity: 'Résidentiel', sport: 'Athlètes & Délégations', icon: 'home-outline' },
-  { name: 'Centre Médias', type: 'Media', capacity: 'Accrédités', sport: 'Presse & Journalistes', icon: 'newspaper-outline' },
+const { height } = Dimensions.get('window');
+
+const VENUES = [
+  {
+    id: 1,
+    name: 'Stade Léopold Sédar Senghor',
+    lat: 14.6937,
+    lng: -17.4441,
+    capacity: 60000,
+    type: 'Stade',
+    description: "Stade principal des JOJ 2026. Cérémonie d'ouverture et athlétisme.",
+    color: '#FF6B35',
+    icon: 'football-outline' as const,
+  },
+  {
+    id: 2,
+    name: 'Dakar Arena',
+    lat: 14.7167,
+    lng: -17.4608,
+    capacity: 15000,
+    type: 'Salle',
+    description: 'Basketball, volleyball, handball.',
+    color: '#4A90E2',
+    icon: 'basketball-outline' as const,
+  },
+  {
+    id: 3,
+    name: 'Piscine Olympique',
+    lat: 14.7023,
+    lng: -17.4680,
+    capacity: 5000,
+    type: 'Piscine',
+    description: 'Compétitions de natation et plongeon.',
+    color: '#3FBDB6',
+    icon: 'water-outline' as const,
+  },
+  {
+    id: 4,
+    name: 'Palais des Sports',
+    lat: 14.6891,
+    lng: -17.4523,
+    capacity: 8000,
+    type: 'Salle',
+    description: 'Judo, lutte, boxe, karaté.',
+    color: '#7B5EA7',
+    icon: 'body-outline' as const,
+  },
+  {
+    id: 5,
+    name: 'Stade Iba Mar Diop',
+    lat: 14.6808,
+    lng: -17.4571,
+    capacity: 10000,
+    type: 'Stade',
+    description: 'Football, athlétisme.',
+    color: '#D4AF37',
+    icon: 'walk-outline' as const,
+  },
+  {
+    id: 6,
+    name: 'Village JOJ',
+    lat: 14.7300,
+    lng: -17.4500,
+    capacity: 3000,
+    type: 'Village',
+    description: 'Hébergement des athlètes et délégations.',
+    color: '#3FBA7A',
+    icon: 'home-outline' as const,
+  },
+  {
+    id: 7,
+    name: 'Centre des Médias',
+    lat: 14.7150,
+    lng: -17.4380,
+    capacity: 2000,
+    type: 'Centre',
+    description: 'Accréditation presse et médias.',
+    color: '#D866A0',
+    icon: 'newspaper-outline' as const,
+  },
 ];
+
+type Venue = (typeof VENUES)[0];
 
 export default function MapScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { state } = useApp();
+  const t = useTranslation(state.language);
+  const C = getColors(state.theme);
+
+  const [search, setSearch] = useState('');
+  const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
+  const mapRef = useRef<MapView>(null);
+  const sheetAnim = useRef(new Animated.Value(0)).current;
+
+  const filteredVenues = search.trim()
+    ? VENUES.filter((v) => v.name.toLowerCase().includes(search.toLowerCase()) || v.type.toLowerCase().includes(search.toLowerCase()))
+    : VENUES;
+
+  const openVenue = (venue: Venue) => {
+    setSelectedVenue(venue);
+    mapRef.current?.animateToRegion(
+      { latitude: venue.lat, longitude: venue.lng, latitudeDelta: 0.03, longitudeDelta: 0.03 },
+      500
+    );
+    Animated.spring(sheetAnim, { toValue: 1, useNativeDriver: true, tension: 80, friction: 10 }).start();
+  };
+
+  const closeVenue = () => {
+    Animated.timing(sheetAnim, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => setSelectedVenue(null));
+  };
+
+  const sheetTranslate = sheetAnim.interpolate({ inputRange: [0, 1], outputRange: [300, 0] });
 
   return (
-    <View style={styles.container}>
-      <LinearGradient colors={[Colors.bg, Colors.bgElevated, Colors.bg]} style={StyleSheet.absoluteFill} />
+    <View style={[StyleSheet.absoluteFill, { backgroundColor: C.bg }]}>
+      {/* Map */}
+      <MapView
+        ref={mapRef}
+        style={StyleSheet.absoluteFill}
+        initialRegion={{
+          latitude: 14.6937,
+          longitude: -17.4441,
+          latitudeDelta: 0.12,
+          longitudeDelta: 0.12,
+        }}
+        mapType="standard"
+      >
+        {filteredVenues.map((venue) => (
+          <Marker
+            key={venue.id}
+            coordinate={{ latitude: venue.lat, longitude: venue.lng }}
+            onPress={() => openVenue(venue)}
+          >
+            <View style={[styles.markerOuter, { borderColor: venue.color + '80', backgroundColor: venue.color + '20' }]}>
+              <View style={[styles.markerInner, { backgroundColor: venue.color }]}>
+                <Ionicons name={venue.icon} size={14} color="#fff" />
+              </View>
+            </View>
+          </Marker>
+        ))}
+      </MapView>
 
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <Pressable onPress={() => router.back()} style={styles.iconBtn}>
-          <Ionicons name="chevron-back" size={20} color={Colors.text} />
-        </Pressable>
-        <Text style={styles.headerTitle}>Carte des venues</Text>
-        <Pressable style={styles.iconBtn}>
-          <Ionicons name="search-outline" size={20} color={Colors.text} />
-        </Pressable>
+      {/* Header overlay */}
+      <View style={[styles.headerOverlay, { paddingTop: insets.top + 8 }]}>
+        <View style={styles.headerRow}>
+          <Pressable
+            onPress={() => router.back()}
+            style={[styles.floatBtn, { backgroundColor: C.bgElevated + 'F0', borderColor: C.border1 }]}
+          >
+            <Ionicons name="arrow-back-outline" size={20} color={C.text} />
+          </Pressable>
+          <View style={[styles.searchBar, { backgroundColor: C.bgElevated + 'F0', borderColor: C.border1 }]}>
+            <Ionicons name="search-outline" size={16} color={C.textTertiary} />
+            <TextInput
+              style={{ flex: 1, fontSize: 14, color: C.text }}
+              placeholder={t.searchVenue}
+              placeholderTextColor={C.textTertiary}
+              value={search}
+              onChangeText={setSearch}
+            />
+            {search.length > 0 && (
+              <Pressable onPress={() => setSearch('')}>
+                <Ionicons name="close-outline" size={16} color={C.textTertiary} />
+              </Pressable>
+            )}
+          </View>
+        </View>
+
+        {/* Search results */}
+        {search.trim().length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 8, gap: 8 }}
+          >
+            {filteredVenues.map((v) => (
+              <Pressable
+                key={v.id}
+                onPress={() => { openVenue(v); setSearch(''); }}
+                style={[styles.searchChip, { backgroundColor: v.color, borderColor: v.color }]}
+              >
+                <Ionicons name={v.icon} size={12} color="#fff" />
+                <Text style={{ fontSize: 12, fontWeight: '700', color: '#fff' }}>{v.name}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        )}
       </View>
 
-      <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 40 }]}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.mapHero}>
-          <LinearGradient colors={[Colors.teal + '30', Colors.blue + '15']} style={StyleSheet.absoluteFill} />
-          <View style={styles.mapHeroContent}>
-            <View style={styles.mapHeroIcon}>
-              <Ionicons name="map" size={40} color={Colors.teal} />
+      {/* Legend pills */}
+      <View style={[styles.legendRow, { bottom: insets.bottom + (selectedVenue ? 280 : 24) }]}>
+        {[
+          { type: 'Stade', color: '#FF6B35' },
+          { type: 'Salle', color: '#4A90E2' },
+          { type: 'Village', color: '#3FBA7A' },
+          { type: 'Centre', color: '#D866A0' },
+        ].map((l) => (
+          <View key={l.type} style={[styles.legendPill, { backgroundColor: C.bgElevated + 'E8', borderColor: C.border1 }]}>
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: l.color }} />
+            <Text style={{ fontSize: 10, fontWeight: '700', color: C.textSecondary }}>{l.type}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Bottom sheet */}
+      {selectedVenue && (
+        <Animated.View
+          style={[
+            styles.sheet,
+            {
+              backgroundColor: C.bgElevated,
+              borderColor: C.border1,
+              paddingBottom: insets.bottom + 16,
+              transform: [{ translateY: sheetTranslate }],
+            },
+          ]}
+        >
+          <View style={[styles.sheetHandle, { backgroundColor: C.border2 }]} />
+          <View style={styles.sheetHeader}>
+            <View style={[styles.sheetIconBox, { backgroundColor: selectedVenue.color + '20', borderColor: selectedVenue.color + '30' }]}>
+              <Ionicons name={selectedVenue.icon} size={24} color={selectedVenue.color} />
             </View>
-            <Text style={styles.mapHeroTitle}>Carte interactive</Text>
-            <Text style={styles.mapHeroSub}>Navigation GPS et wayfinding{'\n'}disponibles pendant l'événement</Text>
-            <Pressable style={styles.mapHeroBtn}>
-              <Ionicons name="navigate" size={14} color="#fff" />
-              <Text style={styles.mapHeroBtnText}>Activer la navigation</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.sheetName, { color: C.text }]}>{selectedVenue.name}</Text>
+              <View style={[styles.sheetTypeBadge, { backgroundColor: selectedVenue.color + '20', borderColor: selectedVenue.color + '30' }]}>
+                <Text style={{ fontSize: 10, fontWeight: '800', color: selectedVenue.color, letterSpacing: 0.5 }}>{selectedVenue.type.toUpperCase()}</Text>
+              </View>
+            </View>
+            <Pressable onPress={closeVenue} style={[styles.closeBtn, { backgroundColor: C.surface2, borderColor: C.border1 }]}>
+              <Ionicons name="close-outline" size={18} color={C.text} />
             </Pressable>
           </View>
-        </View>
 
-        <View style={styles.statRow}>
-          <View style={styles.stat}>
-            <Text style={styles.statValue}>7</Text>
-            <Text style={styles.statLabel}>Venues</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.stat}>
-            <Text style={styles.statValue}>11</Text>
-            <Text style={styles.statLabel}>Disciplines</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.stat}>
-            <Text style={styles.statValue}>120K</Text>
-            <Text style={styles.statLabel}>Places</Text>
-          </View>
-        </View>
+          <Text style={[styles.sheetDesc, { color: C.textSecondary }]}>{selectedVenue.description}</Text>
 
-        <Text style={styles.sectionLabel}>SITES OFFICIELS</Text>
-
-        {VENUES.map((v) => (
-          <Pressable key={v.name} style={styles.venue}>
-            <View style={styles.venueIconWrap}>
-              <Ionicons name={v.icon} size={22} color={Colors.brand} />
+          <View style={styles.sheetMeta}>
+            <View style={[styles.sheetMetaItem, { backgroundColor: C.surface2, borderColor: C.border1 }]}>
+              <Ionicons name="people-outline" size={16} color={C.textTertiary} />
+              <Text style={{ fontSize: 13, color: C.textSecondary }}>{t.capacity}</Text>
+              <Text style={{ fontSize: 14, fontWeight: '800', color: C.text }}>{selectedVenue.capacity.toLocaleString('fr-FR')}</Text>
             </View>
-            <View style={styles.venueInfo}>
-              <View style={styles.venueTopRow}>
-                <Text style={styles.venueName}>{v.name}</Text>
-                <View style={styles.venueTypeBadge}>
-                  <Text style={styles.venueTypeText}>{v.type}</Text>
-                </View>
-              </View>
-              <Text style={styles.venueSport}>{v.sport}</Text>
-              <View style={styles.venueMeta}>
-                <Ionicons name="people-outline" size={11} color={Colors.textTertiary} />
-                <Text style={styles.venueCapacity}>{v.capacity}</Text>
-              </View>
+            <View style={[styles.sheetMetaItem, { backgroundColor: C.surface2, borderColor: C.border1 }]}>
+              <Ionicons name="radio-button-on-outline" size={16} color={C.success} />
+              <Text style={{ fontSize: 13, color: C.textSecondary }}>{t.openNow}</Text>
+              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: C.success }} />
             </View>
-            <Ionicons name="chevron-forward" size={18} color={Colors.textTertiary} />
+          </View>
+
+          <Pressable
+            onPress={() => { closeVenue(); router.push('/(tabs)/transport' as any); }}
+            style={[styles.sheetBtn, { overflow: 'hidden' }]}
+          >
+            <LinearGradientWrapper color={selectedVenue.color} />
+            <Ionicons name="navigate-outline" size={18} color="#fff" />
+            <Text style={{ fontSize: 15, fontWeight: '800', color: '#fff' }}>Itinéraire Yango</Text>
           </Pressable>
-        ))}
-      </ScrollView>
+        </Animated.View>
+      )}
     </View>
   );
 }
 
+function LinearGradientWrapper({ color }: { color: string }) {
+  const { LinearGradient } = require('expo-linear-gradient');
+  return (
+    <LinearGradient
+      colors={[color, color + 'BB']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={StyleSheet.absoluteFill}
+    />
+  );
+}
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.bg },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingBottom: 12, gap: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: Colors.border1 },
-  iconBtn: { width: 36, height: 36, borderRadius: 12, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { ...Typography.title2, fontWeight: '800', flex: 1, marginLeft: 4 },
-  scroll: { padding: 20, gap: 14 },
-
-  mapHero: { borderRadius: Radius.lg, overflow: 'hidden', backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1 },
-  mapHeroContent: { alignItems: 'center', justifyContent: 'center', padding: 24, gap: 10 },
-  mapHeroIcon: { width: 80, height: 80, borderRadius: 24, backgroundColor: Colors.surface3, borderWidth: 1, borderColor: Colors.teal + '40', alignItems: 'center', justifyContent: 'center' },
-  mapHeroTitle: { fontSize: 18, fontWeight: '800', color: Colors.text, marginTop: 4 },
-  mapHeroSub: { ...Typography.footnote, color: Colors.textSecondary, textAlign: 'center', lineHeight: 18 },
-  mapHeroBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 18, paddingVertical: 11, borderRadius: Radius.full, backgroundColor: Colors.teal, marginTop: 8 },
-  mapHeroBtnText: { fontSize: 13, fontWeight: '700', color: '#fff' },
-
-  statRow: { flexDirection: 'row', backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.lg, padding: 16 },
-  stat: { flex: 1, alignItems: 'center', gap: 4 },
-  statDivider: { width: StyleSheet.hairlineWidth, backgroundColor: Colors.border1 },
-  statValue: { fontSize: 22, fontWeight: '900', color: Colors.text },
-  statLabel: { ...Typography.caption, color: Colors.textTertiary, fontWeight: '600' },
-
-  sectionLabel: { ...Typography.label, marginTop: 4, marginBottom: 4 },
-
-  venue: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.lg, padding: 14, gap: 12, marginBottom: 8 },
-  venueIconWrap: { width: 48, height: 48, borderRadius: 14, backgroundColor: Colors.brand + '15', borderWidth: 1, borderColor: Colors.brand + '25', alignItems: 'center', justifyContent: 'center' },
-  venueInfo: { flex: 1, gap: 4 },
-  venueTopRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  venueName: { ...Typography.callout, fontWeight: '700', flex: 1 },
-  venueTypeBadge: { paddingHorizontal: 7, paddingVertical: 2, borderRadius: Radius.full, backgroundColor: Colors.surface3, borderWidth: 1, borderColor: Colors.border1 },
-  venueTypeText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5, color: Colors.textSecondary },
-  venueSport: { ...Typography.caption, color: Colors.textTertiary },
-  venueMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 1 },
-  venueCapacity: { fontSize: 11, color: Colors.textTertiary, fontWeight: '500' },
+  headerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    gap: 8,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    gap: 10,
+  },
+  floatBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  searchBar: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 42,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    gap: 8,
+    borderWidth: 1,
+  },
+  searchChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: Radius.full,
+    borderWidth: 1,
+  },
+  legendRow: {
+    position: 'absolute',
+    left: 16,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  legendPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: Radius.full,
+    borderWidth: 1,
+  },
+  markerOuter: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+  },
+  markerInner: {
+    width: 28,
+    height: 28,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sheet: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    borderTopLeftRadius: Radius.xl,
+    borderTopRightRadius: Radius.xl,
+    borderTopWidth: 1,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    padding: 20,
+    paddingTop: 12,
+    gap: 14,
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 8,
+  },
+  sheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  sheetIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  sheetName: {
+    fontSize: 17,
+    fontWeight: '800',
+    letterSpacing: -0.3,
+    marginBottom: 4,
+  },
+  sheetTypeBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: Radius.full,
+    borderWidth: 1,
+  },
+  sheetDesc: {
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  sheetMeta: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  sheetMetaItem: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    padding: 10,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+  },
+  sheetBtn: {
+    height: 52,
+    borderRadius: Radius.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  closeBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
 });

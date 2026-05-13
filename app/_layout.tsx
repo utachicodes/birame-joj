@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StyleSheet, View, Text, ScrollView } from 'react-native';
+import { AppProvider } from '../src/context/AppContext';
 
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -49,19 +50,21 @@ const errStyles = StyleSheet.create({
 export default function RootLayout() {
   return (
     <ErrorBoundary>
-      <GestureHandlerRootView style={styles.root}>
-        <SafeAreaProvider>
-          <StatusBar style="light" />
-          <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
-            <Stack.Screen name="onboarding" />
-            <Stack.Screen name="auth" />
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="wallet" options={{ presentation: 'modal' }} />
-            <Stack.Screen name="map" />
-            <Stack.Screen name="food" />
-          </Stack>
-        </SafeAreaProvider>
-      </GestureHandlerRootView>
+      <AppProvider>
+        <GestureHandlerRootView style={styles.root}>
+          <SafeAreaProvider>
+            <StatusBar style="auto" />
+            <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+              <Stack.Screen name="onboarding" />
+              <Stack.Screen name="auth" />
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="wallet" options={{ presentation: 'modal' }} />
+              <Stack.Screen name="map" />
+              <Stack.Screen name="food" />
+            </Stack>
+          </SafeAreaProvider>
+        </GestureHandlerRootView>
+      </AppProvider>
     </ErrorBoundary>
   );
 }
