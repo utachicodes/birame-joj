@@ -4,13 +4,14 @@
   <img src="https://img.shields.io/badge/Expo-54.0.0-000020?style=for-the-badge&logo=expo&logoColor=white" />
   <img src="https://img.shields.io/badge/React_Native-0.81.5-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
   <img src="https://img.shields.io/badge/TypeScript-5.3-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
-  <img src="https://img.shields.io/badge/Platform-iOS_Android-FF6B35?style=for-the-badge&logo=apple&logoColor=white" />
+  <img src="https://img.shields.io/badge/Platform-iOS_%26_Android-FF6B35?style=for-the-badge&logo=apple&logoColor=white" />
+  <img src="https://img.shields.io/badge/i18n-FR_%7C_EN_%7C_AR_%7C_WO-C9A84C?style=for-the-badge&logoColor=white" />
 </p>
 
 <p align="left">
-  <img src="https://img.shields.io/github/last-commit/utachicodes/Mobile-Dev.-Final-Project?style=for-the-badge&color=C9A84C&labelColor=050A18" />
-  <img src="https://img.shields.io/github/languages/top/utachicodes/Mobile-Dev.-Final-Project?style=for-the-badge&color=3178C6&labelColor=050A18" />
-  <img src="https://img.shields.io/github/repo-size/utachicodes/Mobile-Dev.-Final-Project?style=for-the-badge&color=4ECDC4&labelColor=050A18" />
+  <img src="https://img.shields.io/github/last-commit/utachicodes/birame-joj?style=for-the-badge&color=C9A84C&labelColor=050A18" />
+  <img src="https://img.shields.io/github/languages/top/utachicodes/birame-joj?style=for-the-badge&color=3178C6&labelColor=050A18" />
+  <img src="https://img.shields.io/github/repo-size/utachicodes/birame-joj?style=for-the-badge&color=4ECDC4&labelColor=050A18" />
 </p>
 
 A unified travel and event management mobile application built for the Jeux de la Francophonie, Dakar 2026. The app consolidates digital ticketing, live sports scores, cashless payments, transportation booking, venue navigation, and food ordering into a single platform for every attendee, athlete, media personnel, and official guest.
@@ -77,7 +78,7 @@ Glass surfaces are rendered using expo-blur BlurView with translucent rgba overl
 
 **Typography** follows the iOS SF Pro hierarchy using the system font with seven defined levels from Large Title at 34pt bold down to Caption 2 at 11pt.
 
-**Animation** uses react-native-reanimated 4.x with spring physics for tab bar interactions, scroll-driven parallax on the onboarding slides, and spring scale feedback on all interactive elements.
+**Animation** uses React Native's built-in Animated API with spring physics for tab bar interactions, scroll-driven parallax on the onboarding slides, and spring scale feedback on all interactive elements.
 
 ---
 
@@ -90,9 +91,11 @@ Glass surfaces are rendered using expo-blur BlurView with translucent rgba overl
 | Navigation | Expo Router 6 with file-based routing |
 | Blur and glass | expo-blur with native BlurView |
 | Gradients | expo-linear-gradient |
-| Animation | react-native-reanimated 4.x |
+| Animation | React Native Animated API |
 | Icons | Ionicons via @expo/vector-icons |
 | Safe areas | react-native-safe-area-context |
+| Internationalisation | Custom i18n with French, English, Arabic, Wolof |
+| State management | React Context API |
 | Type safety | TypeScript 5.3 strict mode |
 
 ---
@@ -102,15 +105,15 @@ Glass surfaces are rendered using expo-blur BlurView with translucent rgba overl
 Clone the repository and install dependencies.
 
 ```bash
-git clone https://github.com/utachicodes/Mobile-Dev.-Final-Project.git
-cd Mobile-Dev.-Final-Project
+git clone https://github.com/utachicodes/birame-joj.git
+cd birame-joj
 npm install --legacy-peer-deps
 npx expo start
 ```
 
 Scan the QR code with Expo Go on iOS or Android. Ensure Expo Go is version 54 to match the SDK.
 
-For iOS Simulator, open Simulator.app first then press i in the terminal.
+For iOS Simulator, open Simulator.app first then press `i` in the terminal.
 
 ---
 
@@ -119,22 +122,24 @@ For iOS Simulator, open Simulator.app first then press i in the terminal.
 ```
 app/                    Expo Router file-based routes
   (tabs)/               Tab navigator screens
-  onboarding.tsx
+    events.tsx
+    profile.tsx
+    tickets.tsx
+    transport.tsx
+  _layout.tsx
   auth.tsx
-  wallet.tsx
-  map.tsx
   food.tsx
+  map.tsx
+  onboarding.tsx
+  wallet.tsx
 
 src/
   components/           Shared UI components
-    GlassCard.tsx
-    GlassButton.tsx
-    GlassInput.tsx
-    Header.tsx
-    TabBar.tsx
+  context/              App-wide state (AppContext.tsx)
+  data/                 Mock data and type definitions
+  i18n/                 Internationalisation strings (FR/EN/AR/WO)
   screens/              Screen implementations
   theme/                Color tokens, typography, spacing
-  data/                 Mock data and type definitions
 
 assets/                 App icons and splash screen
 ```
@@ -144,5 +149,4 @@ assets/                 App icons and splash screen
 ## Author
 
 Abdoullah Ndao
-Mobile Development — Final Project
 Jeux de la Francophonie Dakar 2026
