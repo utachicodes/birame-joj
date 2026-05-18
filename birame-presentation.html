@@ -150,17 +150,17 @@
   .type-row:last-child { border-bottom:none; }
   .type-spec { font-size:10px; color:var(--t3); min-width:130px; }
 
-  /* ── SLIDE 1 ── */
+  /* SLIDE 1 */
   #s1 { background:radial-gradient(ellipse 80% 55% at 65% 10%, rgba(217,78,24,.07) 0%, transparent 70%), radial-gradient(ellipse 55% 45% at 15% 90%, rgba(154,115,32,.05) 0%, transparent 70%); }
   #s1 h1 { font-size:94px; font-weight:900; letter-spacing:-6px; line-height:1; color:var(--tx); }
   #s1 .tagline { font-size:17px; font-weight:400; color:var(--t2); letter-spacing:.3px; margin-top:6px; }
   #s1 .pill-row { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; animation:up .6s .3s both; margin-top:26px; }
   #s1 .meta { font-size:11px; color:var(--t3); letter-spacing:1.5px; text-transform:uppercase; animation:fade .6s .5s both; margin-top:22px; }
-  #s1 .logo-wrap { width:100px; height:100px; border-radius:24px; background:#fff; border:1px solid var(--b2); display:flex; align-items:center; justify-content:center; margin-bottom:20px; padding:10px; animation:up .6s .05s both; box-shadow:0 4px 20px rgba(0,0,0,.06); }
+  #s1 .logo-wrap { width:100px; height:100px; margin-bottom:20px; animation:up .6s .05s both; }
   #s1 .logo-wrap img { width:100%; height:100%; object-fit:contain; }
   #s1 .title-row { display:flex; flex-direction:column; align-items:center; gap:4px; animation:up .6s .12s both; }
 
-  /* ── SLIDE 11 FINAL ── */
+  /* SLIDE 11 FINAL */
   #s11 { background:radial-gradient(ellipse 70% 50% at 50% 30%, rgba(217,78,24,.05) 0%, transparent 70%); }
   #s11 .logo-sm { width:64px; height:64px; border-radius:16px; background:#fff; border:1px solid var(--b2); display:flex; align-items:center; justify-content:center; padding:7px; animation:up .6s .05s both; box-shadow:0 2px 12px rgba(0,0,0,.05); margin-bottom:12px; }
   #s11 .logo-sm img { width:100%; height:100%; object-fit:contain; }
@@ -193,9 +193,7 @@
 
 <div class="deck">
 
-<!-- ══════════════════════════
-     SLIDE 1  TITLE
-══════════════════════════ -->
+<!-- SLIDE 1  TITLE -->
 <div class="slide active" id="s1">
   <div class="logo-wrap">
     <img src="assets/dakarlogo.png" alt="JOJ Logo"/>
@@ -214,9 +212,7 @@
   <p class="meta">Abdoullah Ndao &nbsp;·&nbsp; Mobile Development &nbsp;·&nbsp; 2026</p>
 </div>
 
-<!-- ══════════════════════════
-     SLIDE 2  CONTEXT
-══════════════════════════ -->
+<!-- SLIDE 2  CONTEXT -->
 <div class="slide" id="s2">
   <p class="eyebrow a1">The Event</p>
   <h2 class="h1 a2">Jeux de la Francophonie,<br>Dakar 2026</h2>
@@ -263,9 +259,7 @@
   </div>
 </div>
 
-<!-- ══════════════════════════
-     SLIDE 3  SCREENS
-══════════════════════════ -->
+<!-- SLIDE 3  SCREENS -->
 <div class="slide" id="s3">
   <p class="eyebrow a1">App Structure</p>
   <h2 class="h1 a2">10 Screens, One Experience</h2>
@@ -339,9 +333,7 @@
   </div>
 </div>
 
-<!-- ══════════════════════════
-     SLIDE 4  JOJ CARD
-══════════════════════════ -->
+<!-- SLIDE 4  JOJ CARD -->
 <div class="slide" id="s4">
   <p class="eyebrow a1">Cashless Payments</p>
   <h2 class="h1 a2">The JOJ Card</h2>
@@ -377,7 +369,7 @@
         </div>
         <div style="flex:1;padding:12px;background:#fff;border:1px solid var(--b1);border-radius:12px;text-align:center;">
           <div style="font-size:18px;font-weight:800;color:var(--gr);">100 XOF</div>
-          <div style="font-size:10px;color:var(--t3);margin-top:2px;font-weight:600;">= 1 Point</div>
+          <div style="font-size:10px;color:var(--t3);margin-top:2px;font-weight:600;">loaded = 1 pt</div>
         </div>
       </div>
     </div>
@@ -421,17 +413,33 @@
       </div>
 
       <div class="card">
-        <p style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:10px;">JOJ Points Rewards</p>
-        <p style="font-size:12px;color:var(--t2);line-height:1.65;">Every 100 XOF spent earns 1 JOJ Point. Points unlock exclusive rewards — official merchandise, VIP zone access, and athlete meet-and-greets. Balance is NFC-protected and refundable within 30 days after the Games close.</p>
+        <p style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:10px;">How JOJ Points Work</p>
+        <p style="font-size:12px;color:var(--t2);line-height:1.65;margin-bottom:10px;">Load your JOJ Card with real money (XOF) using any of the payment methods on the left. <strong style="color:var(--tx);">Every 100 XOF you top up automatically earns 1 JOJ Point</strong> — credited instantly to your balance as you recharge, no extra steps.</p>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--t2);">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--go)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Official JOJ merchandise &amp; apparel
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--t2);">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--go)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            VIP tribune upgrades &amp; priority shuttle access
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--t2);">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--go)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Meals, snacks &amp; drinks at venue restaurants
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--t2);">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--go)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Yango ride discounts &amp; express navette passes
+          </div>
+        </div>
       </div>
 
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════
-     SLIDE 5  AUTH & STORAGE
-══════════════════════════ -->
+<!-- SLIDE 5  AUTH & STORAGE -->
 <div class="slide" id="s5">
   <p class="eyebrow a1">Security & Data</p>
   <h2 class="h1 a2">Auth, Storage & Notifications</h2>
@@ -531,9 +539,7 @@
   </div>
 </div>
 
-<!-- ══════════════════════════
-     SLIDE 6  TECH STACK
-══════════════════════════ -->
+<!-- SLIDE 6  TECH STACK -->
 <div class="slide" id="s6">
   <p class="eyebrow a1">Under the Hood</p>
   <h2 class="h1 a2">Tech Stack</h2>
@@ -594,9 +600,7 @@
   </div>
 </div>
 
-<!-- ══════════════════════════
-     SLIDE 7  DATA MODELS
-══════════════════════════ -->
+<!-- SLIDE 7  DATA MODELS -->
 <div class="slide" id="s7">
   <p class="eyebrow a1">Data Layer</p>
   <h2 class="h1 a2">Key Data Models</h2>
@@ -673,9 +677,7 @@
   </div>
 </div>
 
-<!-- ══════════════════════════
-     SLIDE 8  APIs
-══════════════════════════ -->
+<!-- SLIDE 8  APIs -->
 <div class="slide" id="s8">
   <p class="eyebrow a1">Integrations</p>
   <h2 class="h1 a2">APIs & External Services</h2>
@@ -743,9 +745,7 @@
   </div>
 </div>
 
-<!-- ══════════════════════════
-     SLIDE 9  DESIGN SYSTEM
-══════════════════════════ -->
+<!-- SLIDE 9  DESIGN SYSTEM -->
 <div class="slide" id="s9">
   <p class="eyebrow a1">Visual Identity</p>
   <h2 class="h1 a2">Design System</h2>
@@ -809,9 +809,7 @@
   </div>
 </div>
 
-<!-- ══════════════════════════
-     SLIDE 10  ARCHITECTURE
-══════════════════════════ -->
+<!-- SLIDE 10  ARCHITECTURE -->
 <div class="slide" id="s10">
   <p class="eyebrow a1">System Design</p>
   <h2 class="h1 a2">App Architecture</h2>
@@ -871,9 +869,7 @@
   </div>
 </div>
 
-<!-- ══════════════════════════
-     SLIDE 11  GET THE APP
-══════════════════════════ -->
+<!-- SLIDE 11  GET THE APP -->
 <div class="slide" id="s11">
   <p class="eyebrow a1">Distribution</p>
   <h2 class="h1 a2">Get the App</h2>
@@ -932,9 +928,7 @@
   </div>
 </div>
 
-<!-- ══════════════════════════
-     SLIDE 12  ACKNOWLEDGEMENTS
-══════════════════════════ -->
+<!-- SLIDE 12  ACKNOWLEDGEMENTS -->
 <div class="slide" id="s12">
   <p class="eyebrow a1">Thank you</p>
   <h2 class="h1 a2" style="font-size:44px;">Acknowledgements</h2>
@@ -1011,9 +1005,7 @@
   </div>
 </div>
 
-<!-- ══════════════════════════
-     SLIDE 13  FINAL
-══════════════════════════ -->
+<!-- SLIDE 13  FINAL -->
 <div class="slide" id="s13">
   <div class="logo-sm" style="width:64px;height:64px;border-radius:16px;background:#fff;border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;padding:7px;animation:up .6s .05s both;box-shadow:0 2px 12px rgba(0,0,0,.05);margin-bottom:12px;">
     <img src="assets/dakarlogo.png" alt="JOJ Logo" style="width:100%;height:100%;object-fit:contain;"/>
