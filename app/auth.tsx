@@ -21,7 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../src/context/AppContext';
 
-const { width: W } = Dimensions.get('window'); // screen width for pager math
+const { width: W } = Dimensions.get('window');
 
 // ─── Main screen ─────────────────────────────────────────────────────────────
 
@@ -32,48 +32,48 @@ export default function AuthScreen() {
 
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState('');
-  const [pagerH, setPagerH] = useState(520); // measured at runtime
+  const [pagerH, setPagerH] = useState(520);
 
-  // Sign-in state
+ 
   const [siEmail, setSiEmail] = useState('');
   const [siPass, setSiPass] = useState('');
-  const [siPassVis, setSiPassVis] = useState(false); // toggle password visibility
+  const [siPassVis, setSiPassVis] = useState(false);
 
-  // Sign-up state
+ 
   const [suName, setSuName] = useState('');
   const [suEmail, setSuEmail] = useState('');
   const [suPass, setSuPass] = useState('');
   const [suPassVis, setSuPassVis] = useState(false);
 
   const pagerRef = useRef<ScrollView>(null);
-  const scrollX = useRef(new Animated.Value(0)).current; // tracks horizontal scroll for dot indicator
+  const scrollX = useRef(new Animated.Value(0)).current;
 
   const goTo = (p: 0 | 1) => {
-    pagerRef.current?.scrollTo({ x: p * W, animated: true }); // jump to page 0 or 1
+    pagerRef.current?.scrollTo({ x: p * W, animated: true });
   };
 
-  const validateEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); // basic email check
+  const validateEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
-  // Redirect once logged in
+ 
   React.useEffect(() => {
     if (state.isLoggedIn) router.replace('/(tabs)' as any);
   }, [state.isLoggedIn]);
 
   const handleSignIn = async () => {
     setAuthError('');
-    if (!siEmail.trim() || !siPass.trim()) { setAuthError('Veuillez remplir tous les champs.'); return; } // empty check
+    if (!siEmail.trim() || !siPass.trim()) { setAuthError('Veuillez remplir tous les champs.'); return; }
     if (!validateEmail(siEmail)) { setAuthError('Email invalide.'); return; }
     setLoading(true);
     await login(siEmail, siPass);
     setLoading(false);
-    if (state.authError) setAuthError(state.authError); // surface errors from context
+    if (state.authError) setAuthError(state.authError);
   };
 
   const handleSignUp = async () => {
     setAuthError('');
     if (!suName.trim() || !suEmail.trim() || !suPass.trim()) { setAuthError('Veuillez remplir tous les champs.'); return; }
     if (!validateEmail(suEmail)) { setAuthError('Email invalide.'); return; }
-    if (suPass.length < 8) { setAuthError('Mot de passe trop court (8 caractères min).'); return; } // enforce min length
+    if (suPass.length < 8) { setAuthError('Mot de passe trop court (8 caractères min).'); return; }
     setLoading(true);
     await register({ name: suName, email: suEmail, password: suPass, country: 'Sénégal', countryCode: 'SN', role: 'Visiteur' });
     setLoading(false);
@@ -81,13 +81,13 @@ export default function AuthScreen() {
   };
 
   const handleBiometric = () => {
-    setAuthError('Biométrie non disponible en mode démo.'); // placeholder — not wired up yet
+    setAuthError('Biométrie non disponible en mode démo.');
   };
 
-  // Dot indicator interpolations (non-native for layout values)
-  const dot0W = scrollX.interpolate({ inputRange: [0, W], outputRange: [24, 8], extrapolate: 'clamp' }); // wide on page 0
+ 
+  const dot0W = scrollX.interpolate({ inputRange: [0, W], outputRange: [24, 8], extrapolate: 'clamp' });
   const dot0O = scrollX.interpolate({ inputRange: [0, W], outputRange: [1, 0.35], extrapolate: 'clamp' });
-  const dot1W = scrollX.interpolate({ inputRange: [0, W], outputRange: [8, 24], extrapolate: 'clamp' }); // wide on page 1
+  const dot1W = scrollX.interpolate({ inputRange: [0, W], outputRange: [8, 24], extrapolate: 'clamp' });
   const dot1O = scrollX.interpolate({ inputRange: [0, W], outputRange: [0.35, 1], extrapolate: 'clamp' });
 
   return (
@@ -106,7 +106,7 @@ export default function AuthScreen() {
       <View style={s.orbB} /> {/* purple glow bottom-left */}
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // different behavior per platform
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
         {/* ── Header ── */}
@@ -125,14 +125,14 @@ export default function AuthScreen() {
         {/* ── Pager ── */}
         <View
           style={{ flex: 1 }}
-          onLayout={(e) => setPagerH(e.nativeEvent.layout.height)} // measure available height
+          onLayout={(e) => setPagerH(e.nativeEvent.layout.height)}
         >
           <ScrollView
             ref={pagerRef}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            scrollEventThrottle={16} // fire scroll events frequently for smooth dot animation
+            scrollEventThrottle={16}
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
               { useNativeDriver: false } // can't use native driver for layout props
@@ -171,7 +171,7 @@ export default function AuthScreen() {
                     value={siPass}
                     onChangeText={setSiPass}
                     secureTextEntry={!siPassVis}
-                    rightIcon={siPassVis ? 'eye-off-outline' : 'eye-outline'} // toggle icon
+                    rightIcon={siPassVis ? 'eye-off-outline' : 'eye-outline'}
                     onRightPress={() => setSiPassVis((v) => !v)}
                   />
                   <Pressable
@@ -179,7 +179,7 @@ export default function AuthScreen() {
                       Alert.alert('Password reset', 'A reset link will be sent to your email.')
                     }
                     style={s.forgotRow}
-                    hitSlop={8} // easier to tap
+                    hitSlop={8}
                   >
                     <Text style={s.forgotText}>Forgot password?</Text>
                   </Pressable>
@@ -260,8 +260,8 @@ export default function AuthScreen() {
 
         {/* ── Dot indicator ── */}
         <View style={[s.dots, { paddingBottom: insets.bottom + 20 }]}>
-          <Animated.View style={[s.dot, { width: dot0W, opacity: dot0O }]} /> {/* page 0 dot */}
-          <Animated.View style={[s.dot, { width: dot1W, opacity: dot1O }]} /> {/* page 1 dot */}
+          <Animated.View style={[s.dot, { width: dot0W, opacity: dot0O }]} />
+          <Animated.View style={[s.dot, { width: dot1W, opacity: dot1O }]} />
         </View>
       </KeyboardAvoidingView>
     </View>
@@ -291,14 +291,14 @@ function Field({
   keyboardType?: any;
   autoCapitalize?: any;
 }) {
-  const [focused, setFocused] = useState(false); // highlight border on focus
+  const [focused, setFocused] = useState(false);
 
   return (
     <View style={[fS.wrap, focused && fS.wrapFocused]}>
       <Ionicons
         name={icon}
         size={17}
-        color={focused ? 'rgba(255,255,255,0.52)' : 'rgba(255,255,255,0.24)'} // brighter when active
+        color={focused ? 'rgba(255,255,255,0.52)' : 'rgba(255,255,255,0.24)'}
       />
       <TextInput
         style={fS.input}
@@ -310,7 +310,7 @@ function Field({
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize ?? 'none'}
         autoCorrect={false}
-        selectionColor="#FF6B35" // cursor color
+        selectionColor="#FF6B35"
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
       />
@@ -336,7 +336,7 @@ const fS = StyleSheet.create({
     gap: 10,
   },
   wrapFocused: {
-    borderColor: 'rgba(255,107,53,0.40)', // orange accent when focused
+    borderColor: 'rgba(255,107,53,0.40)',
     backgroundColor: 'rgba(255,255,255,0.075)',
   },
   input: {
@@ -358,12 +358,12 @@ function PrimaryBtn({
   onPress: () => void;
   loading?: boolean;
 }) {
-  const scale = useRef(new Animated.Value(1)).current; // for press-in shrink effect
+  const scale = useRef(new Animated.Value(1)).current;
 
   const handlePress = () => {
     Animated.sequence([
-      Animated.timing(scale, { toValue: 0.96, duration: 75, useNativeDriver: true }), // slight shrink
-      Animated.spring(scale, { toValue: 1, tension: 200, friction: 10, useNativeDriver: true }), // spring back
+      Animated.timing(scale, { toValue: 0.96, duration: 75, useNativeDriver: true }),
+      Animated.spring(scale, { toValue: 1, tension: 200, friction: 10, useNativeDriver: true }),
     ]).start();
     onPress();
   };
@@ -378,7 +378,7 @@ function PrimaryBtn({
           style={StyleSheet.absoluteFill}
         />
         {loading ? (
-          <ActivityIndicator color="#fff" size="small" /> // spinner while waiting
+          <ActivityIndicator color="#fff" size="small" />
         ) : (
           <Text style={pS.label}>{label}</Text>
         )}
@@ -388,7 +388,7 @@ function PrimaryBtn({
 }
 
 const pS = StyleSheet.create({
-  wrap: { borderRadius: 16, overflow: 'hidden' }, // clips gradient to rounded corners
+  wrap: { borderRadius: 16, overflow: 'hidden' },
   btn: { height: 56, alignItems: 'center', justifyContent: 'center' },
   label: { fontSize: 16, fontWeight: '700', color: '#fff', letterSpacing: -0.2 },
 });
@@ -444,7 +444,7 @@ const s = StyleSheet.create({
     borderRadius: 190,
     top: -120,
     right: -100,
-    backgroundColor: 'rgba(255,107,53,0.065)', // subtle orange glow
+    backgroundColor: 'rgba(255,107,53,0.065)',
   },
   orbB: {
     position: 'absolute',
@@ -453,7 +453,7 @@ const s = StyleSheet.create({
     borderRadius: 150,
     bottom: 60,
     left: -100,
-    backgroundColor: 'rgba(123,94,167,0.085)', // subtle purple glow
+    backgroundColor: 'rgba(123,94,167,0.085)',
   },
   header: {
     alignItems: 'center',
@@ -475,7 +475,7 @@ const s = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 22,
-    backgroundColor: '#FFFFFF', // white bg so logo colors show correctly
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 8,
