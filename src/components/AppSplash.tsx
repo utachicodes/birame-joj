@@ -1,29 +1,29 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Image, Animated, StyleSheet, Dimensions } from 'react-native';
 
-const { width } = Dimensions.get('window'); // used to size logo relative to screen
+const { width } = Dimensions.get('window');
 
 interface Props {
-  onAnimDone: () => void; // called when the splash fades out
+  onAnimDone: () => void;
 }
 
 export default function AppSplash({ onAnimDone }: Props) {
-  const logoOpacity = useRef(new Animated.Value(0)).current; // logo starts invisible
-  const logoScale = useRef(new Animated.Value(0.8)).current; // logo starts slightly small
-  const textOpacity = useRef(new Animated.Value(0)).current; // text fades in after logo
-  const screenOpacity = useRef(new Animated.Value(1)).current; // whole screen fades to 0 at end
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const logoScale = useRef(new Animated.Value(0.8)).current;
+  const textOpacity = useRef(new Animated.Value(0)).current;
+  const screenOpacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     Animated.sequence([
-      // logo pops in with a spring scale + opacity fade
+     
       Animated.parallel([
         Animated.timing(logoOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
         Animated.spring(logoScale, { toValue: 1, friction: 6, useNativeDriver: true }),
       ]),
-      Animated.timing(textOpacity, { toValue: 1, duration: 400, useNativeDriver: true }), // then text fades in
-      Animated.delay(800), // hold for a moment before exiting
-      Animated.timing(screenOpacity, { toValue: 0, duration: 400, useNativeDriver: true }), // fade out entire splash
-    ]).start(() => onAnimDone()); // notify parent when done
+      Animated.timing(textOpacity, { toValue: 1, duration: 400, useNativeDriver: true }),
+      Animated.delay(800),
+      Animated.timing(screenOpacity, { toValue: 0, duration: 400, useNativeDriver: true }),
+    ]).start(() => onAnimDone());
   }, []);
 
   return (
@@ -47,17 +47,17 @@ export default function AppSplash({ onAnimDone }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject, // covers everything underneath
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: '#050A18',
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 999, // always on top
+    zIndex: 999,
   },
   logoBg: {
-    width: width * 0.45, // 45% of screen width
+    width: width * 0.45,
     height: width * 0.45,
-    borderRadius: width * 0.12, // rounded square
-    backgroundColor: '#FFFFFF', // white bg so logo reads on dark screen
+    borderRadius: width * 0.12,
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 12,

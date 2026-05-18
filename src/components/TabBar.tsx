@@ -14,8 +14,8 @@ import { Colors, Radius } from '../theme';
 // maps route names to icon/label config
 type TabConfig = {
   name: string;
-  icon: keyof typeof Ionicons.glyphMap; // outline icon when inactive
-  iconActive: keyof typeof Ionicons.glyphMap; // filled icon when active
+  icon: keyof typeof Ionicons.glyphMap;
+  iconActive: keyof typeof Ionicons.glyphMap;
   label: string;
 };
 
@@ -38,10 +38,10 @@ function TabItem({
   isFocused: boolean;
   onPress: () => void;
 }) {
-  const scale = useRef(new Animated.Value(1)).current; // each tab has its own scale anim
+  const scale = useRef(new Animated.Value(1)).current;
 
   const handlePress = () => {
-    // quick squish then spring back
+   
     Animated.sequence([
       Animated.timing(scale, { toValue: 0.85, duration: 80, useNativeDriver: true }),
       Animated.spring(scale, { toValue: 1, useNativeDriver: true }),
@@ -54,7 +54,7 @@ function TabItem({
       <Animated.View style={[styles.tabInner, { transform: [{ scale }] }]}>
         {isFocused && <View style={styles.activePill} />} {/* orange top accent bar */}
         <Ionicons
-          name={isFocused ? config.iconActive : config.icon} // filled vs outline
+          name={isFocused ? config.iconActive : config.icon}
           size={24}
           color={isFocused ? Colors.orange : Colors.textTertiary}
         />
@@ -68,7 +68,7 @@ function TabItem({
 
 // custom tab bar wired into React Navigation
 export default function TabBar({ state, navigation }: BottomTabBarProps) {
-  const insets = useSafeAreaInsets(); // adds home indicator clearance on iPhone
+  const insets = useSafeAreaInsets();
 
   return (
     <View style={[styles.wrapper, { paddingBottom: insets.bottom }]}>
@@ -76,15 +76,15 @@ export default function TabBar({ state, navigation }: BottomTabBarProps) {
       <View style={styles.border} /> {/* hairline separator at the top */}
       <View style={styles.content}>
         {state.routes.map((route, index) => {
-          const config = TAB_CONFIG.find((t) => t.name === route.name) || TAB_CONFIG[0]; // match by route name
-          const isFocused = state.index === index; // active tab check
+          const config = TAB_CONFIG.find((t) => t.name === route.name) || TAB_CONFIG[0];
+          const isFocused = state.index === index;
           return (
             <TabItem
               key={route.key}
               config={config}
               isFocused={isFocused}
               onPress={() => {
-                if (!isFocused) navigation.navigate(route.name); // skip re-navigate on same tab
+                if (!isFocused) navigation.navigate(route.name);
               }}
             />
           );
@@ -96,14 +96,14 @@ export default function TabBar({ state, navigation }: BottomTabBarProps) {
 
 const styles = StyleSheet.create({
   wrapper: {
-    position: 'absolute', // floats over screen content
+    position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     backgroundColor: 'transparent',
   },
   overlay: {
-    backgroundColor: 'rgba(5,10,24,0.75)', // semi-transparent dark blur replacement
+    backgroundColor: 'rgba(5,10,24,0.75)',
   },
   border: {
     height: StyleSheet.hairlineWidth,
@@ -126,9 +126,9 @@ const styles = StyleSheet.create({
   },
   activePill: {
     position: 'absolute',
-    top: -8, // sits above the icon
+    top: -8,
     left: '50%',
-    marginLeft: -16, // center it over the icon
+    marginLeft: -16,
     width: 32,
     height: 3,
     borderRadius: 2,
