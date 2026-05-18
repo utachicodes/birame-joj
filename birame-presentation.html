@@ -518,35 +518,35 @@
 <!-- SLIDE 5  AUTH & STORAGE -->
 <div class="slide" id="s5">
   <p class="eyebrow a1">Security & Data</p>
-  <h2 class="h1 a2">Auth, Storage & Notifications</h2>
-  <p class="sub a3">Real accounts persisted locally - every user's wallet, points and transaction history survive app restarts</p>
+  <h2 class="h1 a2">Auth, Backend & Notifications</h2>
+  <p class="sub a3">Real accounts stored in MySQL - every user's wallet, points and transaction history are server-persisted</p>
 
   <div class="grid2" style="max-width:960px;gap:20px;">
 
     <div style="display:flex;flex-direction:column;gap:12px;" class="a3">
       <div class="card">
-        <p style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:12px;">AsyncStorage - What Gets Saved</p>
+        <p style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:12px;">MySQL Tables (joj_dakar)</p>
         <div style="display:flex;flex-direction:column;gap:0;">
-          <div class="field"><span class="fname">@joj_accounts</span><span class="ftype">StoredAccount[]</span></div>
-          <div class="field"><span class="fname">@joj_session_email</span><span class="ftype">string</span></div>
-          <div class="field"><span class="fname">@joj_wallet_{email}</span><span class="ftype">number (XOF)</span></div>
-          <div class="field"><span class="fname">@joj_points_{email}</span><span class="ftype">number</span></div>
-          <div class="field"><span class="fname">@joj_tx_{email}</span><span class="ftype">Transaction[]</span></div>
-          <div class="field"><span class="fname">@joj_theme</span><span class="ftype">'dark' | 'light'</span></div>
-          <div class="field"><span class="fname">@joj_language</span><span class="ftype">'fr' | 'en' | 'ar'</span></div>
+          <div class="field"><span class="fname">users</span><span class="ftype">id, email, password_hash, name, role, accreditation…</span></div>
+          <div class="field"><span class="fname">wallets</span><span class="ftype">balance (XOF), joj_points, card_number</span></div>
+          <div class="field"><span class="fname">transactions</span><span class="ftype">tx_ref, type, label, amount, icon</span></div>
+          <div class="field"><span class="fname">tickets</span><span class="ftype">event_name, venue, seat, category, status</span></div>
+          <div class="field"><span class="fname">events</span><span class="ftype">sport, match_name, home/away_code, status</span></div>
+          <div class="field"><span class="fname">live_scores</span><span class="ftype">scores, period, updated_at</span></div>
+          <div class="field"><span class="fname">medals</span><span class="ftype">gold, silver, bronze per country</span></div>
         </div>
       </div>
 
       <div class="card">
-        <p style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:10px;">Account Security Rules</p>
+        <p style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:10px;">Account Security</p>
         <div style="display:flex;flex-direction:column;gap:7px;">
           <div class="chk">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gr)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            Email normalized (lowercased + trimmed) before storage
+            Passwords hashed with bcryptjs (salt rounds: 10)
           </div>
           <div class="chk">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gr)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            Duplicate email rejected at registration
+            Email unique constraint enforced at DB level
           </div>
           <div class="chk">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gr)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
@@ -554,7 +554,7 @@
           </div>
           <div class="chk">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gr)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            Session restored automatically on app launch
+            Session ID cached in AsyncStorage, live data re-fetched from MySQL on restart
           </div>
           <div class="chk">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gr)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
@@ -608,7 +608,7 @@
             <div style="font-size:10px;color:var(--t3);margin-top:3px;">Clean white · Soft shadows</div>
           </div>
         </div>
-        <p style="font-size:11px;color:var(--t3);margin-top:10px;">Toggled in the Profile screen. Preference saved to AsyncStorage and restored on next launch. Every screen reads <code style="font-size:10px;background:var(--bg2);padding:1px 5px;border-radius:4px;">getColors(state.theme)</code> so the full app repaints instantly.</p>
+        <p style="font-size:11px;color:var(--t3);margin-top:10px;">Toggled in the Profile screen. Preference saved to AsyncStorage (local only - no server round-trip needed). Every screen reads <code style="font-size:10px;background:var(--bg2);padding:1px 5px;border-radius:4px;">getColors(state.theme)</code> so the full app repaints instantly.</p>
       </div>
     </div>
 
@@ -681,6 +681,82 @@
         <span class="chip">EAS Build</span>
         <span class="chip">expo-splash-screen</span>
         <span class="chip">iOS · Android · Web</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6b  BACKEND API -->
+<div class="slide" id="s6b">
+  <p class="eyebrow a1">Backend</p>
+  <h2 class="h1 a2">REST API - Node.js + MySQL</h2>
+  <p class="sub a3">A dedicated Express server handles all data operations - the app never touches the database directly</p>
+
+  <div class="grid2" style="max-width:960px;gap:20px;">
+    <div class="card a3" style="display:flex;flex-direction:column;gap:14px;">
+      <p style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);">API Endpoints</p>
+
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--or);text-transform:uppercase;margin-top:4px;">Auth</div>
+        <div class="field"><span class="fname">POST /auth/register</span><span class="ftype">create account + wallet + tickets</span></div>
+        <div class="field"><span class="fname">POST /auth/login</span><span class="ftype">bcrypt verify, return user + wallet</span></div>
+
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--go);text-transform:uppercase;margin-top:8px;">Wallet</div>
+        <div class="field"><span class="fname">GET /wallet/:userId</span><span class="ftype">balance + points + card number</span></div>
+        <div class="field"><span class="fname">POST /wallet/:userId/topup</span><span class="ftype">credit + log transaction</span></div>
+        <div class="field"><span class="fname">POST /wallet/:userId/debit</span><span class="ftype">deduct + earn JOJ points</span></div>
+        <div class="field"><span class="fname">GET /wallet/:userId/transactions</span><span class="ftype">last 50 rows</span></div>
+
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--bl);text-transform:uppercase;margin-top:8px;">Events & Tickets</div>
+        <div class="field"><span class="fname">GET /tickets/:userId</span><span class="ftype">all tickets for user</span></div>
+        <div class="field"><span class="fname">GET /events</span><span class="ftype">filter by date and/or sport</span></div>
+        <div class="field"><span class="fname">GET /events/live</span><span class="ftype">live_scores table</span></div>
+        <div class="field"><span class="fname">GET /events/medals</span><span class="ftype">medal table ranked</span></div>
+        <div class="field"><span class="fname">GET /health</span><span class="ftype">server + DB status check</span></div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;" class="a4">
+      <div class="card">
+        <p style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:12px;">Backend Stack</p>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div class="chk">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gr)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Node.js + Express 4 - lightweight, no-framework overhead
+          </div>
+          <div class="chk">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gr)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            mysql2/promise - async connection pool (10 connections)
+          </div>
+          <div class="chk">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gr)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            bcryptjs - password hashing, never stored plain-text
+          </div>
+          <div class="chk">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gr)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Atomic DB transactions for wallet top-up and debit
+          </div>
+          <div class="chk">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gr)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            CORS enabled - works with Expo on any device on the same network
+          </div>
+          <div class="chk">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gr)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            seed.js seeds all events, scores and medals on first run
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <p style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:10px;">Run the Backend</p>
+        <div class="code" style="font-size:11px;line-height:1.7;">
+          <span class="cm"># 1. Create the database</span><br>
+          <span class="kw">mysql</span> -u root -p &lt; backend/schema.sql<br><br>
+          <span class="cm"># 2. Seed events, scores, medals</span><br>
+          <span class="kw">cd</span> backend &amp;&amp; <span class="kw">npm</span> run seed<br><br>
+          <span class="cm"># 3. Start the API server</span><br>
+          <span class="kw">npm</span> run dev &nbsp;<span class="cm">// nodemon, port 3001</span>
+        </div>
       </div>
     </div>
   </div>
@@ -915,11 +991,16 @@
         <div class="sub3">transport &nbsp; profile</div>
         <div class="sub1" style="color:var(--pu);">src/</div>
         <div class="sub2">context/ <span class="note">AppContext - global state</span></div>
+        <div class="sub2">services/ <span class="note">api.ts - MySQL REST client</span></div>
         <div class="sub2">screens/ <span class="note">screen components</span></div>
         <div class="sub2">components/ <span class="note">GlassCard, TabBar…</span></div>
         <div class="sub2">theme/ <span class="note">colors · spacing · type</span></div>
-        <div class="sub2">data/ <span class="note">mock.ts - typed fixtures</span></div>
         <div class="sub2">i18n/ <span class="note">FR · EN · AR · WO</span></div>
+        <div class="sub1" style="color:var(--gr);">backend/ <span class="note">Node.js + Express API</span></div>
+        <div class="sub2">server.js <span class="note">port 3001</span></div>
+        <div class="sub2">db.js <span class="note">mysql2 connection pool</span></div>
+        <div class="sub2">schema.sql <span class="note">7 tables</span></div>
+        <div class="sub2" style="color:var(--or);">routes/ <span class="note">auth · wallet · tickets · events</span></div>
       </div>
     </div>
 
@@ -927,15 +1008,15 @@
       <div class="card" style="flex:1;">
         <p style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:12px;">Data Flow</p>
         <div style="display:flex;flex-direction:column;gap:6px;">
-          <div class="flow-step" style="border-color:rgba(217,78,24,.2);color:var(--or);">External APIs & WebSocket feeds</div>
+          <div class="flow-step" style="border-color:rgba(26,140,82,.2);color:var(--gr);">MySQL 8 Database (joj_dakar)</div>
           <div class="flow-arr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div>
-          <div class="flow-step" style="border-color:rgba(38,99,196,.2);color:var(--bl);">Data Layer - mock.ts → API service</div>
+          <div class="flow-step" style="border-color:rgba(38,99,196,.2);color:var(--bl);">Node.js + Express REST API (port 3001)</div>
+          <div class="flow-arr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div>
+          <div class="flow-step" style="border-color:rgba(217,78,24,.2);color:var(--or);">src/services/api.ts (typed fetch client)</div>
           <div class="flow-arr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div>
           <div class="flow-step" style="border-color:rgba(91,63,144,.2);color:var(--pu);">AppContext + useReducer (global state)</div>
           <div class="flow-arr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div>
-          <div class="flow-step" style="border-color:rgba(26,140,82,.2);color:var(--gr);">Expo Router Screen Components</div>
-          <div class="flow-arr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div>
-          <div class="flow-step" style="border-color:rgba(154,115,32,.2);color:var(--go);">Reusable Glass UI Components</div>
+          <div class="flow-step" style="border-color:rgba(154,115,32,.2);color:var(--go);">Expo Router Screens + Glass UI Components</div>
         </div>
       </div>
       <div class="card">
