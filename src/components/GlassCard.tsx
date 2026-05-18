@@ -5,10 +5,10 @@ import { Colors, Radius, Shadows } from '../theme';
 interface GlassCardProps {
   children: React.ReactNode;
   style?: ViewStyle;
-  onPress?: () => void;
-  intensity?: number;
+  onPress?: () => void; // if provided, wraps in Pressable
+  intensity?: number; // reserved for blur intensity (not used yet)
   variant?: 'default' | 'strong' | 'subtle' | 'accent';
-  borderGlow?: string;
+  borderGlow?: string; // hex color for a glowing border tint
   disabled?: boolean;
 }
 
@@ -22,13 +22,14 @@ export default function GlassCard({
 }: GlassCardProps) {
   const cardStyle = [
     styles.card,
-    variant === 'strong' && styles.cardStrong,
-    variant === 'subtle' && styles.cardSubtle,
-    variant === 'accent' && styles.cardAccent,
-    borderGlow && { borderColor: borderGlow + '40' },
+    variant === 'strong' && styles.cardStrong, // more opaque white
+    variant === 'subtle' && styles.cardSubtle, // barely visible
+    variant === 'accent' && styles.cardAccent, // orange tint
+    borderGlow && { borderColor: borderGlow + '40' }, // apply glow color at 25% opacity
     style,
   ];
 
+  // pressable variant — wraps children in a touchable with scale feedback
   if (onPress) {
     return (
       <Pressable
@@ -41,31 +42,31 @@ export default function GlassCard({
     );
   }
 
-  return <View style={cardStyle}>{children}</View>;
+  return <View style={cardStyle}>{children}</View>; // static card, no press handler
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.08)', // default frosted glass fill
     borderRadius: Radius.lg,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.12)',
-    overflow: 'hidden',
+    overflow: 'hidden', // clip children to rounded corners
   },
   cardStrong: {
-    backgroundColor: 'rgba(255,255,255,0.13)',
+    backgroundColor: 'rgba(255,255,255,0.13)', // noticeably more opaque
     borderColor: 'rgba(255,255,255,0.18)',
   },
   cardSubtle: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: 'rgba(255,255,255,0.05)', // barely there
     borderColor: 'rgba(255,255,255,0.08)',
   },
   cardAccent: {
-    backgroundColor: 'rgba(255,107,53,0.12)',
+    backgroundColor: 'rgba(255,107,53,0.12)', // brand orange tint
     borderColor: 'rgba(255,107,53,0.30)',
   },
   pressed: {
     opacity: 0.82,
-    transform: [{ scale: 0.98 }],
+    transform: [{ scale: 0.98 }], // slight shrink when tapped
   },
 });

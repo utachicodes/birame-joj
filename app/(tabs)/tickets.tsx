@@ -13,6 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import QRCode from 'react-native-qrcode-svg'; // real QR code, not an image
 import { useApp } from '../../src/context/AppContext';
 import { useTranslation } from '../../src/i18n';
 import { getColors, Radius } from '../../src/theme';
@@ -25,10 +26,11 @@ export default function TicketsScreen() {
   const t = useTranslation(state.language);
   const C = getColors(state.theme);
 
-  const [selected, setSelected] = useState<(typeof TICKETS)[0] | null>(null);
+  const [selected, setSelected]         = useState<(typeof TICKETS)[0] | null>(null); // null = no modal
   const [showAddModal, setShowAddModal] = useState(false);
-  const [ticketCode, setTicketCode] = useState('');
+  const [ticketCode, setTicketCode]     = useState('');
 
+  // fall back to a guest if not logged in
   const user = state.user ?? {
     name: 'Visiteur',
     role: 'Visiteur',
@@ -42,10 +44,14 @@ export default function TicketsScreen() {
       Alert.alert('Erreur', 'Veuillez entrer un code de billet.');
       return;
     }
-    setTicketCode('');
+    setTicketCode('');       // clear the field
     setShowAddModal(false);
+    // In a real app this would hit an API endpoint
     Alert.alert('Billet ajouté !', `Le billet ${ticketCode.toUpperCase()} a été ajouté à votre compte.`);
   };
+
+  // QR value readable by venue scanners
+  const accredQrValue = `JOJ:ACCRED:${user.accreditation}:${user.name.replace(/\s+/g, '_').toUpperCase()}`;
 
   const s = makeStyles(C);
 
@@ -54,6 +60,7 @@ export default function TicketsScreen() {
       <StatusBar style={state.theme === 'dark' ? 'light' : 'dark'} />
       <LinearGradient colors={[C.bg, C.bgElevated, C.bg]} style={StyleSheet.absoluteFill} />
 
+      {/* Screen header */}
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: C.border1 }]}>
         <View style={s.headerRow}>
           <View>
@@ -73,19 +80,24 @@ export default function TicketsScreen() {
         contentContainerStyle={[s.scroll, { paddingBottom: insets.bottom + 100 }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Accreditation card */}
+        {/* Official accreditation card */}
         <View style={s.accred}>
           <LinearGradient colors={[C.brand, C.brandDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+
+          {/* Decorative concentric circles */}
           <View style={s.accredPattern}>
             {[0, 1, 2].map((i) => (
               <View key={i} style={[s.accredCircle, { width: 160 + i * 60, height: 160 + i * 60, borderRadius: (160 + i * 60) / 2, right: -50 - i * 20, top: -30 - i * 15 }]} />
             ))}
           </View>
+
           <View style={s.accredHead}>
             <Ionicons name="shield-checkmark" size={18} color="#fff" />
             <Text style={s.accredHeadText}>ACCRÉDITATION OFFICIELLE</Text>
           </View>
+
           <Text style={s.accredName}>{user.name}</Text>
+
           <View style={s.accredMeta}>
             <CountryBadge code={user.countryCode} size="md" />
             <View>
@@ -93,13 +105,21 @@ export default function TicketsScreen() {
               <Text style={s.accredCountry}>{user.country}</Text>
             </View>
           </View>
+
+          {/* Card footer: accreditation number + mini QR */}
           <View style={s.accredFooter}>
             <View>
               <Text style={s.accredFooterLabel}>N° ACCRÉDITATION</Text>
               <Text style={s.accredNum}>{user.accreditation}</Text>
             </View>
+            {/* QR on a transparent background — sits on the gradient */}
             <View style={s.accredQr}>
-              <Ionicons name="qr-code" size={36} color="#fff" />
+              <QRCode
+                value={accredQrValue}
+                size={42}
+                color="#fff"
+                backgroundColor="transparent"
+              />
             </View>
           </View>
         </View>
@@ -110,6 +130,7 @@ export default function TicketsScreen() {
           <TicketCard key={tkt.id} ticket={tkt} onPress={() => setSelected(tkt)} C={C} />
         ))}
 
+        {/* "Add ticket" card with dashed border */}
         <Pressable style={[s.addCard, { backgroundColor: C.surface1, borderColor: C.border1 }]} onPress={() => setShowAddModal(true)}>
           <View style={[s.addIconRing, { borderColor: C.border2 }]}>
             <Ionicons name="add-outline" size={26} color={C.textSecondary} />
@@ -143,6 +164,7 @@ export default function TicketsScreen() {
               Entrez votre code de billet ou scannez le QR code reçu par email.
             </Text>
             <Text style={{ fontSize: 12, fontWeight: '600', color: C.textSecondary }}>Code de billet</Text>
+            {/* Force uppercase so codes are always formatted correctly */}
             <TextInput
               placeholder="ex: JOJ-T-2026-XXXXX"
               placeholderTextColor={C.textTertiary}
@@ -158,7 +180,7 @@ export default function TicketsScreen() {
                 height: 52,
                 fontSize: 16,
                 color: C.text,
-                fontFamily: 'monospace',
+                fontFamily: 'monospace', // easier to read codes
                 letterSpacing: 1,
               }}
             />
@@ -173,6 +195,7 @@ export default function TicketsScreen() {
   );
 }
 
+// Compact ticket row shown in the main list
 function TicketCard({
   ticket,
   onPress,
@@ -184,13 +207,18 @@ function TicketCard({
 }) {
   return (
     <Pressable style={[{ flexDirection: 'row', alignItems: 'center', backgroundColor: C.surface2, borderWidth: 1, borderColor: C.border1, borderRadius: Radius.lg, padding: 14, gap: 12, marginBottom: 8 }]} onPress={onPress}>
+      {/* Sport icon + ticket type */}
       <View style={{ alignItems: 'center', gap: 8, width: 60 }}>
         <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: C.brand + '15', borderWidth: 1, borderColor: C.brand + '30', alignItems: 'center', justifyContent: 'center' }}>
           <Ionicons name={ticket.icon} size={22} color={C.brand} />
         </View>
         <Text style={{ fontSize: 9, fontWeight: '800', letterSpacing: 1, color: C.brand }}>{ticket.type.toUpperCase()}</Text>
       </View>
+
+      {/* Vertical perforated divider */}
       <View style={{ width: StyleSheet.hairlineWidth, height: 60, backgroundColor: C.border1 }} />
+
+      {/* Event info */}
       <View style={{ flex: 1, gap: 4 }}>
         <Text style={{ fontSize: 15, fontWeight: '700', color: C.text, lineHeight: 19 }} numberOfLines={2}>{ticket.event}</Text>
         <Text style={{ fontSize: 12, color: C.textSecondary }} numberOfLines={1}>{ticket.venue}</Text>
@@ -204,6 +232,7 @@ function TicketCard({
             <Text style={{ fontSize: 11, color: C.textTertiary, fontWeight: '500' }}>{ticket.time}</Text>
           </View>
         </View>
+        {/* Active (green) or upcoming (orange) status pill */}
         <View style={{
           flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start',
           borderRadius: Radius.full, paddingHorizontal: 7, paddingVertical: 2, marginTop: 4,
@@ -215,11 +244,13 @@ function TicketCard({
           </Text>
         </View>
       </View>
+
       <Ionicons name="chevron-forward" size={18} color={C.textTertiary} />
     </Pressable>
   );
 }
 
+// Full-screen ticket detail shown inside a pageSheet modal
 function TicketModal({
   ticket,
   onClose,
@@ -232,21 +263,30 @@ function TicketModal({
   t: ReturnType<typeof useTranslation>;
 }) {
   const handleShare = () => {
+    // Would use expo-sharing in production
     Alert.alert(t.share, 'Billet partagé !');
   };
 
   const handleDownload = () => {
+    // Would use expo-media-library in production
     Alert.alert(t.download, 'Billet téléchargé dans vos photos.');
   };
 
   const handleNFC = () => {
+    // Would use expo-local-authentication + NFC in production
     Alert.alert(t.nfc, 'Approchez votre téléphone du lecteur NFC.');
   };
+
+  // Structured value readable by entry scanners
+  const qrValue = `JOJ:TICKET:${ticket.id}:${ticket.event.replace(/\s+/g, '_').toUpperCase()}:${ticket.date}:${ticket.seat}`;
 
   return (
     <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 12, backgroundColor: C.bg }}>
       <LinearGradient colors={[C.bg, C.bgDeep]} style={StyleSheet.absoluteFill} />
+
+      {/* Drag handle */}
       <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: C.border2, alignSelf: 'center', marginBottom: 14 }} />
+
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <Text style={{ fontSize: 21, fontWeight: '800', color: C.text }}>Billet</Text>
         <Pressable onPress={onClose} style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: C.surface2, borderWidth: 1, borderColor: C.border1, alignItems: 'center', justifyContent: 'center' }}>
@@ -255,18 +295,23 @@ function TicketModal({
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 40, gap: 14 }} showsVerticalScrollIndicator={false}>
-        {/* Ticket card */}
+
+        {/* Visual ticket card */}
         <View style={{ borderRadius: Radius.xl, padding: 24, gap: 14, overflow: 'hidden' }}>
           <LinearGradient colors={[C.brand, C.brandDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+
+          {/* Icon + ticket type */}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
             <View style={{ width: 44, height: 44, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
               <Ionicons name={ticket.icon} size={26} color="#fff" />
             </View>
             <Text style={{ fontSize: 10, fontWeight: '800', letterSpacing: 1.4, color: 'rgba(255,255,255,0.85)' }}>{ticket.type.toUpperCase()}</Text>
           </View>
+
           <Text style={{ fontSize: 22, fontWeight: '800', color: '#fff', lineHeight: 26 }}>{ticket.event}</Text>
           <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.85)' }}>{ticket.venue}</Text>
 
+          {/* Date / time / seat strip */}
           <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.18)', borderRadius: Radius.md, padding: 12, marginTop: 4 }}>
             <View style={{ flex: 1, alignItems: 'center', gap: 4 }}>
               <Ionicons name="calendar-outline" size={12} color="rgba(255,255,255,0.7)" />
@@ -287,24 +332,30 @@ function TicketModal({
             </View>
           </View>
 
-          {/* Perforated divider */}
+          {/* Perforation dots row — mimics a real paper ticket */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: -24, paddingHorizontal: 16, paddingVertical: 8 }}>
             {[...Array(20)].map((_, i) => (
               <View key={i} style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(0,0,0,0.18)' }} />
             ))}
           </View>
 
-          {/* QR code */}
+          {/* Real QR code */}
           <View style={{ alignItems: 'center', gap: 8 }}>
-            <View style={{ width: 160, height: 160, borderRadius: 18, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}>
-              <Ionicons name="qr-code" size={140} color={C.bg} />
+            {/* White bg required for scanner contrast */}
+            <View style={{ width: 172, height: 172, borderRadius: 18, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', padding: 10 }}>
+              <QRCode
+                value={qrValue}
+                size={152}
+                color="#000000"
+                backgroundColor="#fff"
+              />
             </View>
             <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', fontWeight: '500' }}>Présentez ce QR à l'entrée</Text>
             <Text style={{ fontSize: 11, fontFamily: 'monospace', color: 'rgba(255,255,255,0.55)' }}>{ticket.id}</Text>
           </View>
         </View>
 
-        {/* Action buttons */}
+        {/* Action buttons: share / download / NFC */}
         <View style={{ flexDirection: 'row', gap: 10 }}>
           <Pressable
             onPress={handleShare}
@@ -342,7 +393,6 @@ function makeStyles(C: ReturnType<typeof getColors>) {
     headerSub: { fontSize: 13, marginTop: 2 },
     iconBtn: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
     scroll: { padding: 20, gap: 12 },
-
     accred: { borderRadius: Radius.xl, padding: 22, overflow: 'hidden', gap: 14, marginBottom: 8 },
     accredPattern: { position: 'absolute', right: 0, top: 0 },
     accredCircle: { position: 'absolute', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)' },
@@ -355,15 +405,12 @@ function makeStyles(C: ReturnType<typeof getColors>) {
     accredFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 6 },
     accredFooterLabel: { fontSize: 9, fontWeight: '700', letterSpacing: 1, color: 'rgba(255,255,255,0.7)' },
     accredNum: { fontSize: 13, fontWeight: '700', color: '#fff', fontFamily: 'monospace', marginTop: 2 },
-    accredQr: { width: 56, height: 56, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' },
-
+    accredQr: { width: 58, height: 58, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center', padding: 8 },
     sectionLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 1, marginTop: 8, marginBottom: 4 },
-
     addCard: { flexDirection: 'row', alignItems: 'center', gap: 14, borderWidth: 1, borderStyle: 'dashed', borderRadius: Radius.lg, padding: 16, marginTop: 4 },
     addIconRing: { width: 44, height: 44, borderRadius: 12, borderWidth: 1.5, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
     addTitle: { fontSize: 15, fontWeight: '600' },
     addSub: { fontSize: 12 },
-
     modal: { flex: 1, paddingHorizontal: 20, paddingTop: 12 },
     modalHandle: { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 14 },
     modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },

@@ -17,18 +17,19 @@ import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import QRCode from 'react-native-qrcode-svg'; // real QR code generation
 import { useApp } from '../src/context/AppContext';
 import { useTranslation } from '../src/i18n';
 import { getColors, Radius } from '../src/theme';
 
 const { width } = Dimensions.get('window');
-const CARD_W = width - 40;
+const CARD_W = width - 40; // card spans most of the screen width
 
 type PaymentMethod = { id: string; name: string; icon: keyof typeof Ionicons.glyphMap; color: string };
 const METHODS: PaymentMethod[] = [
   { id: 'orange', name: 'Orange Money', icon: 'phone-portrait-outline', color: '#FF6B00' },
-  { id: 'wave', name: 'Wave', icon: 'water-outline', color: '#1DC7FF' },
-  { id: 'card', name: 'Carte bancaire', icon: 'card-outline', color: '#4A90E2' },
+  { id: 'wave',   name: 'Wave',         icon: 'water-outline',           color: '#1DC7FF' },
+  { id: 'card',   name: 'Carte bancaire', icon: 'card-outline',          color: '#4A90E2' },
 ];
 
 type TopUpStep = 'method' | 'phone' | 'otp' | 'processing' | 'success';
@@ -41,10 +42,11 @@ export default function WalletScreen() {
   const t = useTranslation(state.language);
   const C = getColors(state.theme);
 
-  const [showTopUp, setShowTopUp] = useState(false);
-  const [showPay, setShowPay] = useState(false);
-  const [showQR, setShowQR] = useState(false);
+  const [showTopUp, setShowTopUp] = useState(false); // top-up flow modal
+  const [showPay, setShowPay]     = useState(false); // pay flow modal
+  const [showQR, setShowQR]       = useState(false); // QR code modal
 
+  // fall back to a guest user if not logged in
   const user = state.user ?? { name: 'Visiteur', accreditation: 'JOJ-2026-VIS-00000', avatar: 'VT' };
   const s = makeStyles(C);
 
@@ -59,7 +61,7 @@ export default function WalletScreen() {
             <Ionicons name="arrow-back-outline" size={20} color={C.text} />
           </Pressable>
           <Text style={[s.headerTitle, { color: C.text }]}>Mon Wallet</Text>
-          <View style={[s.iconBtn, { backgroundColor: 'transparent', borderColor: 'transparent' }]} />
+          <View style={[s.iconBtn, { backgroundColor: 'transparent', borderColor: 'transparent' }]} /> {/* spacer to center title */}
         </View>
       </View>
 
@@ -69,7 +71,7 @@ export default function WalletScreen() {
           <LinearGradient colors={[C.gold, C.gold + 'CC', C.goldLight ?? C.gold]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
           <View style={s.cardPattern}>
             {[0, 1, 2, 3].map((i) => (
-              <View key={i} style={[s.cardCircle, { width: 100 + i * 50, height: 100 + i * 50, borderRadius: (100 + i * 50) / 2, right: -30 - i * 20, top: -20 - i * 10 }]} />
+              <View key={i} style={[s.cardCircle, { width: 100 + i * 50, height: 100 + i * 50, borderRadius: (100 + i * 50) / 2, right: -30 - i * 20, top: -20 - i * 10 }]} /> // decorative rings
             ))}
           </View>
           <View style={s.cardTop}>
@@ -87,22 +89,22 @@ export default function WalletScreen() {
             </View>
           </View>
           <View style={s.cardFooter}>
-            <Text style={s.cardNum}>•••• •••• ••••  8421</Text>
+            <Text style={s.cardNum}>•••• •••• ••••  8421</Text> {/* masked card number */}
             <View style={s.cardNfc}>
-              <Ionicons name="wifi-outline" size={18} color="rgba(255,255,255,0.7)" style={{ transform: [{ rotate: '90deg' }] }} />
+              <Ionicons name="wifi-outline" size={18} color="rgba(255,255,255,0.7)" style={{ transform: [{ rotate: '90deg' }] }} /> {/* NFC icon rotated */}
             </View>
           </View>
         </View>
 
         {/* Quick actions */}
         <View style={s.actions}>
-          <ActionItem icon="add-outline" label={t.topUp} color={C.gold} onPress={() => setShowTopUp(true)} C={C} />
-          <ActionItem icon="arrow-up-outline" label={t.send} color={C.teal} onPress={() => Alert.alert(t.send, t.comingSoon)} C={C} />
-          <ActionItem icon="qr-code-outline" label={t.pay} color={C.brand} onPress={() => setShowPay(true)} C={C} />
-          <ActionItem icon="arrow-down-outline" label={t.receive} color={C.blue} onPress={() => Alert.alert(t.receive, t.comingSoon)} C={C} />
+          <ActionItem icon="add-outline"        label={t.topUp}   color={C.gold}  onPress={() => setShowTopUp(true)} C={C} />
+          <ActionItem icon="arrow-up-outline"   label={t.send}    color={C.teal}  onPress={() => Alert.alert(t.send, t.comingSoon)} C={C} />
+          <ActionItem icon="qr-code-outline"    label={t.pay}     color={C.brand} onPress={() => setShowPay(true)} C={C} />
+          <ActionItem icon="arrow-down-outline" label={t.receive} color={C.blue}  onPress={() => Alert.alert(t.receive, t.comingSoon)} C={C} />
         </View>
 
-        {/* QR Pay */}
+        {/* QR Pay shortcut banner */}
         <Pressable style={[s.qrPay, { backgroundColor: C.brand + '15', borderColor: C.brand + '30' }]} onPress={() => setShowQR(true)}>
           <View style={[s.qrPayIcon, { backgroundColor: C.brand + '20' }]}>
             <Ionicons name="qr-code-outline" size={28} color={C.brand} />
@@ -114,13 +116,13 @@ export default function WalletScreen() {
           <Ionicons name="chevron-forward" size={18} color={C.textTertiary} />
         </Pressable>
 
-        {/* Transactions */}
+        {/* Transaction history */}
         <View style={s.txHeader}>
           <Text style={[s.sectionLabel, { color: C.textTertiary }]}>HISTORIQUE</Text>
           <Text style={[s.txAll, { color: C.brand }]}>Voir tout</Text>
         </View>
         {state.transactions.slice(0, 10).map((tx) => (
-          <TransactionRow key={tx.id} tx={tx} C={C} />
+          <TransactionRow key={tx.id} tx={tx} C={C} /> // show last 10 transactions
         ))}
       </ScrollView>
 
@@ -130,7 +132,8 @@ export default function WalletScreen() {
           type="topup"
           onClose={() => setShowTopUp(false)}
           onSuccess={(amount) => {
-            dispatch({ type: 'TOP_UP', payload: amount });
+            const m = METHODS.find((m) => m.id === 'orange')?.name ?? 'Mobile Money';
+            dispatch({ type: 'TOP_UP', payload: { amount, method: m } }); // update balance in store
             setShowTopUp(false);
           }}
           C={C}
@@ -144,24 +147,35 @@ export default function WalletScreen() {
           type="pay"
           onClose={() => setShowPay(false)}
           onSuccess={(amount) => {
-            dispatch({ type: 'DEBIT_WALLET', payload: { amount, label: 'Paiement JOJ' } });
+            dispatch({ type: 'DEBIT_WALLET', payload: { amount, label: 'Paiement JOJ' } }); // deduct from balance
             setShowPay(false);
           }}
           C={C}
           t={t}
-          maxAmount={state.walletBalance}
+          maxAmount={state.walletBalance} // enforce balance cap
         />
       </Modal>
 
-      {/* QR Modal */}
+      {/* QR payment modal — transparent overlay */}
       <Modal visible={showQR} animationType="fade" transparent onRequestClose={() => setShowQR(false)}>
         <View style={s.qrOverlay}>
           <View style={[s.qrModal, { backgroundColor: C.bgElevated }]}>
             <Text style={[s.qrTitle, { color: C.text }]}>Mon QR Code</Text>
+            {/* White background required for QR scanners to work */}
             <View style={[s.qrBox, { backgroundColor: '#fff' }]}>
-              <Ionicons name="qr-code" size={160} color={C.bg} />
+              {/* Encodes accreditation + wallet payment type */}
+              <QRCode
+                value={`JOJ:PAY:${user.accreditation}:WALLET:${Date.now()}`}
+                size={160}             // pixels
+                color="#000000"        // dark modules
+                backgroundColor="#fff" // light background for contrast
+              />
             </View>
+            {/* Accreditation number shown under the QR */}
             <Text style={[s.qrAccred, { color: C.textSecondary }]}>{user.accreditation ?? 'JOJ-2026'}</Text>
+            <Text style={{ fontSize: 12, color: C.textTertiary, textAlign: 'center' }}>
+              Présentez ce code aux caisses JOJ pour payer sans contact
+            </Text>
             <Pressable style={[s.closeQrBtn, { backgroundColor: C.brand }]} onPress={() => setShowQR(false)}>
               <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>{t.close}</Text>
             </Pressable>
@@ -189,18 +203,18 @@ function PaymentFlow({
 }) {
   const [step, setStep] = useState<TopUpStep>('method');
   const [selectedMethod, setSelectedMethod] = useState<string>('orange');
-  const [amount, setAmount] = useState(10000);
+  const [amount, setAmount] = useState(10000); // default preset amount
   const [customAmount, setCustomAmount] = useState('');
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
-  const [countdown, setCountdown] = useState(0);
+  const [countdown, setCountdown] = useState(0); // resend OTP countdown
 
   const PRESETS = [5000, 10000, 25000, 50000];
 
   useEffect(() => {
     if (step === 'otp') {
-      setCountdown(30);
-      const timer = setTimeout(() => setOtp('123456'), 3000);
+      setCountdown(30); // 30-second resend window
+      const timer = setTimeout(() => setOtp('123456'), 3000); // auto-fill OTP in demo mode
       const interval = setInterval(() => setCountdown((c) => Math.max(0, c - 1)), 1000);
       return () => {
         clearTimeout(timer);
@@ -212,7 +226,7 @@ function PaymentFlow({
   const handleMethodNext = () => {
     const m = METHODS.find((m) => m.id === selectedMethod);
     if (m?.id === 'card') {
-      setStep('phone');
+      setStep('phone'); // card still uses the phone step (card number input)
     } else {
       setStep('phone');
     }
@@ -229,7 +243,7 @@ function PaymentFlow({
       return;
     }
     if (type === 'pay' && maxAmount !== undefined && finalAmount > maxAmount) {
-      Alert.alert('Erreur', 'Solde insuffisant.');
+      Alert.alert('Erreur', 'Solde insuffisant.'); // can't pay more than balance
       return;
     }
     setStep('otp');
@@ -242,13 +256,13 @@ function PaymentFlow({
     }
     setStep('processing');
     setTimeout(() => {
-      setStep('success');
+      setStep('success'); // simulate network delay
     }, 2000);
   };
 
   const handleFinish = () => {
     const finalAmount = customAmount ? parseInt(customAmount, 10) : amount;
-    onSuccess(finalAmount);
+    onSuccess(finalAmount); // bubble amount up to parent
   };
 
   const finalAmount = customAmount ? parseInt(customAmount, 10) || 0 : amount;
@@ -258,7 +272,7 @@ function PaymentFlow({
   return (
     <View style={[{ flex: 1, paddingHorizontal: 20, paddingTop: 12, backgroundColor: C.bg }]}>
       <LinearGradient colors={[C.bg, C.bgDeep]} style={StyleSheet.absoluteFill} />
-      <View style={[{ width: 40, height: 4, borderRadius: 2, backgroundColor: C.border2, alignSelf: 'center', marginBottom: 14 }]} />
+      <View style={[{ width: 40, height: 4, borderRadius: 2, backgroundColor: C.border2, alignSelf: 'center', marginBottom: 14 }]} /> {/* drag handle */}
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <Text style={{ fontSize: 21, fontWeight: '800', color: C.text }}>
           {isTopup ? t.topUp : t.pay}
@@ -268,10 +282,10 @@ function PaymentFlow({
         </Pressable>
       </View>
 
-      {/* Step indicator */}
+      {/* Step progress bar */}
       <View style={{ flexDirection: 'row', gap: 6, marginBottom: 24 }}>
         {(['method', 'phone', 'otp', 'processing', 'success'] as TopUpStep[]).map((s, i) => (
-          <View key={s} style={{ flex: 1, height: 3, borderRadius: 2, backgroundColor: ['method', 'phone', 'otp', 'processing', 'success'].indexOf(step) >= i ? C.brand : C.border2 }} />
+          <View key={s} style={{ flex: 1, height: 3, borderRadius: 2, backgroundColor: ['method', 'phone', 'otp', 'processing', 'success'].indexOf(step) >= i ? C.brand : C.border2 }} /> // filled up to current step
         ))}
       </View>
 
@@ -288,7 +302,7 @@ function PaymentFlow({
                     flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: Radius.lg,
                     backgroundColor: selectedMethod === m.id ? C.brand + '12' : C.surface2,
                     borderWidth: 1.5,
-                    borderColor: selectedMethod === m.id ? C.brand + '60' : C.border1,
+                    borderColor: selectedMethod === m.id ? C.brand + '60' : C.border1, // highlight selected
                     gap: 12,
                   }}
                 >
@@ -297,9 +311,9 @@ function PaymentFlow({
                   </View>
                   <Text style={{ flex: 1, fontSize: 15, fontWeight: '600', color: C.text }}>{m.name}</Text>
                   {selectedMethod === m.id ? (
-                    <Ionicons name="checkmark-circle" size={22} color={C.brand} />
+                    <Ionicons name="checkmark-circle" size={22} color={C.brand} /> // selected indicator
                   ) : (
-                    <View style={{ width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: C.border2 }} />
+                    <View style={{ width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: C.border2 }} /> // empty radio
                   )}
                 </Pressable>
               ))}
@@ -313,7 +327,7 @@ function PaymentFlow({
               {PRESETS.map((p) => (
                 <Pressable key={p} onPress={() => { setAmount(p); setCustomAmount(''); }} style={{
                   flex: 1, minWidth: '47%', height: 50, borderRadius: Radius.md,
-                  backgroundColor: amount === p && !customAmount ? C.gold + '20' : C.surface2,
+                  backgroundColor: amount === p && !customAmount ? C.gold + '20' : C.surface2, // highlight active preset
                   borderWidth: 1,
                   borderColor: amount === p && !customAmount ? C.gold + '50' : C.border1,
                   alignItems: 'center', justifyContent: 'center',
@@ -363,7 +377,7 @@ function PaymentFlow({
                 <TextInput
                   placeholder="1234 5678 9012 3456"
                   placeholderTextColor={C.textTertiary}
-                  value={phone}
+                  value={phone} // reusing phone state for card number input
                   onChangeText={setPhone}
                   keyboardType="number-pad"
                   style={{ backgroundColor: C.surface2, borderWidth: 1, borderColor: C.border2, borderRadius: Radius.md, paddingHorizontal: 16, height: 52, fontSize: 15, color: C.text, marginBottom: 20 }}
@@ -410,7 +424,7 @@ function PaymentFlow({
 
         {step === 'processing' && (
           <View style={{ alignItems: 'center', paddingVertical: 60, gap: 20 }}>
-            <ActivityIndicator size="large" color={C.brand} />
+            <ActivityIndicator size="large" color={C.brand} /> {/* show while waiting on server */}
             <Text style={{ fontSize: 18, fontWeight: '700', color: C.text }}>{t.verifying}</Text>
             <Text style={{ fontSize: 13, color: C.textSecondary }}>Transaction en cours...</Text>
           </View>
@@ -423,7 +437,7 @@ function PaymentFlow({
             </View>
             <Text style={{ fontSize: 24, fontWeight: '900', color: C.text }}>{isTopup ? t.topUpSuccess : t.success}</Text>
             <Text style={{ fontSize: 36, fontWeight: '900', color: C.brand, letterSpacing: -1 }}>
-              {isTopup ? '+' : '-'}{finalAmount.toLocaleString('fr-FR')} XOF
+              {isTopup ? '+' : '-'}{finalAmount.toLocaleString('fr-FR')} XOF {/* + for top-up, - for pay */}
             </Text>
             <Text style={{ fontSize: 13, color: C.textSecondary }}>via {methodObj?.name}</Text>
             <Pressable onPress={handleFinish} style={{ height: 56, borderRadius: Radius.lg, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', width: '100%', marginTop: 16 }}>
@@ -461,7 +475,7 @@ function ActionItem({
 }
 
 function TransactionRow({ tx, C }: { tx: any; C: ReturnType<typeof getColors> }) {
-  const isCredit = tx.type === 'credit';
+  const isCredit = tx.type === 'credit'; // green for incoming, default for outgoing
   return (
     <View style={{
       flexDirection: 'row', alignItems: 'center', backgroundColor: C.surface1,
@@ -489,7 +503,7 @@ function makeStyles(C: ReturnType<typeof getColors>) {
     headerTitle: { fontSize: 21, fontWeight: '800' },
     iconBtn: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
     scroll: { padding: 20, gap: 14 },
-    card: { height: CARD_W * 0.58, borderRadius: Radius.xl, padding: 22, justifyContent: 'space-between', overflow: 'hidden' },
+    card: { height: CARD_W * 0.58, borderRadius: Radius.xl, padding: 22, justifyContent: 'space-between', overflow: 'hidden' }, // credit-card proportions
     cardPattern: { position: 'absolute', right: 0, top: 0 },
     cardCircle: { position: 'absolute', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)' },
     cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
@@ -513,7 +527,7 @@ function makeStyles(C: ReturnType<typeof getColors>) {
     qrModal: { width: width - 60, borderRadius: Radius.xl, padding: 28, alignItems: 'center', gap: 16 },
     qrTitle: { fontSize: 20, fontWeight: '800' },
     qrBox: { width: 180, height: 180, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-    qrAccred: { fontSize: 12, fontFamily: 'monospace' },
+    qrAccred: { fontSize: 12, fontFamily: 'monospace' }, // monospace for badge numbers
     closeQrBtn: { width: '100%', height: 48, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center' },
   });
 }

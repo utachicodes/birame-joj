@@ -1,6 +1,7 @@
-export type Lang = 'fr' | 'en' | 'ar';
+export type Lang = 'fr' | 'en' | 'ar'; // the three supported languages
 
 const translations = {
+  // ─── French (default language) ─────────────────────────────────────────────
   fr: {
     login: 'Connexion',
     register: "S'inscrire",
@@ -12,64 +13,64 @@ const translations = {
     forgotPassword: 'Mot de passe oublié ?',
     noAccount: "Pas encore de compte ?",
     hasAccount: 'Déjà un compte ?',
-    loginBtn: 'Se connecter',
-    registerBtn: "Créer un compte",
-    orContinueWith: 'Ou continuer avec',
-    biometricLogin: 'Connexion biométrique',
-    home: 'Accueil',
+    loginBtn: 'Se connecter',          // CTA on the login form
+    registerBtn: "Créer un compte",    // CTA on the register form
+    orContinueWith: 'Ou continuer avec', // divider label above social buttons
+    biometricLogin: 'Connexion biométrique', // Face ID / Touch ID option
+    home: 'Accueil',                   // bottom tab labels start here
     tickets: 'Billets',
     events: 'Événements',
     transport: 'Transport',
-    profile: 'Profil',
-    goodMorning: 'Bonjour',
+    profile: 'Profil',                 // bottom tab labels end here
+    goodMorning: 'Bonjour',            // greeting varies by time of day
     goodAfternoon: 'Bon après-midi',
     goodEvening: 'Bonsoir',
     wallet: 'Portefeuille',
-    seeAll: 'Tout voir',
+    seeAll: 'Tout voir',               // "see all" link on list sections
     liveScores: 'Scores en direct',
     nextEvent: 'Prochain événement',
-    quickActions: 'Actions rapides',
+    quickActions: 'Actions rapides',   // home screen shortcut row
     myTickets: 'Mes billets',
-    accreditation: 'Accréditation',
+    accreditation: 'Accréditation',    // badge / QR code screen
     share: 'Partager',
     download: 'Télécharger',
-    nfc: 'NFC',
-    programme: 'Programme',
-    live: 'En direct',
-    medals: 'Médailles',
-    requestRide: 'Commander un trajet',
-    findingDriver: 'Recherche du chauffeur...',
+    nfc: 'NFC',                        // tap-to-pay / tap-to-enter feature
+    programme: 'Programme',            // full schedule screen
+    live: 'En direct',                 // LIVE badge text
+    medals: 'Médailles',               // medal table tab
+    requestRide: 'Commander un trajet', // Yango ride CTA
+    findingDriver: 'Recherche du chauffeur...', // intermediate ride state
     driverFound: 'Chauffeur trouvé',
     arriving: 'En route',
     arrived: 'Arrivé',
     yourDriver: 'Votre chauffeur',
     cancel: 'Annuler',
     confirm: 'Confirmer',
-    from: 'De',
-    to: 'Vers',
-    estimate: 'Estimation',
+    from: 'De',                        // route origin label
+    to: 'Vers',                        // route destination label
+    estimate: 'Estimation',            // fare or time estimate label
     shuttles: 'Navettes',
     officialShuttle: 'Navette officielle',
-    topUp: 'Recharger',
-    send: 'Envoyer',
-    pay: 'Payer',
-    receive: 'Recevoir',
-    balance: 'Solde',
-    transactions: 'Transactions',
+    topUp: 'Recharger',                // wallet top-up CTA
+    send: 'Envoyer',                   // send money action
+    pay: 'Payer',                      // pay at venue action
+    receive: 'Recevoir',               // receive money action
+    balance: 'Solde',                  // wallet balance label
+    transactions: 'Transactions',      // history section header
     paymentMethod: 'Méthode de paiement',
     enterAmount: 'Entrer le montant',
     enterPhone: 'Numéro de téléphone',
-    otpCode: 'Code OTP',
+    otpCode: 'Code OTP',               // one-time password field
     verifying: 'Vérification...',
     success: 'Succès !',
     topUpSuccess: 'Rechargement réussi',
-    venues: 'Sites',
+    venues: 'Sites',                   // venues map / list screen
     searchVenue: 'Rechercher un site',
     getDirections: 'Itinéraire',
-    capacity: 'Capacité',
+    capacity: 'Capacité',              // venue capacity info
     openNow: 'Ouvert',
     distance: 'Distance',
-    menu: 'Menu',
+    menu: 'Menu',                      // food & merch menu screen
     addToCart: 'Ajouter',
     cart: 'Panier',
     checkout: 'Commander',
@@ -92,9 +93,11 @@ const translations = {
     loading: 'Chargement...',
     error: 'Erreur',
     saved: 'Enregistré',
-    copied: 'Copié !',
-    comingSoon: 'Bientôt disponible',
+    copied: 'Copié !',                 // shown briefly after copying accreditation ID
+    comingSoon: 'Bientôt disponible',  // placeholder for unfinished screens
   },
+
+  // ─── English ────────────────────────────────────────────────────────────────
   en: {
     login: 'Login',
     register: 'Sign up',
@@ -189,6 +192,8 @@ const translations = {
     copied: 'Copied!',
     comingSoon: 'Coming soon',
   },
+
+  // ─── Arabic ─────────────────────────────────────────────────────────────────
   ar: {
     login: 'تسجيل الدخول',
     register: 'إنشاء حساب',
@@ -221,7 +226,7 @@ const translations = {
     accreditation: 'الاعتماد',
     share: 'مشاركة',
     download: 'تحميل',
-    nfc: 'NFC',
+    nfc: 'NFC',                        // technology name stays the same across languages
     programme: 'البرنامج',
     live: 'مباشر',
     medals: 'الميداليات',
@@ -286,7 +291,7 @@ const translations = {
 };
 
 export function useTranslation(lang: Lang) {
-  return translations[lang];
+  return translations[lang]; // just look up the right locale object
 }
 
-export default translations;
+export default translations; // exported for any direct import that doesn't use the hook

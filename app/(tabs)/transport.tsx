@@ -18,8 +18,8 @@ import { useApp } from '../../src/context/AppContext';
 import { useTranslation } from '../../src/i18n';
 import { getColors, Radius } from '../../src/theme';
 
-type Tab = 'yango' | 'navettes' | 'carte';
-type RideStep = 0 | 1 | 2 | 3 | 4;
+type Tab      = 'yango' | 'navettes' | 'carte';
+type RideStep = 0 | 1 | 2 | 3 | 4; // idle → searching → found → en route → arrived
 
 const LOCATIONS = [
   'Aéroport AIBD',
@@ -32,6 +32,7 @@ const LOCATIONS = [
   'Centre des Médias',
 ];
 
+// Deterministic fake price based on route string — same pair always gives same price
 function getPrice(from: string, to: string): number {
   const hash = (from + to).length * 317 + from.charCodeAt(0) * 13;
   return Math.round(((hash % 6000) + 2500) / 100) * 100;
@@ -70,7 +71,7 @@ const SHUTTLE_ROUTES = [
     name: 'Route D — Village',
     from: 'Centre-Ville Dakar',
     to: 'Village JOJ',
-    available: 3,
+    available: 3, // almost full
     departures: ['14:50', '15:20', '15:50'],
     nextIn: '12 min',
   },
@@ -93,9 +94,9 @@ export default function TransportScreen() {
       <View style={[s.header, { paddingTop: insets.top + 8, borderBottomColor: C.border1 }]}>
         <Text style={[s.headerTitle, { color: C.text }]}>{t.transport}</Text>
         <View style={s.tabs}>
-          <TabBtn active={tab === 'yango'} onPress={() => setTab('yango')} icon="car-outline" label="Yango" C={C} />
-          <TabBtn active={tab === 'navettes'} onPress={() => setTab('navettes')} icon="bus-outline" label={t.shuttles} C={C} />
-          <TabBtn active={tab === 'carte'} onPress={() => setTab('carte')} icon="map-outline" label="Carte" C={C} />
+          <TabBtn active={tab === 'yango'}    onPress={() => setTab('yango')}    icon="car-outline"  label="Yango" C={C} />
+          <TabBtn active={tab === 'navettes'} onPress={() => setTab('navettes')} icon="bus-outline"  label={t.shuttles} C={C} />
+          <TabBtn active={tab === 'carte'}    onPress={() => setTab('carte')}    icon="map-outline"  label="Carte" C={C} />
         </View>
       </View>
 
@@ -103,14 +104,15 @@ export default function TransportScreen() {
         contentContainerStyle={[s.scroll, { paddingBottom: insets.bottom + 100 }]}
         showsVerticalScrollIndicator={false}
       >
-        {tab === 'yango' && <YangoTab C={C} t={t} />}
+        {tab === 'yango'    && <YangoTab C={C} t={t} />}
         {tab === 'navettes' && <NavettesTab C={C} t={t} />}
-        {tab === 'carte' && <CarteTab C={C} t={t} router={router} />}
+        {tab === 'carte'    && <CarteTab C={C} t={t} router={router} />}
       </ScrollView>
     </View>
   );
 }
 
+// Shared tab pill button
 function TabBtn({
   active,
   onPress,
@@ -145,43 +147,45 @@ function TabBtn({
   );
 }
 
+// Yango ride booking flow
 function YangoTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<typeof useTranslation> }) {
-  const [rideStep, setRideStep] = useState<RideStep>(0);
-  const [fromIdx, setFromIdx] = useState(0);
-  const [toIdx, setToIdx] = useState(2);
+  const [rideStep, setRideStep]         = useState<RideStep>(0);
+  const [fromIdx, setFromIdx]           = useState(0);
+  const [toIdx, setToIdx]               = useState(2);
   const [showFromPicker, setShowFromPicker] = useState(false);
-  const [showToPicker, setShowToPicker] = useState(false);
-  const [eta, setEta] = useState(12);
-  const progressAnim = useRef(new Animated.Value(0)).current;
+  const [showToPicker, setShowToPicker]     = useState(false);
+  const [eta, setEta]                   = useState(12); // minutes until driver arrives
+  const progressAnim                    = useRef(new Animated.Value(0)).current;
 
   const fromLoc = LOCATIONS[fromIdx];
-  const toLoc = LOCATIONS[toIdx];
-  const price = getPrice(fromLoc, toLoc);
+  const toLoc   = LOCATIONS[toIdx];
+  const price   = getPrice(fromLoc, toLoc);
 
   useEffect(() => {
     if (rideStep === 3) {
       setEta(12);
-      const interval = setInterval(() => setEta((e) => Math.max(0, e - 1)), 1000);
+      const interval = setInterval(() => setEta((e) => Math.max(0, e - 1)), 1000); // countdown every second
       Animated.timing(progressAnim, {
         toValue: 1,
-        duration: 12000,
+        duration: 12000, // matches ETA countdown
         useNativeDriver: false,
-      }).start(() => setRideStep(4));
+      }).start(() => setRideStep(4)); // auto-advance to "arrived"
       return () => clearInterval(interval);
     }
   }, [rideStep]);
 
   const handleCommand = () => {
     setRideStep(1);
-    setTimeout(() => setRideStep(2), 3000);
+    setTimeout(() => setRideStep(2), 3000); // simulate driver matching delay
   };
 
   const handleConfirm = () => setRideStep(3);
-  const handleCancel = () => { setRideStep(0); progressAnim.setValue(0); };
-  const handleFinish = () => { setRideStep(0); progressAnim.setValue(0); };
+  const handleCancel  = () => { setRideStep(0); progressAnim.setValue(0); }; // reset everything
+  const handleFinish  = () => { setRideStep(0); progressAnim.setValue(0); };
 
-  const progressWidth = progressAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] });
+  const progressWidth = progressAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }); // animated bar width
 
+  // Location picker overlay (replaces tab content when open)
   if (showFromPicker || showToPicker) {
     const current = showFromPicker ? fromIdx : toIdx;
     return (
@@ -197,14 +201,14 @@ function YangoTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<typ
               if (showFromPicker) setFromIdx(idx);
               else setToIdx(idx);
               setShowFromPicker(false);
-              setShowToPicker(false);
+              setShowToPicker(false); // close picker on selection
             }}
           >
             <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: C.brand + '15', alignItems: 'center', justifyContent: 'center' }}>
               <Ionicons name="location-outline" size={18} color={C.brand} />
             </View>
             <Text style={{ flex: 1, fontSize: 15, fontWeight: '600', color: C.text }}>{loc}</Text>
-            {idx === current && <Ionicons name="checkmark-circle" size={20} color={C.brand} />}
+            {idx === current && <Ionicons name="checkmark-circle" size={20} color={C.brand} />} {/* mark current selection */}
           </Pressable>
         ))}
       </View>
@@ -213,7 +217,7 @@ function YangoTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<typ
 
   return (
     <>
-      {/* Hero banner */}
+      {/* Yango partner banner */}
       <View style={{ borderRadius: Radius.lg, overflow: 'hidden', marginBottom: 4 }}>
         <LinearGradient colors={[C.brand, C.brandDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 18 }}>
@@ -224,6 +228,7 @@ function YangoTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<typ
               <Text style={{ fontSize: 17, fontWeight: '800', color: '#fff' }}>Yango Ride</Text>
               <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)' }}>Partenaire officiel JOJ 2026</Text>
             </View>
+            {/* "ACTIF" status pill */}
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(255,255,255,0.20)', borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 5 }}>
               <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#3FBA7A' }} />
               <Text style={{ fontSize: 10, fontWeight: '800', color: '#fff', letterSpacing: 0.5 }}>ACTIF</Text>
@@ -232,11 +237,13 @@ function YangoTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<typ
         </LinearGradient>
       </View>
 
-      {/* Step 0: Idle — route picker */}
+      {/* Step 0: route picker + request button */}
       {rideStep === 0 && (
         <>
+          {/* From / To route selector */}
           <View style={{ backgroundColor: C.surface2, borderWidth: 1, borderColor: C.border1, borderRadius: Radius.lg, padding: 16, gap: 0 }}>
             <View style={{ flexDirection: 'row', gap: 12 }}>
+              {/* Route line dots */}
               <View style={{ alignItems: 'center', paddingTop: 18 }}>
                 <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: C.brand, borderWidth: 2, borderColor: C.brand + '50' }} />
                 <View style={{ width: 2, flex: 1, backgroundColor: C.border2, marginVertical: 4 }} />
@@ -255,6 +262,7 @@ function YangoTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<typ
             </View>
           </View>
 
+          {/* Price / wait / availability summary */}
           <View style={{ backgroundColor: C.surface2, borderWidth: 1, borderColor: C.border1, borderRadius: Radius.lg, padding: 16 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 }}>
               <View style={{ alignItems: 'center', gap: 4 }}>
@@ -284,7 +292,7 @@ function YangoTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<typ
         </>
       )}
 
-      {/* Step 1: Searching */}
+      {/* Step 1: searching for a driver */}
       {rideStep === 1 && (
         <View style={{ backgroundColor: C.surface2, borderWidth: 1, borderColor: C.border1, borderRadius: Radius.lg, padding: 28, alignItems: 'center', gap: 20 }}>
           <ActivityIndicator size="large" color={C.brand} />
@@ -299,7 +307,7 @@ function YangoTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<typ
         </View>
       )}
 
-      {/* Step 2: Driver found */}
+      {/* Step 2: driver matched, waiting for user confirmation */}
       {rideStep === 2 && (
         <View style={{ backgroundColor: C.surface2, borderWidth: 1, borderColor: C.border1, borderRadius: Radius.lg, padding: 20, gap: 16 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -307,6 +315,7 @@ function YangoTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<typ
             <Text style={{ fontSize: 13, fontWeight: '700', color: C.success }}>{t.driverFound.toUpperCase()}</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+            {/* Driver avatar placeholder */}
             <View style={{ width: 60, height: 60, borderRadius: 20, backgroundColor: C.teal + '20', borderWidth: 2, borderColor: C.teal + '40', alignItems: 'center', justifyContent: 'center' }}>
               <Text style={{ fontSize: 20, fontWeight: '800', color: C.teal }}>ID</Text>
             </View>
@@ -320,6 +329,7 @@ function YangoTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<typ
               </View>
             </View>
           </View>
+          {/* Route + price summary strip */}
           <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: C.brand + '12', borderRadius: Radius.md, padding: 12, gap: 8 }}>
             <Ionicons name="navigate-outline" size={16} color={C.brand} />
             <Text style={{ flex: 1, fontSize: 13, color: C.text }}>{fromLoc} → {toLoc}</Text>
@@ -343,7 +353,7 @@ function YangoTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<typ
         </View>
       )}
 
-      {/* Step 3: En route */}
+      {/* Step 3: driver en route, animated ETA progress bar */}
       {rideStep === 3 && (
         <View style={{ backgroundColor: C.surface2, borderWidth: 1, borderColor: C.border1, borderRadius: Radius.lg, padding: 20, gap: 16 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -352,6 +362,7 @@ function YangoTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<typ
             <Text style={{ flex: 1 }} />
             <Text style={{ fontSize: 24, fontWeight: '900', color: C.text }}>{eta} min</Text>
           </View>
+          {/* Progress bar shrinks as ETA counts down */}
           <View style={{ height: 6, backgroundColor: C.surface3, borderRadius: 3, overflow: 'hidden' }}>
             <Animated.View style={{ height: '100%', width: progressWidth, backgroundColor: C.brand, borderRadius: 3 }} />
           </View>
@@ -365,7 +376,7 @@ function YangoTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<typ
         </View>
       )}
 
-      {/* Step 4: Arrived */}
+      {/* Step 4: driver arrived */}
       {rideStep === 4 && (
         <View style={{ backgroundColor: C.surface2, borderWidth: 1, borderColor: C.border1, borderRadius: Radius.lg, padding: 24, alignItems: 'center', gap: 16 }}>
           <View style={{ width: 72, height: 72, borderRadius: 24, backgroundColor: C.success + '20', borderWidth: 2, borderColor: C.success + '40', alignItems: 'center', justifyContent: 'center' }}>
@@ -386,9 +397,11 @@ function YangoTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<typ
   );
 }
 
+// Official shuttle routes list
 function NavettesTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<typeof useTranslation> }) {
   return (
     <>
+      {/* Info banner: free for all accredited people */}
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', backgroundColor: C.teal + '10', borderWidth: 1, borderColor: C.teal + '25', borderRadius: Radius.lg, padding: 14, gap: 12, marginBottom: 4 }}>
         <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: C.teal + '20', alignItems: 'center', justifyContent: 'center' }}>
           <Ionicons name="information-circle-outline" size={20} color={C.teal} />
@@ -406,8 +419,10 @@ function NavettesTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<
   );
 }
 
+// Single shuttle route card with seat availability and departure times
 function ShuttleCard({ route, C }: { route: (typeof SHUTTLE_ROUTES)[0]; C: ReturnType<typeof getColors> }) {
-  const seats = route.available > 10 ? 'good' : route.available > 4 ? 'low' : 'critical';
+  // colour-coded availability: green > 10, yellow 5-10, red < 5
+  const seats     = route.available > 10 ? 'good' : route.available > 4 ? 'low' : 'critical';
   const seatColor = seats === 'good' ? C.success : seats === 'low' ? C.warning : C.error;
 
   return (
@@ -424,17 +439,20 @@ function ShuttleCard({ route, C }: { route: (typeof SHUTTLE_ROUTES)[0]; C: Retur
             <Text style={{ fontSize: 12, color: C.textSecondary }}>{route.to}</Text>
           </View>
         </View>
+        {/* Seats remaining pill */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: Radius.full, borderWidth: 1, backgroundColor: seatColor + '15', borderColor: seatColor + '30' }}>
           <Ionicons name="people-outline" size={11} color={seatColor} />
           <Text style={{ fontSize: 11, fontWeight: '800', color: seatColor }}>{route.available}</Text>
         </View>
       </View>
+      {/* Next departure highlight */}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: C.brand + '10', borderRadius: Radius.md, padding: 10 }}>
         <Ionicons name="time-outline" size={14} color={C.brand} />
         <Text style={{ fontSize: 13, color: C.text, fontWeight: '600' }}>Prochain départ: <Text style={{ color: C.brand }}>{route.departures[0]}</Text></Text>
         <Text style={{ flex: 1 }} />
         <Text style={{ fontSize: 11, color: C.textTertiary }}>dans {route.nextIn}</Text>
       </View>
+      {/* Tappable departure time buttons */}
       <View style={{ flexDirection: 'row', gap: 8 }}>
         {route.departures.map((d, i) => (
           <Pressable
@@ -457,6 +475,7 @@ function ShuttleCard({ route, C }: { route: (typeof SHUTTLE_ROUTES)[0]; C: Retur
   );
 }
 
+// Placeholder tab that links to the full map screen
 function CarteTab({
   C,
   t,
@@ -484,17 +503,18 @@ function CarteTab({
         <Text style={{ fontSize: 15, fontWeight: '800', color: '#fff' }}>Ouvrir la carte</Text>
       </Pressable>
 
+      {/* Nearby venues list */}
       <View style={{ width: '100%', gap: 10, marginTop: 8 }}>
         <Text style={{ fontSize: 11, fontWeight: '700', letterSpacing: 1, color: C.textTertiary }}>SITES PROCHES</Text>
         {[
           { name: 'Stade Léopold Sédar Senghor', dist: '7.8 km', icon: 'football-outline' as const },
-          { name: 'Dakar Arena', dist: '4.2 km', icon: 'basketball-outline' as const },
-          { name: 'Village JOJ', dist: '2.1 km', icon: 'home-outline' as const },
+          { name: 'Dakar Arena',                  dist: '4.2 km', icon: 'basketball-outline' as const },
+          { name: 'Village JOJ',                  dist: '2.1 km', icon: 'home-outline' as const },
         ].map((v) => (
           <Pressable
             key={v.name}
             style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: C.surface2, borderWidth: 1, borderColor: C.border1, borderRadius: Radius.lg, padding: 14, gap: 12 }}
-            onPress={() => router.push('/map' as any)}
+            onPress={() => router.push('/map' as any)} // all deep-link to the map screen
           >
             <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: C.brand + '15', alignItems: 'center', justifyContent: 'center' }}>
               <Ionicons name={v.icon} size={20} color={C.brand} />

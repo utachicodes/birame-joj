@@ -15,8 +15,10 @@ import SportIcon from '../components/SportIcon';
 import { Colors, Typography, Radius } from '../theme';
 import { EVENTS, LIVE_SCORES, MEDAL_TABLE } from '../data/mock';
 
+// three tabs this screen can show
 type Tab = 'programme' | 'live' | 'medailles';
 
+// days shown in the horizontal day picker
 const DAYS = [
   { day: 'Auj.', date: '28' },
   { day: 'Mer.', date: '29' },
@@ -27,6 +29,7 @@ const DAYS = [
   { day: 'Lun.', date: '03' },
 ];
 
+// sport filter pills; 'all' means no filter
 const SPORTS = [
   { id: 'all', label: 'Tous', icon: 'apps-outline' as const },
   { id: 'basketball', label: 'Basketball', icon: 'basketball-outline' as const },
@@ -37,31 +40,32 @@ const SPORTS = [
 ];
 
 export default function EventsScreen() {
-  const insets = useSafeAreaInsets();
-  const [tab, setTab] = useState<Tab>('live');
-  const [dayIdx, setDayIdx] = useState(0);
-  const [sport, setSport] = useState('all');
+  const insets = useSafeAreaInsets(); // safe area so notch doesn't clip header
+  const [tab, setTab] = useState<Tab>('live'); // start on live tab
+  const [dayIdx, setDayIdx] = useState(0); // which day is selected in picker
+  const [sport, setSport] = useState('all'); // active sport filter
 
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      <LinearGradient colors={[Colors.bg, Colors.bgElevated, Colors.bg]} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={[Colors.bg, Colors.bgElevated, Colors.bg]} style={StyleSheet.absoluteFill} /> {/* subtle gradient bg */}
 
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <Text style={styles.headerTitle}>Programme JOJ</Text>
         <View style={styles.tabs}>
           <TabBtn active={tab === 'programme'} onPress={() => setTab('programme')} icon="calendar-outline" label="Programme" />
-          <TabBtn active={tab === 'live'} onPress={() => setTab('live')} icon="radio-outline" label="Direct" badge={LIVE_SCORES.length} />
+          <TabBtn active={tab === 'live'} onPress={() => setTab('live')} icon="radio-outline" label="Direct" badge={LIVE_SCORES.length} /> {/* badge shows live count */}
           <TabBtn active={tab === 'medailles'} onPress={() => setTab('medailles')} icon="medal-outline" label="Médailles" />
         </View>
       </View>
 
       <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 100 }]}
+        contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 100 }]} // leave room for tab bar
         showsVerticalScrollIndicator={false}
       >
         {tab === 'programme' && (
           <>
+            {/* horizontal day selector */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.dayList}>
               {DAYS.map((d, i) => (
                 <Pressable key={i} onPress={() => setDayIdx(i)} style={[styles.dayItem, i === dayIdx && styles.dayItemActive]}>
@@ -71,6 +75,7 @@ export default function EventsScreen() {
               ))}
             </ScrollView>
 
+            {/* horizontal sport filter row */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sportList}>
               {SPORTS.map((s) => (
                 <Pressable key={s.id} onPress={() => setSport(s.id)} style={[styles.sportPill, s.id === sport && styles.sportPillActive]}>
@@ -80,24 +85,24 @@ export default function EventsScreen() {
               ))}
             </ScrollView>
 
-            {EVENTS.map((e) => <EventCard key={e.id} event={e} />)}
+            {EVENTS.map((e) => <EventCard key={e.id} event={e} />)} {/* one card per event */}
           </>
         )}
 
         {tab === 'live' && (
           <>
             <View style={styles.liveHeader}>
-              <View style={styles.liveDot} />
+              <View style={styles.liveDot} /> {/* red pulsing indicator */}
               <Text style={styles.liveHeaderText}>{LIVE_SCORES.length} compétitions en direct</Text>
             </View>
-            {LIVE_SCORES.map((s) => <FullLive key={s.id} score={s} />)}
+            {LIVE_SCORES.map((s) => <FullLive key={s.id} score={s} />)} {/* full scorecards */}
           </>
         )}
 
         {tab === 'medailles' && (
           <>
             <View style={styles.medalHeader}>
-              <LinearGradient colors={[Colors.gold, '#A88A2C']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+              <LinearGradient colors={[Colors.gold, '#A88A2C']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} /> {/* gold gradient banner */}
               <View style={styles.medalHeaderContent}>
                 <Ionicons name="trophy" size={28} color="#fff" />
                 <View style={{ flex: 1 }}>
@@ -106,6 +111,7 @@ export default function EventsScreen() {
                 </View>
               </View>
               <View style={styles.medalCols}>
+                {/* column headers for the medal table */}
                 <Text style={styles.medalColText}>OR</Text>
                 <Text style={styles.medalColText}>ARG</Text>
                 <Text style={styles.medalColText}>BRZ</Text>
@@ -120,12 +126,13 @@ export default function EventsScreen() {
   );
 }
 
+// reusable tab button with optional notification badge
 function TabBtn({ active, onPress, icon, label, badge }: { active: boolean; onPress: () => void; icon: any; label: string; badge?: number }) {
   return (
     <Pressable onPress={onPress} style={[styles.tabBtn, active && styles.tabBtnActive]}>
       <Ionicons name={icon} size={15} color={active ? Colors.text : Colors.textTertiary} />
       <Text style={[styles.tabBtnText, active && styles.tabBtnTextActive]}>{label}</Text>
-      {badge && (
+      {badge && ( // only render badge when there's a count
         <View style={styles.tabBadge}>
           <Text style={styles.tabBadgeText}>{badge}</Text>
         </View>
@@ -134,10 +141,11 @@ function TabBtn({ active, onPress, icon, label, badge }: { active: boolean; onPr
   );
 }
 
+// compact event row used in the programme tab
 function EventCard({ event }: { event: (typeof EVENTS)[0] }) {
   return (
     <Pressable style={styles.eventCard}>
-      <SportIcon sport={event.sport} size={20} />
+      <SportIcon sport={event.sport} size={20} /> {/* sport-specific icon */}
       <View style={styles.eventInfo}>
         <Text style={styles.eventCategory}>{event.sport.toUpperCase()}  ·  {event.category}</Text>
         <Text style={styles.eventMatch}>{event.match}</Text>
@@ -158,13 +166,14 @@ function EventCard({ event }: { event: (typeof EVENTS)[0] }) {
             <Text style={styles.finishedText}>Terminé</Text>
           </View>
         ) : (
-          <Text style={styles.eventTimeText}>{event.time}</Text>
+          <Text style={styles.eventTimeText}>{event.time}</Text> // upcoming, show time
         )}
       </View>
     </Pressable>
   );
 }
 
+// expanded live score card with team flags and stats CTA
 function FullLive({ score }: { score: (typeof LIVE_SCORES)[0] }) {
   return (
     <View style={styles.fullLive}>
@@ -174,7 +183,7 @@ function FullLive({ score }: { score: (typeof LIVE_SCORES)[0] }) {
           <Text style={styles.liveBadgeText}>LIVE</Text>
         </View>
         <Text style={styles.fullLiveSport}>{score.sport}</Text>
-        <Text style={styles.fullLivePeriod}>{score.period}</Text>
+        <Text style={styles.fullLivePeriod}>{score.period}</Text> {/* e.g. "2nd Half" */}
       </View>
       <View style={styles.fullLiveTeams}>
         <View style={styles.fullLiveTeam}>
@@ -199,10 +208,11 @@ function FullLive({ score }: { score: (typeof LIVE_SCORES)[0] }) {
   );
 }
 
+// single row in the medal table
 function MedalRow({ row }: { row: (typeof MEDAL_TABLE)[0] }) {
-  const total = row.gold + row.silver + row.bronze;
+  const total = row.gold + row.silver + row.bronze; // compute total here, not in data
   return (
-    <View style={[styles.medalRow, row.rank === 1 && styles.medalRowFirst]}>
+    <View style={[styles.medalRow, row.rank === 1 && styles.medalRowFirst]}> {/* gold tint for top ranked */}
       <Text style={[styles.medalRank, row.rank === 1 && styles.medalRankFirst]}>{row.rank}</Text>
       <CountryBadge code={row.code} size="sm" />
       <Text style={styles.medalCountry}>{row.country}</Text>
@@ -210,7 +220,7 @@ function MedalRow({ row }: { row: (typeof MEDAL_TABLE)[0] }) {
         <Text style={styles.medalNum}>{row.gold}</Text>
         <Text style={styles.medalNum}>{row.silver}</Text>
         <Text style={styles.medalNum}>{row.bronze}</Text>
-        <Text style={[styles.medalNum, styles.medalNumTotal]}>{total}</Text>
+        <Text style={[styles.medalNum, styles.medalNumTotal]}>{total}</Text> {/* slightly dimmer total */}
       </View>
     </View>
   );

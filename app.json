@@ -8,7 +8,7 @@
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/dakarlogo.png",
       "resizeMode": "contain",
       "backgroundColor": "#050A18"
     },
@@ -29,10 +29,25 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#050A18",
-          "image": "./assets/splash-icon.png"
+          "image": "./assets/dakarlogo.png"
         }
       ]
     ],
-    "scheme": "joj"
+    "scheme": "joj",
+    "extra": {
+      "eas": {
+        "projectId": "075098d6-4a1a-4d75-b1fa-eb1c9b209692"
+      },
+      "router": {}
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/",
+      "enabled": true,
+      "fallbackToCacheTimeout": 0
+    },
+    "owner": "abdoullah2025"
   }
 }

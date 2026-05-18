@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
   Platform,
   KeyboardAvoidingView,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
@@ -20,22 +21,23 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../src/context/AppContext';
 
-const { width: W } = Dimensions.get('window');
+const { width: W } = Dimensions.get('window'); // screen width for pager math
 
 // ─── Main screen ─────────────────────────────────────────────────────────────
 
 export default function AuthScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { dispatch } = useApp();
+  const { state, login, register } = useApp();
 
   const [loading, setLoading] = useState(false);
-  const [pagerH, setPagerH] = useState(520);
+  const [authError, setAuthError] = useState('');
+  const [pagerH, setPagerH] = useState(520); // measured at runtime
 
   // Sign-in state
   const [siEmail, setSiEmail] = useState('');
   const [siPass, setSiPass] = useState('');
-  const [siPassVis, setSiPassVis] = useState(false);
+  const [siPassVis, setSiPassVis] = useState(false); // toggle password visibility
 
   // Sign-up state
   const [suName, setSuName] = useState('');
@@ -44,64 +46,48 @@ export default function AuthScreen() {
   const [suPassVis, setSuPassVis] = useState(false);
 
   const pagerRef = useRef<ScrollView>(null);
-  const scrollX = useRef(new Animated.Value(0)).current;
+  const scrollX = useRef(new Animated.Value(0)).current; // tracks horizontal scroll for dot indicator
 
   const goTo = (p: 0 | 1) => {
-    pagerRef.current?.scrollTo({ x: p * W, animated: true });
+    pagerRef.current?.scrollTo({ x: p * W, animated: true }); // jump to page 0 or 1
   };
 
-  const validateEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  const validateEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); // basic email check
 
-  const doLogin = (name?: string, email?: string) => {
+  // Redirect once logged in
+  React.useEffect(() => {
+    if (state.isLoggedIn) router.replace('/(tabs)' as any);
+  }, [state.isLoggedIn]);
+
+  const handleSignIn = async () => {
+    setAuthError('');
+    if (!siEmail.trim() || !siPass.trim()) { setAuthError('Veuillez remplir tous les champs.'); return; } // empty check
+    if (!validateEmail(siEmail)) { setAuthError('Email invalide.'); return; }
     setLoading(true);
-    setTimeout(() => {
-      dispatch({ type: 'LOGIN', payload: { name, email } });
-      setLoading(false);
-      router.replace('/greeting' as any);
-    }, 950);
+    await login(siEmail, siPass);
+    setLoading(false);
+    if (state.authError) setAuthError(state.authError); // surface errors from context
   };
 
-  const handleSignIn = () => {
-    if (!siEmail.trim() || !siPass.trim()) {
-      Alert.alert('Missing fields', 'Please enter your email and password.');
-      return;
-    }
-    if (!validateEmail(siEmail)) {
-      Alert.alert('Invalid email', 'Please enter a valid email address.');
-      return;
-    }
-    doLogin(undefined, siEmail);
-  };
-
-  const handleSignUp = () => {
-    if (!suName.trim() || !suEmail.trim() || !suPass.trim()) {
-      Alert.alert('Missing fields', 'Please fill in all fields.');
-      return;
-    }
-    if (!validateEmail(suEmail)) {
-      Alert.alert('Invalid email', 'Please enter a valid email address.');
-      return;
-    }
-    if (suPass.length < 8) {
-      Alert.alert('Weak password', 'Password must be at least 8 characters.');
-      return;
-    }
-    doLogin(suName, suEmail);
+  const handleSignUp = async () => {
+    setAuthError('');
+    if (!suName.trim() || !suEmail.trim() || !suPass.trim()) { setAuthError('Veuillez remplir tous les champs.'); return; }
+    if (!validateEmail(suEmail)) { setAuthError('Email invalide.'); return; }
+    if (suPass.length < 8) { setAuthError('Mot de passe trop court (8 caractères min).'); return; } // enforce min length
+    setLoading(true);
+    await register({ name: suName, email: suEmail, password: suPass, country: 'Sénégal', countryCode: 'SN', role: 'Visiteur' });
+    setLoading(false);
+    if (state.authError) setAuthError(state.authError);
   };
 
   const handleBiometric = () => {
-    setLoading(true);
-    setTimeout(() => {
-      dispatch({ type: 'LOGIN' });
-      setLoading(false);
-      router.replace('/greeting' as any);
-    }, 1200);
+    setAuthError('Biométrie non disponible en mode démo.'); // placeholder — not wired up yet
   };
 
   // Dot indicator interpolations (non-native for layout values)
-  const dot0W = scrollX.interpolate({ inputRange: [0, W], outputRange: [24, 8], extrapolate: 'clamp' });
+  const dot0W = scrollX.interpolate({ inputRange: [0, W], outputRange: [24, 8], extrapolate: 'clamp' }); // wide on page 0
   const dot0O = scrollX.interpolate({ inputRange: [0, W], outputRange: [1, 0.35], extrapolate: 'clamp' });
-  const dot1W = scrollX.interpolate({ inputRange: [0, W], outputRange: [8, 24], extrapolate: 'clamp' });
+  const dot1W = scrollX.interpolate({ inputRange: [0, W], outputRange: [8, 24], extrapolate: 'clamp' }); // wide on page 1
   const dot1O = scrollX.interpolate({ inputRange: [0, W], outputRange: [0.35, 1], extrapolate: 'clamp' });
 
   return (
@@ -116,17 +102,21 @@ export default function AuthScreen() {
       />
 
       {/* Ambient glows */}
-      <View style={s.orbA} />
-      <View style={s.orbB} />
+      <View style={s.orbA} /> {/* orange glow top-right */}
+      <View style={s.orbB} /> {/* purple glow bottom-left */}
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // different behavior per platform
         style={{ flex: 1 }}
       >
         {/* ── Header ── */}
         <View style={[s.header, { paddingTop: insets.top + 20 }]}>
-          <View style={s.logoBox}>
-            <Ionicons name="trophy" size={22} color="#FF6B35" />
+          <View style={s.logoBg}>
+            <Image
+              source={require('../assets/dakarlogo.png')}
+              style={s.headerLogo}
+              resizeMode="contain"
+            />
           </View>
           <Text style={s.appName}>Birame</Text>
           <Text style={s.appSub}>JOJ Dakar 2026</Text>
@@ -135,17 +125,17 @@ export default function AuthScreen() {
         {/* ── Pager ── */}
         <View
           style={{ flex: 1 }}
-          onLayout={(e) => setPagerH(e.nativeEvent.layout.height)}
+          onLayout={(e) => setPagerH(e.nativeEvent.layout.height)} // measure available height
         >
           <ScrollView
             ref={pagerRef}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            scrollEventThrottle={16}
+            scrollEventThrottle={16} // fire scroll events frequently for smooth dot animation
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-              { useNativeDriver: false }
+              { useNativeDriver: false } // can't use native driver for layout props
             )}
           >
             {/* Page 0 – Sign In */}
@@ -153,13 +143,19 @@ export default function AuthScreen() {
               <ScrollView
                 contentContainerStyle={[s.pageContent, { minHeight: pagerH }]}
                 showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
+                keyboardShouldPersistTaps="handled" // tap outside doesn't dismiss keyboard
               >
                 <View style={s.pageHead}>
                   <Text style={s.pageTitle}>Welcome back</Text>
                   <Text style={s.pageSub}>Sign in to your account</Text>
                 </View>
 
+                {!!authError && (
+                  <View style={s.errorBox}>
+                    <Ionicons name="alert-circle-outline" size={15} color="#E63946" />
+                    <Text style={s.errorText}>{authError}</Text>
+                  </View>
+                )}
                 <View style={s.fields}>
                   <Field
                     placeholder="Email address"
@@ -175,7 +171,7 @@ export default function AuthScreen() {
                     value={siPass}
                     onChangeText={setSiPass}
                     secureTextEntry={!siPassVis}
-                    rightIcon={siPassVis ? 'eye-off-outline' : 'eye-outline'}
+                    rightIcon={siPassVis ? 'eye-off-outline' : 'eye-outline'} // toggle icon
                     onRightPress={() => setSiPassVis((v) => !v)}
                   />
                   <Pressable
@@ -183,7 +179,7 @@ export default function AuthScreen() {
                       Alert.alert('Password reset', 'A reset link will be sent to your email.')
                     }
                     style={s.forgotRow}
-                    hitSlop={8}
+                    hitSlop={8} // easier to tap
                   >
                     <Text style={s.forgotText}>Forgot password?</Text>
                   </Pressable>
@@ -218,6 +214,12 @@ export default function AuthScreen() {
                   <Text style={s.pageSub}>Join the Francophone Games</Text>
                 </View>
 
+                {!!authError && (
+                  <View style={s.errorBox}>
+                    <Ionicons name="alert-circle-outline" size={15} color="#E63946" />
+                    <Text style={s.errorText}>{authError}</Text>
+                  </View>
+                )}
                 <View style={s.fields}>
                   <Field
                     placeholder="Full name"
@@ -258,8 +260,8 @@ export default function AuthScreen() {
 
         {/* ── Dot indicator ── */}
         <View style={[s.dots, { paddingBottom: insets.bottom + 20 }]}>
-          <Animated.View style={[s.dot, { width: dot0W, opacity: dot0O }]} />
-          <Animated.View style={[s.dot, { width: dot1W, opacity: dot1O }]} />
+          <Animated.View style={[s.dot, { width: dot0W, opacity: dot0O }]} /> {/* page 0 dot */}
+          <Animated.View style={[s.dot, { width: dot1W, opacity: dot1O }]} /> {/* page 1 dot */}
         </View>
       </KeyboardAvoidingView>
     </View>
@@ -289,14 +291,14 @@ function Field({
   keyboardType?: any;
   autoCapitalize?: any;
 }) {
-  const [focused, setFocused] = useState(false);
+  const [focused, setFocused] = useState(false); // highlight border on focus
 
   return (
     <View style={[fS.wrap, focused && fS.wrapFocused]}>
       <Ionicons
         name={icon}
         size={17}
-        color={focused ? 'rgba(255,255,255,0.52)' : 'rgba(255,255,255,0.24)'}
+        color={focused ? 'rgba(255,255,255,0.52)' : 'rgba(255,255,255,0.24)'} // brighter when active
       />
       <TextInput
         style={fS.input}
@@ -308,7 +310,7 @@ function Field({
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize ?? 'none'}
         autoCorrect={false}
-        selectionColor="#FF6B35"
+        selectionColor="#FF6B35" // cursor color
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
       />
@@ -334,7 +336,7 @@ const fS = StyleSheet.create({
     gap: 10,
   },
   wrapFocused: {
-    borderColor: 'rgba(255,107,53,0.40)',
+    borderColor: 'rgba(255,107,53,0.40)', // orange accent when focused
     backgroundColor: 'rgba(255,255,255,0.075)',
   },
   input: {
@@ -356,12 +358,12 @@ function PrimaryBtn({
   onPress: () => void;
   loading?: boolean;
 }) {
-  const scale = useRef(new Animated.Value(1)).current;
+  const scale = useRef(new Animated.Value(1)).current; // for press-in shrink effect
 
   const handlePress = () => {
     Animated.sequence([
-      Animated.timing(scale, { toValue: 0.96, duration: 75, useNativeDriver: true }),
-      Animated.spring(scale, { toValue: 1, tension: 200, friction: 10, useNativeDriver: true }),
+      Animated.timing(scale, { toValue: 0.96, duration: 75, useNativeDriver: true }), // slight shrink
+      Animated.spring(scale, { toValue: 1, tension: 200, friction: 10, useNativeDriver: true }), // spring back
     ]).start();
     onPress();
   };
@@ -376,7 +378,7 @@ function PrimaryBtn({
           style={StyleSheet.absoluteFill}
         />
         {loading ? (
-          <ActivityIndicator color="#fff" size="small" />
+          <ActivityIndicator color="#fff" size="small" /> // spinner while waiting
         ) : (
           <Text style={pS.label}>{label}</Text>
         )}
@@ -386,7 +388,7 @@ function PrimaryBtn({
 }
 
 const pS = StyleSheet.create({
-  wrap: { borderRadius: 16, overflow: 'hidden' },
+  wrap: { borderRadius: 16, overflow: 'hidden' }, // clips gradient to rounded corners
   btn: { height: 56, alignItems: 'center', justifyContent: 'center' },
   label: { fontSize: 16, fontWeight: '700', color: '#fff', letterSpacing: -0.2 },
 });
@@ -429,6 +431,12 @@ const s = StyleSheet.create({
     flex: 1,
     backgroundColor: '#070A14',
   },
+  errorBox: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: 'rgba(230,57,70,0.12)', borderWidth: 1,
+    borderColor: 'rgba(230,57,70,0.30)', borderRadius: 10, padding: 10,
+  },
+  errorText: { flex: 1, fontSize: 13, color: '#E63946', fontWeight: '500' },
   orbA: {
     position: 'absolute',
     width: 380,
@@ -436,7 +444,7 @@ const s = StyleSheet.create({
     borderRadius: 190,
     top: -120,
     right: -100,
-    backgroundColor: 'rgba(255,107,53,0.065)',
+    backgroundColor: 'rgba(255,107,53,0.065)', // subtle orange glow
   },
   orbB: {
     position: 'absolute',
@@ -445,7 +453,7 @@ const s = StyleSheet.create({
     borderRadius: 150,
     bottom: 60,
     left: -100,
-    backgroundColor: 'rgba(123,94,167,0.085)',
+    backgroundColor: 'rgba(123,94,167,0.085)', // subtle purple glow
   },
   header: {
     alignItems: 'center',
@@ -462,6 +470,20 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 2,
+  },
+  logoBg: {
+    width: 90,
+    height: 90,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF', // white bg so logo colors show correctly
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 8,
+    marginBottom: 4,
+  },
+  headerLogo: {
+    width: '100%',
+    height: '100%',
   },
   appName: {
     fontSize: 27,

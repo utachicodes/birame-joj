@@ -13,8 +13,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors, Typography, Radius } from '../theme';
 import { TRANSPORT } from '../data/mock';
 
+// three views: overview, yango ride-hailing, official shuttles
 type Tab = 'overview' | 'yango' | 'shuttles';
 
+// venue shortcuts shown in the Yango quick-destinations row
 const VENUES = [
   { name: 'Stade LSS', icon: 'football-outline' as const, dist: '7.8 km' },
   { name: 'Dakar Arena', icon: 'basketball-outline' as const, dist: '4.2 km' },
@@ -23,6 +25,7 @@ const VENUES = [
   { name: 'Médias', icon: 'newspaper-outline' as const, dist: '5.5 km' },
 ];
 
+// static shuttle timetable data
 const SHUTTLE_ROUTES = [
   { id: 'S1', name: 'Route A — Centre', from: 'AIBD', to: 'Dakar Centre', available: 24, departures: ['14:35', '15:05', '15:35', '16:05'] },
   { id: 'S2', name: 'Route B — Stade LSS', from: 'Village JOJ', to: 'Stade LSS', available: 8, departures: ['15:00', '15:30', '16:00', '16:30'] },
@@ -30,13 +33,13 @@ const SHUTTLE_ROUTES = [
 ];
 
 export default function TransportScreen() {
-  const insets = useSafeAreaInsets();
-  const [tab, setTab] = useState<Tab>('overview');
+  const insets = useSafeAreaInsets(); // safe area for the notch
+  const [tab, setTab] = useState<Tab>('overview'); // default to overview
 
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      <LinearGradient colors={[Colors.bg, Colors.bgElevated, Colors.bg]} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={[Colors.bg, Colors.bgElevated, Colors.bg]} style={StyleSheet.absoluteFill} /> {/* bg gradient layer */}
 
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <Text style={styles.headerTitle}>Transport</Text>
@@ -56,6 +59,7 @@ export default function TransportScreen() {
   );
 }
 
+// small pill-style tab button
 function TabBtn({ active, onPress, icon, label }: { active: boolean; onPress: () => void; icon: any; label: string }) {
   return (
     <Pressable onPress={onPress} style={[styles.tabBtn, active && styles.tabBtnActive]}>
@@ -65,11 +69,12 @@ function TabBtn({ active, onPress, icon, label }: { active: boolean; onPress: ()
   );
 }
 
+// overview tab: map card, status pills, transport list, emergency
 function Overview() {
   return (
     <>
       <View style={styles.mapCard}>
-        <LinearGradient colors={[Colors.teal + '30', Colors.blue + '15']} style={StyleSheet.absoluteFill} />
+        <LinearGradient colors={[Colors.teal + '30', Colors.blue + '15']} style={StyleSheet.absoluteFill} /> {/* teal tint over card */}
         <View style={styles.mapContent}>
           <View style={styles.mapIconRing}>
             <Ionicons name="map-outline" size={36} color={Colors.teal} />
@@ -83,6 +88,7 @@ function Overview() {
         </View>
       </View>
 
+      {/* three quick status indicators at a glance */}
       <View style={styles.statusGrid}>
         <StatusPill icon="bus-outline" label="Navettes" status="EN SERVICE" color={Colors.success} />
         <StatusPill icon="car-outline" label="Yango" status="DISPONIBLE" color={Colors.teal} />
@@ -90,8 +96,9 @@ function Overview() {
       </View>
 
       <Text style={styles.sectionLabel}>OPTIONS DE TRANSPORT</Text>
-      {TRANSPORT.map((t) => <TransportRow key={t.id} t={t} />)}
+      {TRANSPORT.map((t) => <TransportRow key={t.id} t={t} />)} {/* one row per transport option */}
 
+      {/* emergency transport section at the bottom */}
       <View style={styles.emergency}>
         <View style={styles.emergencyIcon}>
           <Ionicons name="warning-outline" size={20} color={Colors.error} />
@@ -109,6 +116,7 @@ function Overview() {
   );
 }
 
+// single transport option row with name, route, and detail info
 function TransportRow({ t }: { t: (typeof TRANSPORT)[0] }) {
   return (
     <Pressable style={styles.transportRow}>
@@ -122,6 +130,7 @@ function TransportRow({ t }: { t: (typeof TRANSPORT)[0] }) {
           <Ionicons name="arrow-forward" size={11} color={Colors.textTertiary} />
           <Text style={styles.transportRouteText} numberOfLines={1}>{t.to}</Text>
         </View>
+        {/* yango shows fare estimate, shuttles show next departure */}
         <Text style={styles.transportDetail}>
           {t.type === 'yango' ? `${(t as any).estimate}  ·  ${(t as any).price}` : `Prochain ${(t as any).nextDeparture}  ·  ${(t as any).duration}`}
         </Text>
@@ -131,10 +140,11 @@ function TransportRow({ t }: { t: (typeof TRANSPORT)[0] }) {
   );
 }
 
+// small colored status badge used in the status grid
 function StatusPill({ icon, label, status, color }: { icon: any; label: string; status: string; color: string }) {
   return (
     <View style={[styles.statusPill, { borderColor: color + '30' }]}>
-      <View style={[styles.statusPillIcon, { backgroundColor: color + '18' }]}>
+      <View style={[styles.statusPillIcon, { backgroundColor: color + '18' }]}> {/* tinted icon bg */}
         <Ionicons name={icon} size={16} color={color} />
       </View>
       <Text style={styles.statusPillLabel}>{label}</Text>
@@ -143,9 +153,11 @@ function StatusPill({ icon, label, status, color }: { icon: any; label: string; 
   );
 }
 
+// yango ride-booking tab
 function YangoTab() {
   return (
     <>
+      {/* branded hero banner for Yango partnership */}
       <View style={styles.yangoHero}>
         <LinearGradient colors={[Colors.brand, Colors.brandDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
         <View style={styles.yangoHeroContent}>
@@ -157,17 +169,18 @@ function YangoTab() {
             <Text style={styles.yangoSub}>Partenaire officiel JOJ 2026</Text>
           </View>
           <View style={styles.yangoBadge}>
-            <View style={styles.yangoDot} />
+            <View style={styles.yangoDot} /> {/* green dot = service active */}
             <Text style={styles.yangoBadgeText}>ACTIF</Text>
           </View>
         </View>
       </View>
 
+      {/* route input card with visual indicator line */}
       <View style={styles.routeCard}>
         <View style={styles.routeIndicator}>
-          <View style={[styles.routePoint, { backgroundColor: Colors.brand }]} />
-          <View style={styles.routeLine} />
-          <View style={[styles.routePoint, { backgroundColor: Colors.teal }]} />
+          <View style={[styles.routePoint, { backgroundColor: Colors.brand }]} /> {/* departure dot */}
+          <View style={styles.routeLine} /> {/* connecting line */}
+          <View style={[styles.routePoint, { backgroundColor: Colors.teal }]} /> {/* destination dot */}
         </View>
         <View style={styles.routeInputs}>
           <Pressable style={styles.routeInput}>
@@ -190,11 +203,12 @@ function YangoTab() {
               <Ionicons name={v.icon} size={20} color={Colors.text} />
             </View>
             <Text style={styles.venueName}>{v.name}</Text>
-            <Text style={styles.venueDist}>{v.dist}</Text>
+            <Text style={styles.venueDist}>{v.dist}</Text> {/* distance from user */}
           </Pressable>
         ))}
       </ScrollView>
 
+      {/* fare and availability summary before booking */}
       <View style={styles.estimate}>
         <View style={styles.estimateRow}>
           <EstimateItem label="Attente" value="8 min" />
@@ -213,6 +227,7 @@ function YangoTab() {
   );
 }
 
+// single estimate stat, label below value
 function EstimateItem({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.estimateItem}>
@@ -222,9 +237,11 @@ function EstimateItem({ label, value }: { label: string; value: string }) {
   );
 }
 
+// official shuttle timetable tab
 function ShuttlesTab() {
   return (
     <>
+      {/* info banner explaining who can use shuttles */}
       <View style={styles.shuttleInfo}>
         <View style={styles.shuttleInfoIcon}>
           <Ionicons name="information-circle" size={20} color={Colors.teal} />
@@ -240,8 +257,9 @@ function ShuttlesTab() {
   );
 }
 
+// card for one shuttle route with departure times
 function ShuttleCard({ route }: { route: (typeof SHUTTLE_ROUTES)[0] }) {
-  const seats = route.available > 10 ? 'good' : 'low';
+  const seats = route.available > 10 ? 'good' : 'low'; // threshold for seat availability color
   return (
     <View style={styles.shuttleCard}>
       <View style={styles.shuttleHeader}>
@@ -256,6 +274,7 @@ function ShuttleCard({ route }: { route: (typeof SHUTTLE_ROUTES)[0] }) {
             <Text style={styles.shuttleRouteText}>{route.to}</Text>
           </View>
         </View>
+        {/* seat count badge, green when plenty, orange when low */}
         <View style={[styles.seatsBadge, seats === 'good' ? styles.seatsGood : styles.seatsLow]}>
           <Ionicons name="people-outline" size={11} color={seats === 'good' ? Colors.success : Colors.warning} />
           <Text style={[styles.seatsText, { color: seats === 'good' ? Colors.success : Colors.warning }]}>{route.available}</Text>
@@ -263,9 +282,10 @@ function ShuttleCard({ route }: { route: (typeof SHUTTLE_ROUTES)[0] }) {
       </View>
       <View style={styles.deptRow}>
         {route.departures.map((d, i) => (
+          // first departure gets the brand color highlight
           <Pressable key={i} style={[styles.deptChip, i === 0 && styles.deptChipNext]}>
             <Text style={[styles.deptTime, i === 0 && { color: '#fff' }]}>{d}</Text>
-            {i === 0 && <Text style={styles.deptNext}>PROCHAIN</Text>}
+            {i === 0 && <Text style={styles.deptNext}>PROCHAIN</Text>} {/* label next departure */}
           </Pressable>
         ))}
       </View>

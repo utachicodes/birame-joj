@@ -3,6 +3,7 @@ import { View, StyleSheet, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../theme';
 
+// map sport slugs to Ionicons names
 export const SPORT_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   basketball: 'basketball-outline',
   football: 'football-outline',
@@ -12,21 +13,21 @@ export const SPORT_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   handball: 'hand-right-outline',
   volleyball: 'baseball-outline',
   tennis: 'tennisball-outline',
-  default: 'trophy-outline',
+  default: 'trophy-outline', // fallback for unknown sports
 };
 
 interface Props {
-  sport: string;
-  size?: number;
+  sport: string; // slug like "basketball" or "natation"
+  size?: number; // icon size in dp, wrapper grows by 18
   color?: string;
-  bg?: string;
+  bg?: string; // background color for the wrapper box
   style?: ViewStyle;
 }
 
 export default function SportIcon({ sport, size = 24, color, bg, style }: Props) {
-  const key = sport.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-  const iconName = SPORT_ICONS[key] || SPORT_ICONS.default;
-  const wrapSize = size + 18;
+  const key = sport.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); // strip accents for lookup
+  const iconName = SPORT_ICONS[key] || SPORT_ICONS.default; // fall back gracefully
+  const wrapSize = size + 18; // wrapper is always 18px bigger than icon
 
   return (
     <View
@@ -35,7 +36,7 @@ export default function SportIcon({ sport, size = 24, color, bg, style }: Props)
           width: wrapSize,
           height: wrapSize,
           borderRadius: 14,
-          backgroundColor: bg || Colors.glass2,
+          backgroundColor: bg || Colors.glass2, // allow custom bg per usage
           borderWidth: 1,
           borderColor: Colors.border1,
           alignItems: 'center',
