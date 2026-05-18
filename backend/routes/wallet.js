@@ -1,24 +1,26 @@
 const express = require('express');
 const pool = require('../db');
+const { walletRules, handleValidation } = require('../middleware/validate');
+const { param } = require('express-validator');
 const router = express.Router();
 
+const userIdRule = [param('userId').isInt({ min: 1 }).withMessage('userId invalide')];
+
 // GET /wallet/:userId
-router.get('/:userId', async (req, res) => {
+router.get('/:userId', userIdRule, handleValidation, async (req, res) => {
   try {
     const [rows] = await pool.execute('SELECT balance, joj_points, card_number FROM wallets WHERE user_id = ?', [req.params.userId]);
-    if (rows.length === 0) return res.status(404).json({ error: 'Wallet not found' });
+    if (rows.length === 0) return res.status(404).json({ error: 'Wallet introuvable' });
     const w = rows[0];
     res.json({ balance: parseFloat(w.balance), jojPoints: w.joj_points, cardNumber: w.card_number });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 
 // POST /wallet/:userId/topup
-router.post('/:userId/topup', async (req, res) => {
+router.post('/:userId/topup', walletRules, handleValidation, async (req, res) => {
   const { amount, method } = req.body;
-  if (!amount || amount <= 0) return res.status(400).json({ error: 'Invalid amount' });
-
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
@@ -33,17 +35,15 @@ router.post('/:userId/topup', async (req, res) => {
     res.json({ balance: parseFloat(rows[0].balance), jojPoints: rows[0].joj_points, txRef });
   } catch (err) {
     await conn.rollback();
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Erreur serveur' });
   } finally {
     conn.release();
   }
 });
 
 // POST /wallet/:userId/debit
-router.post('/:userId/debit', async (req, res) => {
+router.post('/:userId/debit', walletRules, handleValidation, async (req, res) => {
   const { amount, label, icon } = req.body;
-  if (!amount || amount <= 0) return res.status(400).json({ error: 'Invalid amount' });
-
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
@@ -67,14 +67,14 @@ router.post('/:userId/debit', async (req, res) => {
     res.json({ balance: parseFloat(rows[0].balance), jojPoints: rows[0].joj_points, pointsEarned, txRef });
   } catch (err) {
     await conn.rollback();
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Erreur serveur' });
   } finally {
     conn.release();
   }
 });
 
 // GET /wallet/:userId/transactions
-router.get('/:userId/transactions', async (req, res) => {
+router.get('/:userId/transactions', userIdRule, handleValidation, async (req, res) => {
   try {
     const [rows] = await pool.execute(
       'SELECT tx_ref AS id, type, label, amount, icon, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 50',
@@ -82,7 +82,7 @@ router.get('/:userId/transactions', async (req, res) => {
     );
     res.json(rows.map(r => ({ ...r, amount: parseFloat(r.amount) })));
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 

@@ -1,6 +1,11 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../services/api';
+import { USE_LOCAL_DB } from '../services/config';
+import {
+  initDb, localLogin, localRegister, localGetWallet,
+  localTopup, localDebit, localGetTransactions,
+} from '../services/localDb';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -236,6 +241,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
+        if (USE_LOCAL_DB) await initDb();
+
         const [theme, language, sessionUserId] = await Promise.all([
           AsyncStorage.getItem(KEY_THEME),
           AsyncStorage.getItem(KEY_LANGUAGE),
@@ -253,17 +260,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
 
         if (sessionUserId) {
-          // Re-fetch live data from MySQL for the stored user ID
           const userId = parseInt(sessionUserId, 10);
-          const [walletData, txData] = await Promise.all([
-            api.wallet.get(userId),
-            api.wallet.transactions(userId),
-          ]);
-          // We need the user row too — use login won't work without password.
-          // So we store minimal user snapshot in AsyncStorage alongside the ID.
           const userSnapshot = await AsyncStorage.getItem(`@joj_user_${sessionUserId}`);
           if (userSnapshot) {
             const user: AppUser = JSON.parse(userSnapshot);
+            const [walletData, txData] = await Promise.all([
+              USE_LOCAL_DB ? localGetWallet(userId) : api.wallet.get(userId),
+              USE_LOCAL_DB ? localGetTransactions(userId) : api.wallet.transactions(userId),
+            ]);
             dispatch({
               type: 'LOGIN_SUCCESS',
               payload: {
@@ -302,8 +306,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         dispatch({ type: 'AUTH_ERROR', payload: 'Veuillez remplir tous les champs.' });
         return;
       }
-      const { user: apiUser, wallet } = await api.auth.login(normalized, password);
-      const txData = await api.wallet.transactions(apiUser.id);
+      const { user: apiUser, wallet } = USE_LOCAL_DB
+        ? await localLogin(normalized, password)
+        : await api.auth.login(normalized, password);
+
+      const txData = USE_LOCAL_DB
+        ? await localGetTransactions(apiUser.id)
+        : await api.wallet.transactions(apiUser.id);
 
       const user: AppUser = { ...apiUser };
       await AsyncStorage.setItem(KEY_SESSION, String(apiUser.id));
@@ -316,12 +325,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           balance: wallet.balance,
           points: wallet.jojPoints,
           transactions: txData.map(t => ({
-            id: t.id,
-            type: t.type,
-            label: t.label,
-            amount: t.amount,
-            date: formatTxDate(t.created_at),
-            icon: t.icon,
+            id: t.id, type: t.type, label: t.label,
+            amount: t.amount, date: formatTxDate(t.created_at), icon: t.icon,
           })),
         },
       });
@@ -349,9 +354,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         dispatch({ type: 'AUTH_ERROR', payload: 'Le mot de passe doit contenir au moins 8 caractères.' });
         return;
       }
-      const { user: apiUser, wallet } = await api.auth.register({ ...params, email: normalized });
-      const user: AppUser = { ...apiUser };
+      const { user: apiUser, wallet } = USE_LOCAL_DB
+        ? await localRegister({ ...params, email: normalized })
+        : await api.auth.register({ ...params, email: normalized });
 
+      const user: AppUser = { ...apiUser };
       await AsyncStorage.setItem(KEY_SESSION, String(apiUser.id));
       await AsyncStorage.setItem(`@joj_user_${apiUser.id}`, JSON.stringify(user));
 
@@ -374,15 +381,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const topUp = async (amount: number, method: string) => {
     if (!state.user) return;
     try {
-      const result = await api.wallet.topup(state.user.id, amount, method);
-      const tx: Transaction = {
-        id: result.txRef,
-        type: 'credit',
-        label: `Rechargement ${method}`,
-        amount,
-        date: "Maintenant",
-        icon: 'add-circle-outline',
-      };
+      const result = USE_LOCAL_DB
+        ? await localTopup(state.user.id, amount, method)
+        : await api.wallet.topup(state.user.id, amount, method);
+      const tx: Transaction = { id: result.txRef, type: 'credit', label: `Rechargement ${method}`, amount, date: 'Maintenant', icon: 'add-circle-outline' };
       dispatch({ type: 'WALLET_UPDATED', payload: { balance: result.balance, jojPoints: result.jojPoints, tx } });
     } catch (err: any) {
       console.warn('topUp failed:', err.message);
@@ -392,15 +394,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const debit = async (amount: number, label: string, icon?: string) => {
     if (!state.user) return;
     try {
-      const result = await api.wallet.debit(state.user.id, amount, label, icon);
-      const tx: Transaction = {
-        id: result.txRef,
-        type: 'debit',
-        label,
-        amount,
-        date: "Maintenant",
-        icon: icon || 'remove-circle-outline',
-      };
+      const result = USE_LOCAL_DB
+        ? await localDebit(state.user.id, amount, label, icon)
+        : await api.wallet.debit(state.user.id, amount, label, icon);
+      const tx: Transaction = { id: result.txRef, type: 'debit', label, amount, date: 'Maintenant', icon: icon || 'remove-circle-outline' };
       dispatch({ type: 'WALLET_UPDATED', payload: { balance: result.balance, jojPoints: result.jojPoints, tx } });
     } catch (err: any) {
       console.warn('debit failed:', err.message);

@@ -1,10 +1,12 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const { apiLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '16kb' })); // reject oversized payloads
+app.use(apiLimiter);                       // 60 req/min on all routes
 
 app.use('/auth',    require('./routes/auth'));
 app.use('/wallet',  require('./routes/wallet'));
