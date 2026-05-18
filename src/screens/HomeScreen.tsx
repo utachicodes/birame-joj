@@ -1,30 +1,30 @@
 // ─── IMPORTS ─────────────────────────────────────────────────────────────────
 
-import React, { useState } from 'react'; // React core + useState hook to manage local state (e.g. show/hide notifications panel)
+import React, { useState } from 'react';
 import {
-  View,        // Generic container block (like a <div>)
-  Text,        // Renders text on screen
-  StyleSheet,  // Utility to define styles in a structured object
-  ScrollView,  // Container that scrolls when content overflows the screen
-  Pressable,   // Touchable element that triggers an action when pressed
-  Dimensions,  // Lets us read the device screen width/height at runtime
-  Modal,       // Overlay that appears on top of the current screen
-  Image,       // Renders a local or remote image
+  View,       
+  Text,       
+  StyleSheet, 
+  ScrollView, 
+  Pressable,  
+  Dimensions, 
+  Modal,      
+  Image,      
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient'; // Draws a smooth gradient between two or more colors
-import { StatusBar } from 'expo-status-bar';            // Controls the top system bar (clock, battery, etc.)
+import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'expo-status-bar';           
 import { useSafeAreaInsets } from 'react-native-safe-area-context'; // Returns the screen's safe-area padding (avoids notch / home indicator)
-import { Ionicons } from '@expo/vector-icons'; // Library of vector icons (scalable, crisp on any screen)
-import { useRouter } from 'expo-router';        // Navigation hook — lets us push new screens programmatically
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';       
 import CountryBadge from '../components/CountryBadge'; // Small flag/badge component that shows a country's icon
-import SportIcon from '../components/SportIcon';        // Small icon component that renders a sport-specific symbol
-import { getColors, Radius, Shadows, Typography } from '../theme'; // Design tokens: colors, border radii, shadow presets, text styles
-import { LIVE_SCORES, EVENTS, TICKETS, NOTIFICATIONS } from '../data/mock'; // static test data
-import { useApp } from '../context/AppContext'; // global state hook
+import SportIcon from '../components/SportIcon';       
+import { getColors, Radius, Shadows, Typography } from '../theme';
+import { LIVE_SCORES, EVENTS, TICKETS, NOTIFICATIONS } from '../data/mock';
+import { useApp } from '../context/AppContext';
 
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
 
-const { width } = Dimensions.get('window'); // Get the current screen width in pixels
+const { width } = Dimensions.get('window');
 
 // Calculate the width of each Quick Action button so 3 fit in a row with 12 px gaps and 20 px side padding
 const QUICK_W = (width - 40 - 24) / 3;
@@ -32,16 +32,16 @@ const QUICK_W = (width - 40 - 24) / 3;
 // Static list of quick-access shortcuts shown on the home screen grid
 const QUICK_ACTIONS: Array<{
   id: string;
-  icon: keyof typeof Ionicons.glyphMap; // Must be a valid Ionicons icon name
-  label: string;                         // Text shown below the icon
-  route: string;                         // App route to navigate to when pressed
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;                        
+  route: string;                        
 }> = [
-  { id: '1', icon: 'ticket-outline',     label: 'Mes Billets', route: '/tickets'   }, // My Tickets
-  { id: '2', icon: 'map-outline',        label: 'Carte',       route: '/map'       }, // Interactive map
-  { id: '3', icon: 'bus-outline',        label: 'Transport',   route: '/transport' }, // Transport/shuttle info
-  { id: '4', icon: 'restaurant-outline', label: 'Commander',   route: '/food'      }, // Food ordering
-  { id: '5', icon: 'medal-outline',      label: 'Médailles',   route: '/events'    }, // Medal standings
-  { id: '6', icon: 'wallet-outline',     label: 'Wallet',      route: '/wallet'    }, // In-app wallet
+  { id: '1', icon: 'ticket-outline',     label: 'Mes Billets', route: '/tickets'   },
+  { id: '2', icon: 'map-outline',        label: 'Carte',       route: '/map'       },
+  { id: '3', icon: 'bus-outline',        label: 'Transport',   route: '/transport' },
+  { id: '4', icon: 'restaurant-outline', label: 'Commander',   route: '/food'      },
+  { id: '5', icon: 'medal-outline',      label: 'Médailles',   route: '/events'    },
+  { id: '6', icon: 'wallet-outline',     label: 'Wallet',      route: '/wallet'    },
 ];
 
 // Pre-compute how many notifications are unread so we can show a badge count
@@ -50,17 +50,17 @@ const UNREAD_COUNT = NOTIFICATIONS.filter((n) => !n.read).length;
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 
 export default function HomeScreen() {
-  const insets = useSafeAreaInsets(); // Read device safe-area padding (top notch, bottom home bar)
-  const router  = useRouter();        // Navigation helper to change screens
-  const { state } = useApp(); // pull global app state (theme, user, wallet, etc.)
-  const C = getColors(state.theme); // resolve the full color palette for current theme
-  const s = makeStyles(C); // build the StyleSheet with those colors
-  const user = state.user; // shortcut to the logged-in user object
+  const insets = useSafeAreaInsets();
+  const router  = useRouter();       
+  const { state } = useApp();
+  const C = getColors(state.theme);
+  const s = makeStyles(C);
+  const user = state.user;
 
-  const [showNotifs, setShowNotifs] = useState(false); // controls the notification sheet
+  const [showNotifs, setShowNotifs] = useState(false);
 
   return (
-    // Root container that fills the whole screen with the background color
+   
     <View style={s.container}>
 
       {/* System status bar — uses light icons on dark theme and dark icons on light theme */}
@@ -75,9 +75,9 @@ export default function HomeScreen() {
       {/* ── Scrollable page body ── */}
       <ScrollView
         style={{ flex: 1 }}
-        // Add top padding to clear the status bar/notch, and bottom padding to clear the tab bar
+       
         contentContainerStyle={[s.scroll, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 100 }]}
-        showsVerticalScrollIndicator={false} // Hide the scroll bar for a cleaner look
+        showsVerticalScrollIndicator={false}
       >
 
         {/* ── HEADER: logo, greeting, user info, notifications bell ── */}
@@ -127,7 +127,7 @@ export default function HomeScreen() {
           {/* Decorative translucent circles in the top-right corner */}
           <View style={s.heroPattern}>
             {[0, 1, 2].map((i) => (
-              // Three concentric circles growing outward — purely decorative rings
+             
               <View key={i} style={[s.heroCircle, { width: 180 + i * 80, height: 180 + i * 80, borderRadius: (180 + i * 80) / 2, right: -60 - i * 30, top: -40 - i * 20 }]} />
             ))}
           </View>
@@ -287,7 +287,7 @@ type C = ReturnType<typeof getColors>;
  * Shows an optional live dot on the left and an optional tappable link on the right.
  */
 function SectionHeader({ title, right, onRight, dot, C }: { title: string; right?: string; onRight?: () => void; dot?: boolean; C: C }) {
-  const s = makeStyles(C); // Build styles with the passed-in color palette
+  const s = makeStyles(C);
   return (
     <View style={s.sectionHeader}>
       {/* Left side: optional live dot + section title */}
@@ -310,7 +310,7 @@ function SectionHeader({ title, right, onRight, dot, C }: { title: string; right
  * Shows sport name, team flags, the current score, and the match period.
  */
 function LiveCard({ score, C, onPress }: { score: (typeof LIVE_SCORES)[0]; C: C; onPress: () => void }) {
-  const s = makeStyles(C); // Build styles with the passed-in color palette
+  const s = makeStyles(C);
   return (
     <Pressable style={[s.liveCard, { backgroundColor: C.surface2, borderColor: C.border1 }]} onPress={onPress}>
 
@@ -357,7 +357,7 @@ function LiveCard({ score, C, onPress }: { score: (typeof LIVE_SCORES)[0]; C: C;
  * Shows the sport icon, event name, venue, date/time, and an "active" status badge.
  */
 function NextTicket({ ticket, C, onPress }: { ticket: (typeof TICKETS)[0]; C: C; onPress: () => void }) {
-  const s = makeStyles(C); // Build styles with the passed-in color palette
+  const s = makeStyles(C);
   return (
     <Pressable style={[s.ticket, { backgroundColor: C.surface2, borderColor: C.border1 }]} onPress={onPress}>
 
@@ -398,7 +398,7 @@ function NextTicket({ ticket, C, onPress }: { ticket: (typeof TICKETS)[0]; C: C;
  * Shows the sport icon, match name, venue/category, and either a LIVE badge or a start time.
  */
 function EventRow({ event, C, onPress }: { event: (typeof EVENTS)[0]; C: C; onPress: () => void }) {
-  const s = makeStyles(C); // Build styles with the passed-in color palette
+  const s = makeStyles(C);
   return (
     <Pressable style={[s.eventRow, { backgroundColor: C.surface2, borderColor: C.border1 }]} onPress={onPress}>
 
@@ -414,7 +414,7 @@ function EventRow({ event, C, onPress }: { event: (typeof EVENTS)[0]; C: C; onPr
       {/* Right side: show "LIVE" badge if ongoing, otherwise show scheduled start time */}
       <View style={s.eventTime}>
         {event.status === 'live' ? (
-          // Live badge (same style as in LiveCard)
+         
           <View style={[s.liveBadge, { backgroundColor: C.liveDot + '20' }]}>
             <View style={[s.liveBadgeDot, { backgroundColor: C.liveDot }]} />
             <Text style={[s.liveBadgeText, { color: C.liveDot }]}>LIVE</Text>
@@ -437,29 +437,29 @@ function EventRow({ event, C, onPress }: { event: (typeof EVENTS)[0]; C: C; onPr
 function makeStyles(C: C) {
   return StyleSheet.create({
 
-    // ── Root container ──
-    container: { flex: 1, backgroundColor: C.bg }, // Full-screen background
+   
+    container: { flex: 1, backgroundColor: C.bg },
 
-    // ── Decorative top-right glow blob ──
+   
     glow: {
-      position: 'absolute',       // Removed from normal flow, overlaid on screen
-      width: 400, height: 400,    // Large circle
-      borderRadius: 200,          // Half of width/height → perfect circle
-      backgroundColor: C.brand + '08', // Brand color at 3% opacity — very subtle
-      top: -120, right: -100,     // Partially off-screen for a soft edge effect
+      position: 'absolute',      
+      width: 400, height: 400,   
+      borderRadius: 200,         
+      backgroundColor: C.brand + '08',
+      top: -120, right: -100,    
     },
 
-    // ── ScrollView content area ──
-    scroll: { paddingHorizontal: 20 }, // 20 px left/right margin for all content
+   
+    scroll: { paddingHorizontal: 20 },
 
-    // ── Header row ──
+   
     header: {
-      flexDirection: 'row',            // Children side by side
+      flexDirection: 'row',           
       alignItems: 'flex-start',        // Align to top so the bell doesn't stretch
-      justifyContent: 'space-between', // Push logo column left and bell button right
-      marginBottom: 20,                // Space below header before the hero card
+      justifyContent: 'space-between',
+      marginBottom: 20,               
     },
-    headerLeft: { gap: 4 }, // Vertical gap between each line of text in the left column
+    headerLeft: { gap: 4 },
 
     // ── Logo row (image + "JOJ 2026" label) ──
     logoRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
@@ -470,49 +470,49 @@ function makeStyles(C: C) {
     logoLabel: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
 
     // ── "Bonjour," subtitle ──
-    greeting: { ...Typography.subheadline }, // Reuse app-wide subheadline text style
+    greeting: { ...Typography.subheadline },
 
     // ── User's full name ──
-    userName: { ...Typography.title1, fontWeight: '800' }, // Large bold title
+    userName: { ...Typography.title1, fontWeight: '800' },
 
     // ── Country flag + "Country · Role" row ──
     userMeta: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
     userMetaText: { ...Typography.caption, fontWeight: '500' },
 
-    // ── Notification bell button ──
+   
     iconBtn: {
-      width: 42, height: 42,         // Square touch target
-      borderRadius: 14,              // Rounded square (squircle-ish)
-      borderWidth: 1,                // Thin border
-      alignItems: 'center', justifyContent: 'center', // Center the icon inside
+      width: 42, height: 42,        
+      borderRadius: 14,             
+      borderWidth: 1,               
+      alignItems: 'center', justifyContent: 'center',
     },
 
-    // ── Red unread notification dot on the bell ──
+   
     dot: {
-      position: 'absolute',        // Float over the bell icon
-      top: 10, right: 10,          // Positioned near the top-right corner of the button
+      position: 'absolute',       
+      top: 10, right: 10,         
       width: 8, height: 8,
-      borderRadius: 4,             // Circle
-      borderWidth: 1.5,            // Border in bg color creates a gap between dot and icon
+      borderRadius: 4,            
+      borderWidth: 1.5,           
     },
 
-    // ── Hero banner card ──
+   
     hero: {
       height: 132,
-      borderRadius: Radius.xl, // Large corner radius for a card look
-      overflow: 'hidden',       // Clip gradient and decorative circles within the rounded corners
+      borderRadius: Radius.xl,
+      overflow: 'hidden',      
       marginBottom: 14,
     },
-    heroPattern: { position: 'absolute', right: 0, top: 0 }, // Anchor point for the decorative circles
+    heroPattern: { position: 'absolute', right: 0, top: 0 },
     heroCircle: {
       position: 'absolute',
       borderWidth: 1,
-      borderColor: 'rgba(255,255,255,0.10)', // Very subtle white ring
+      borderColor: 'rgba(255,255,255,0.10)',
     },
     heroContent: {
       flex: 1,
       flexDirection: 'row',
-      justifyContent: 'space-between', // Event info left, day counter right
+      justifyContent: 'space-between',
       alignItems: 'center',
       padding: 20,
     },
@@ -523,28 +523,28 @@ function makeStyles(C: C) {
     // ── "Dakar 2026" large event name ──
     heroTitle: { fontSize: 26, fontWeight: '900', color: '#fff', letterSpacing: -0.5 },
 
-    // ── Date range + discipline count subtitle ──
+   
     heroSub: { fontSize: 12, color: 'rgba(255,255,255,0.85)', marginTop: 4 },
 
     // ── Day counter badge ("J+2 / JOUR") ──
     heroDay: {
-      backgroundColor: 'rgba(255,255,255,0.18)', // Semi-transparent white pill
+      backgroundColor: 'rgba(255,255,255,0.18)',
       borderRadius: Radius.md,
       paddingHorizontal: 14, paddingVertical: 8,
       alignItems: 'center',
     },
-    heroDayNum: { fontSize: 22, fontWeight: '900', color: '#fff' },   // Big day number
+    heroDayNum: { fontSize: 22, fontWeight: '900', color: '#fff' },  
     heroDayLabel: { fontSize: 9, fontWeight: '700', color: 'rgba(255,255,255,0.85)', letterSpacing: 1 }, // "JOUR" label
 
-    // ── Progress bar at the bottom of the hero ──
+   
     heroBar: {
-      position: 'absolute', bottom: 0, left: 0, right: 0, // Stick to the very bottom
+      position: 'absolute', bottom: 0, left: 0, right: 0,
       height: 3,
-      backgroundColor: 'rgba(0,0,0,0.25)', // Dark track
+      backgroundColor: 'rgba(0,0,0,0.25)',
     },
-    heroBarFill: { height: 3, backgroundColor: '#fff' }, // White fill = percentage of games elapsed
+    heroBarFill: { height: 3, backgroundColor: '#fff' },
 
-    // ── Wallet balance row ──
+   
     walletRow: {
       flexDirection: 'row', alignItems: 'center',
       borderWidth: 1, borderRadius: Radius.lg,
@@ -553,9 +553,9 @@ function makeStyles(C: C) {
     walletIcon: {
       width: 44, height: 44, borderRadius: 12,
       alignItems: 'center', justifyContent: 'center',
-      borderWidth: 1, // Subtle border around the icon box
+      borderWidth: 1,
     },
-    walletText: { flex: 1 }, // Take all remaining space between the icon and the CTA
+    walletText: { flex: 1 },
 
     // ── "Solde JOJ Wallet" label ──
     walletLabel: { ...Typography.caption, fontWeight: '600' },
@@ -570,7 +570,7 @@ function makeStyles(C: C) {
     walletCta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
     walletCtaText: { ...Typography.footnote, fontWeight: '700' },
 
-    // ── Section header row (title + optional right link) ──
+   
     sectionHeader: {
       flexDirection: 'row', alignItems: 'center',
       justifyContent: 'space-between',
@@ -582,19 +582,19 @@ function makeStyles(C: C) {
     // ── Small red dot used next to "En direct" title ──
     liveDot: { width: 8, height: 8, borderRadius: 4 },
 
-    // ── Quick actions 3-column grid ──
-    quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 }, // Wrap to new row every 3 items
+   
+    quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
 
-    // ── Individual quick action button ──
+   
     quickItem: {
-      width: QUICK_W,        // Exactly 1/3 of the available row width
+      width: QUICK_W,       
       borderWidth: 1, borderRadius: Radius.lg,
       padding: 14,
-      alignItems: 'center', // Center icon and label horizontally
-      gap: 10,              // Space between icon and label
+      alignItems: 'center',
+      gap: 10,             
     },
 
-    // ── Icon box inside each quick action button ──
+   
     quickIconBox: {
       width: 44, height: 44, borderRadius: 12,
       borderWidth: 1,
@@ -602,22 +602,22 @@ function makeStyles(C: C) {
     },
     quickLabel: { ...Typography.footnote, fontWeight: '600', textAlign: 'center' },
 
-    // ── Horizontal scroll container for live cards ──
+   
     hScroll: { gap: 12, paddingBottom: 4 }, // 12 px gap between cards; 4 px bottom so shadow isn't clipped
 
-    // ── Individual live score card ──
+   
     liveCard: { width: 230, borderWidth: 1, borderRadius: Radius.lg, padding: 16, gap: 12 },
 
-    // ── Live card top row (LIVE badge + sport name) ──
+   
     liveCardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
 
     // ── "LIVE" pill badge ──
     liveBadge: {
       flexDirection: 'row', alignItems: 'center', gap: 5,
-      borderRadius: Radius.full,          // Fully rounded (pill shape)
+      borderRadius: Radius.full,         
       paddingHorizontal: 8, paddingVertical: 3,
     },
-    liveBadgeDot: { width: 6, height: 6, borderRadius: 3 }, // Small dot inside the badge
+    liveBadgeDot: { width: 6, height: 6, borderRadius: 3 },
 
     // ── "LIVE" text inside the badge ──
     liveBadgeText: { fontSize: 10, fontWeight: '800', letterSpacing: 0.6 },
@@ -625,31 +625,31 @@ function makeStyles(C: C) {
     // ── Sport name (e.g. "Basketball") ──
     liveSport: { ...Typography.caption2, fontWeight: '600' },
 
-    // ── Row containing both teams and the score ──
+   
     liveTeams: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
 
-    // ── Single team column (flag + name) ──
+   
     liveTeam: { alignItems: 'center', gap: 6, flex: 1 },
     liveTeamName: { ...Typography.caption, fontWeight: '600', textAlign: 'center' },
 
     // ── Score in the middle (e.g. "72 : 68") ──
     liveScore: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8 },
-    liveScoreNum: { fontSize: 26, fontWeight: '900' }, // Large bold score digits
+    liveScoreNum: { fontSize: 26, fontWeight: '900' },
     liveScoreSep: { fontSize: 18 },                    // ":" separator between scores
 
     // ── Match period (e.g. "Q3 · 5:42") ──
     livePeriod: { ...Typography.caption, textAlign: 'center' },
 
-    // ── Next ticket row card ──
+   
     ticket: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: Radius.lg, padding: 16, gap: 14 },
 
-    // ── Sport icon box on the left of the ticket row ──
+   
     ticketIconWrap: { width: 48, height: 48, borderRadius: 14, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
 
-    // ── Text content area in the ticket row ──
+   
     ticketBody: { flex: 1, gap: 4 },
 
-    // ── Top row inside the ticket: type label + status pill ──
+   
     ticketTopRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 
     // ── Ticket category label (e.g. "FINALE") ──
@@ -657,13 +657,13 @@ function makeStyles(C: C) {
 
     // ── Green "Actif" status pill ──
     ticketStatus: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: Radius.full, paddingHorizontal: 7, paddingVertical: 2 },
-    ticketStatusDot: { width: 5, height: 5, borderRadius: 3 }, // Small green dot inside the pill
+    ticketStatusDot: { width: 5, height: 5, borderRadius: 3 },
     ticketStatusText: { fontSize: 10, fontWeight: '700' },
 
-    ticketEvent: { ...Typography.callout, fontWeight: '700' }, // Event title (bold)
-    ticketVenue: { ...Typography.footnote },                   // Venue name (lighter)
+    ticketEvent: { ...Typography.callout, fontWeight: '700' },
+    ticketVenue: { ...Typography.footnote },                  
 
-    // ── Date/time row at the bottom of the ticket ──
+   
     ticketMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
     ticketMetaText: { ...Typography.caption },
 
@@ -672,35 +672,35 @@ function makeStyles(C: C) {
       flexDirection: 'row', alignItems: 'center',
       borderWidth: 1, borderRadius: Radius.lg,
       padding: 14, gap: 12,
-      marginBottom: 8, // Space between rows
+      marginBottom: 8,
     },
-    eventInfo: { flex: 1, gap: 2 }, // Text column takes all available space
+    eventInfo: { flex: 1, gap: 2 },
 
     // ── Match title (e.g. "Sénégal vs Mali") ──
     eventMatch: { ...Typography.callout, fontWeight: '600' },
 
-    // ── Venue + category subtitle ──
+   
     eventVenue: { ...Typography.caption },
 
-    // ── Right-side time or LIVE badge container ──
-    eventTime: { alignItems: 'flex-end' }, // Right-align the time or badge
+   
+    eventTime: { alignItems: 'flex-end' },
 
-    // ── Scheduled start time text ──
+   
     eventTimeText: { ...Typography.callout, fontWeight: '700' },
 
-    // ── Notifications Modal ──
+   
 
-    // Semi-transparent black backdrop behind the sheet
+   
     modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)' },
 
-    // Slide-up bottom sheet panel
+   
     notifSheet: {
-      borderTopLeftRadius: 28, borderTopRightRadius: 28, // Rounded top corners
-      borderWidth: 1, borderBottomWidth: 0,              // Border on top and sides only
+      borderTopLeftRadius: 28, borderTopRightRadius: 28,
+      borderWidth: 1, borderBottomWidth: 0,             
       paddingHorizontal: 20, paddingTop: 12,
     },
 
-    // Drag handle pill at the top center of the sheet
+   
     sheetHandle: { width: 38, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 20 },
 
     // "Notifications" title + unread count badge row
@@ -711,31 +711,31 @@ function makeStyles(C: C) {
     notifBadge: { borderRadius: Radius.full, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 4 },
     notifBadgeText: { fontSize: 12, fontWeight: '700' },
 
-    // Individual notification row
+   
     notifRow: {
       flexDirection: 'row', alignItems: 'flex-start', gap: 12,
       paddingVertical: 14, paddingHorizontal: 4,
-      borderRadius: Radius.md, // Slight rounding so the highlight looks neat on unread rows
+      borderRadius: Radius.md,
     },
 
-    // Colored icon box inside each notification
+   
     notifIconBox: { width: 40, height: 40, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
 
-    // Text column (title row + body + timestamp)
+   
     notifBody: { flex: 1, gap: 3 },
 
-    // Title + unread dot side by side
+   
     notifTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    notifItemTitle: { fontSize: 13, fontWeight: '700', flex: 1 }, // Shrinks to let the dot fit
+    notifItemTitle: { fontSize: 13, fontWeight: '700', flex: 1 },
 
-    // Small blue circle shown on unread notifications
+   
     unreadDot: { width: 7, height: 7, borderRadius: 4 },
 
-    notifItemBody: { fontSize: 13, lineHeight: 18 }, // Notification body text
+    notifItemBody: { fontSize: 13, lineHeight: 18 },
     notifTime: { fontSize: 11, fontWeight: '500', marginTop: 2 }, // Timestamp (e.g. "Il y a 5 min")
 
-    // Thin horizontal separator between notification rows
-    divider: { height: StyleSheet.hairlineWidth, marginLeft: 52 }, // Indent to align with text, not icon
+   
+    divider: { height: StyleSheet.hairlineWidth, marginLeft: 52 },
 
     // "Fermer" close button at the bottom of the sheet
     closeBtn: { marginTop: 16, height: 48, borderRadius: Radius.lg, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
