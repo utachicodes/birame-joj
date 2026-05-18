@@ -1,14 +1,14 @@
-import React, { useState } from 'react'; // React core + local state hook
+import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, Pressable, Switch, // all RN primitives we use
+  View, Text, StyleSheet, ScrollView, Pressable, Switch,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient'; // smooth color gradient backgrounds
-import { StatusBar } from 'expo-status-bar'; // control the top system bar
-import { useSafeAreaInsets } from 'react-native-safe-area-context'; // notch / home-bar padding
-import { Ionicons } from '@expo/vector-icons'; // scalable vector icons
-import CountryBadge from '../components/CountryBadge'; // flag chip component
-import { Colors, Typography, Radius } from '../theme'; // design tokens
-import { useApp } from '../context/AppContext'; // global app state + dispatch
+import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'expo-status-bar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import CountryBadge from '../components/CountryBadge';
+import { Colors, Typography, Radius } from '../theme';
+import { useApp } from '../context/AppContext';
 
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
 
@@ -24,7 +24,7 @@ const LANGUAGES = [
 const MENU_ITEMS: Array<{
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
-  color: string; // accent color for the icon box
+  color: string;
 }> = [
   { icon: 'person-circle-outline',   label: 'Modifier mon profil',  color: Colors.purple      },
   { icon: 'shield-checkmark-outline',label: 'Sécurité & biométrie', color: Colors.blue        },
@@ -37,37 +37,37 @@ const MENU_ITEMS: Array<{
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 
 export default function ProfileScreen() {
-  const insets = useSafeAreaInsets(); // safe-area padding for notch and home bar
-  const { state, dispatch, logout } = useApp(); // pull global state + actions
-  const user = state.user; // shortcut to the logged-in user object
+  const insets = useSafeAreaInsets();
+  const { state, dispatch, logout } = useApp();
+  const user = state.user;
 
-  const [activeLang, setActiveLang] = useState('FR'); // tracks the selected language chip
+  const [activeLang, setActiveLang] = useState('FR');
 
-  // Hard-coded ticket count for now — replace with real data later
+ 
   const ticketCount = 4;
-  const tripCount   = 12; // number of transport trips taken
+  const tripCount   = 12;
 
   // Sum all debit transactions, divide by 1000 to get "K" units (e.g. 12 000 → 12K)
   const spentK = Math.floor(
     state.transactions
-      .filter((t) => t.type === 'debit') // only spending, not top-ups
-      .reduce((s, t) => s + t.amount, 0) // total XOF spent
+      .filter((t) => t.type === 'debit')
+      .reduce((s, t) => s + t.amount, 0)
     / 1000
   );
 
-  // Three summary stats shown in the card row below the ID card
+ 
   const STATS = [
     { id: 'tickets',   icon: 'ticket-outline' as const, label: 'Billets',  value: String(ticketCount), color: Colors.brand },
     { id: 'transport', icon: 'car-outline'    as const, label: 'Trajets',  value: String(tripCount),   color: Colors.teal  },
     { id: 'spending',  icon: 'wallet-outline' as const, label: 'Dépenses', value: spentK > 0 ? `${spentK}K` : '0', color: Colors.gold },
   ];
 
-  // Wraps logout in async so we can await any cleanup inside AppContext
+ 
   const handleLogout = async () => {
     await logout();
   };
 
-  // Nothing to render until the user object is loaded
+ 
   if (!user) return null;
 
   return (
@@ -93,7 +93,7 @@ export default function ProfileScreen() {
       {/* Main scrollable body */}
       <ScrollView
         contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 100 }]}
-        showsVerticalScrollIndicator={false} // cleaner look without scrollbar
+        showsVerticalScrollIndicator={false}
       >
 
         {/* ── ID CARD: gradient accreditation card with avatar, name, QR button ── */}
@@ -189,7 +189,7 @@ export default function ProfileScreen() {
         <Text style={styles.sectionLabel}>LANGUE D'INTERFACE</Text>
         <View style={styles.langGrid}>
           {LANGUAGES.map((l) => (
-            // Pressing a chip sets it as active; active chip gets brand styling
+           
             <Pressable
               key={l.code}
               onPress={() => setActiveLang(l.code)}
@@ -288,9 +288,9 @@ function ToggleRow({
       <Switch
         value={value}
         onValueChange={onChange}
-        trackColor={{ false: Colors.surface3, true: Colors.brand }} // off/on track colors
-        thumbColor="#fff" // always white thumb
-        ios_backgroundColor={Colors.surface3} // iOS off-state track color
+        trackColor={{ false: Colors.surface3, true: Colors.brand }}
+        thumbColor="#fff"
+        ios_backgroundColor={Colors.surface3}
       />
     </View>
   );
@@ -300,97 +300,97 @@ function ToggleRow({
 
 const styles = StyleSheet.create({
 
-  // ── Root ──
-  container: { flex: 1, backgroundColor: Colors.bg }, // full-screen base
+ 
+  container: { flex: 1, backgroundColor: Colors.bg },
 
-  // ── Sticky header ──
+ 
   header: { paddingHorizontal: 20, paddingBottom: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: Colors.border1 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerTitle: { ...Typography.title2, fontWeight: '800' },
-  iconBtn: { width: 36, height: 36, borderRadius: 12, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, alignItems: 'center', justifyContent: 'center' }, // edit button
+  iconBtn: { width: 36, height: 36, borderRadius: 12, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, alignItems: 'center', justifyContent: 'center' },
 
-  // ── ScrollView body ──
-  scroll: { padding: 20, gap: 12 }, // uniform gap between sections
+ 
+  scroll: { padding: 20, gap: 12 },
 
-  // ── ID card ──
-  idCard: { borderRadius: Radius.xl, padding: 20, gap: 16, overflow: 'hidden' }, // clip gradient inside rounded corners
+ 
+  idCard: { borderRadius: Radius.xl, padding: 20, gap: 16, overflow: 'hidden' },
   idTop: { flexDirection: 'row', alignItems: 'center', gap: 14 },
 
-  // ── Avatar ──
+ 
   avatar: { width: 64, height: 64, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.20)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.30)' },
-  avatarText: { fontSize: 24, fontWeight: '800', color: '#fff' }, // initials in white
-  avatarVerified: { position: 'absolute', bottom: -3, right: -3, width: 20, height: 20, borderRadius: 10, backgroundColor: Colors.success, borderWidth: 2, borderColor: Colors.brand, alignItems: 'center', justifyContent: 'center' }, // green checkmark badge
+  avatarText: { fontSize: 24, fontWeight: '800', color: '#fff' },
+  avatarVerified: { position: 'absolute', bottom: -3, right: -3, width: 20, height: 20, borderRadius: 10, backgroundColor: Colors.success, borderWidth: 2, borderColor: Colors.brand, alignItems: 'center', justifyContent: 'center' },
 
-  // ── Name / country / role ──
+ 
   idName: { fontSize: 18, fontWeight: '800', color: '#fff' },
-  idMeta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }, // flag + country name
+  idMeta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
   idCountry: { fontSize: 12, color: 'rgba(255,255,255,0.85)' },
-  idRoleBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', marginTop: 6, backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: Radius.full, paddingHorizontal: 8, paddingVertical: 3 }, // frosted pill
+  idRoleBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', marginTop: 6, backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: Radius.full, paddingHorizontal: 8, paddingVertical: 3 },
   idRole: { fontSize: 11, fontWeight: '700', color: '#fff' },
 
-  // ── QR button ──
-  qrBtn: { width: 48, height: 48, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }, // frosted square button
+ 
+  qrBtn: { width: 48, height: 48, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' },
 
-  // ── Card divider ──
-  idDivider: { height: StyleSheet.hairlineWidth, backgroundColor: 'rgba(255,255,255,0.20)' }, // barely visible white line
+ 
+  idDivider: { height: StyleSheet.hairlineWidth, backgroundColor: 'rgba(255,255,255,0.20)' },
 
-  // ── Accreditation + verified ──
+ 
   idBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  idLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1, color: 'rgba(255,255,255,0.7)' }, // tiny uppercase label
-  idNum: { fontSize: 13, color: '#fff', fontFamily: 'monospace', marginTop: 2, letterSpacing: 0.5 }, // monospace accreditation number
+  idLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1, color: 'rgba(255,255,255,0.7)' },
+  idNum: { fontSize: 13, color: '#fff', fontFamily: 'monospace', marginTop: 2, letterSpacing: 0.5 },
   idStatus: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  idStatusDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#5BFF8E' }, // green dot
+  idStatusDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#5BFF8E' },
   idStatusText: { fontSize: 10, fontWeight: '800', color: '#5BFF8E', letterSpacing: 0.5 }, // "VÉRIFIÉ"
 
-  // ── Email row ──
+ 
   emailRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 },
   emailText: { fontSize: 13, color: Colors.textTertiary },
 
-  // ── Stats row ──
-  statsRow: { flexDirection: 'row', gap: 10 }, // three equal cards side by side
+ 
+  statsRow: { flexDirection: 'row', gap: 10 },
   statCard: { flex: 1, alignItems: 'center', backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.lg, padding: 14, gap: 6 },
   statIcon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
-  statValue: { fontSize: 20, fontWeight: '900', color: Colors.text }, // large bold number
-  statLabel: { ...Typography.caption, color: Colors.textTertiary }, // small label below the number
+  statValue: { fontSize: 20, fontWeight: '900', color: Colors.text },
+  statLabel: { ...Typography.caption, color: Colors.textTertiary },
 
-  // ── JOJ Points card ──
-  pointsCard: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: Colors.gold + '40', borderRadius: Radius.lg, padding: 16, overflow: 'hidden' }, // clip gradient
+ 
+  pointsCard: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: Colors.gold + '40', borderRadius: Radius.lg, padding: 16, overflow: 'hidden' },
   pointsLeft: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  pointsValue: { fontSize: 18, fontWeight: '800', color: Colors.gold }, // gold balance number
-  pointsSub: { fontSize: 11, color: Colors.textTertiary, marginTop: 2 }, // conversion rate hint
+  pointsValue: { fontSize: 18, fontWeight: '800', color: Colors.gold },
+  pointsSub: { fontSize: 11, color: Colors.textTertiary, marginTop: 2 },
 
-  // ── Section labels (uppercase headers above card groups) ──
+ 
   sectionLabel: { ...Typography.label, marginTop: 8, marginBottom: 4 },
 
-  // ── Language picker ──
-  langGrid: { flexDirection: 'row', gap: 8 }, // four chips in a row
+ 
+  langGrid: { flexDirection: 'row', gap: 8 },
   langChip: { flex: 1, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.md, padding: 12, alignItems: 'center', gap: 4 },
-  langChipActive: { backgroundColor: Colors.brand + '15', borderColor: Colors.brand + '50' }, // selected state
+  langChipActive: { backgroundColor: Colors.brand + '15', borderColor: Colors.brand + '50' },
   langCode: { fontSize: 14, fontWeight: '800', color: Colors.textSecondary }, // "FR", "EN", etc.
-  langCodeActive: { color: Colors.brand }, // selected chip code in brand color
-  langLabel: { fontSize: 11, color: Colors.textTertiary }, // full language name
-  langLabelActive: { color: Colors.text }, // selected chip name in full text color
+  langCodeActive: { color: Colors.brand },
+  langLabel: { fontSize: 11, color: Colors.textTertiary },
+  langLabelActive: { color: Colors.text },
 
-  // ── Settings card (shared by notifications and account sections) ──
+ 
   settingsCard: { backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.lg, overflow: 'hidden' },
-  divider: { height: StyleSheet.hairlineWidth, backgroundColor: Colors.border1, marginHorizontal: 14 }, // hairline row separator
+  divider: { height: StyleSheet.hairlineWidth, backgroundColor: Colors.border1, marginHorizontal: 14 },
 
-  // ── Toggle row ──
+ 
   toggleRow: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 },
-  toggleIcon: { width: 36, height: 36, borderRadius: 10, backgroundColor: Colors.surface3, borderWidth: 1, borderColor: Colors.border1, alignItems: 'center', justifyContent: 'center' }, // icon box
-  toggleInfo: { flex: 1, gap: 2 }, // label + subtitle column
+  toggleIcon: { width: 36, height: 36, borderRadius: 10, backgroundColor: Colors.surface3, borderWidth: 1, borderColor: Colors.border1, alignItems: 'center', justifyContent: 'center' },
+  toggleInfo: { flex: 1, gap: 2 },
   toggleLabel: { ...Typography.callout, fontWeight: '600' },
-  toggleSub: { ...Typography.caption, color: Colors.textTertiary }, // smaller hint text
+  toggleSub: { ...Typography.caption, color: Colors.textTertiary },
 
-  // ── Account menu row ──
+ 
   menuRow: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 },
-  menuIcon: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', borderWidth: 1 }, // colored icon box
-  menuLabel: { ...Typography.callout, fontWeight: '500', flex: 1 }, // menu item text
+  menuIcon: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  menuLabel: { ...Typography.callout, fontWeight: '500', flex: 1 },
 
-  // ── Logout button ──
-  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 52, borderRadius: Radius.lg, backgroundColor: Colors.error + '12', borderWidth: 1, borderColor: Colors.error + '25', marginTop: 8 }, // subtle red tint
+ 
+  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 52, borderRadius: Radius.lg, backgroundColor: Colors.error + '12', borderWidth: 1, borderColor: Colors.error + '25', marginTop: 8 },
   logoutText: { ...Typography.callout, fontWeight: '700', color: Colors.error },
 
-  // ── Version string at the bottom ──
+ 
   version: { ...Typography.caption, color: Colors.textDim, textAlign: 'center', marginTop: 8 },
 });

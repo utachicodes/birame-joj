@@ -56,28 +56,28 @@ const SLIDES: Array<{
 export default function OnboardingScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const flatListRef = useRef<FlatList>(null); // ref to programmatically scroll slides
-  const [activeIndex, setActiveIndex] = useState(0); // tracks which slide is visible
-  const scrollX = useRef(new Animated.Value(0)).current; // drives dot and slide animations
+  const flatListRef = useRef<FlatList>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const scrollX = useRef(new Animated.Value(0)).current;
 
-  // listen to scroll to update activeIndex and drive animated values
+ 
   const handleScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { x: scrollX } } }],
     {
       useNativeDriver: false,
       listener: (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-        const idx = Math.round(e.nativeEvent.contentOffset.x / width); // snap to nearest slide
+        const idx = Math.round(e.nativeEvent.contentOffset.x / width);
         setActiveIndex(idx);
       },
     }
   );
 
-  // advance slide or navigate to auth on last slide
+ 
   const handleNext = () => {
     if (activeIndex < SLIDES.length - 1) {
       flatListRef.current?.scrollToIndex({ index: activeIndex + 1, animated: true });
     } else {
-      router.replace('/auth'); // done with onboarding, go to login
+      router.replace('/auth');
     }
   };
 
@@ -104,10 +104,10 @@ export default function OnboardingScreen() {
         ref={flatListRef}
         data={SLIDES}
         horizontal
-        pagingEnabled // full-page snapping
+        pagingEnabled
         showsHorizontalScrollIndicator={false}
         onScroll={handleScroll}
-        scrollEventThrottle={16} // smooth animation updates
+        scrollEventThrottle={16}
         keyExtractor={(item) => item.id}
         renderItem={({ item, index }) => <Slide item={item} index={index} scrollX={scrollX} />}
       />
@@ -119,7 +119,7 @@ export default function OnboardingScreen() {
             const inputRange = [(i - 1) * width, i * width, (i + 1) * width];
             const dotWidth = scrollX.interpolate({
               inputRange,
-              outputRange: [8, 28, 8], // active dot is wider
+              outputRange: [8, 28, 8],
               extrapolate: 'clamp',
             });
             return <Animated.View key={i} style={[styles.dot, { width: dotWidth }]} />;
@@ -141,9 +141,9 @@ export default function OnboardingScreen() {
 // individual slide with parallax-like opacity and translateY driven by scrollX
 function Slide({ item, index, scrollX }: { item: (typeof SLIDES)[0]; index: number; scrollX: Animated.Value }) {
   const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
-  const opacity = scrollX.interpolate({ inputRange, outputRange: [0.3, 1, 0.3], extrapolate: 'clamp' }); // fade neighboring slides
-  const translateY = scrollX.interpolate({ inputRange, outputRange: [40, 0, 40], extrapolate: 'clamp' }); // slide content up when active
-  const iconScale = scrollX.interpolate({ inputRange, outputRange: [0.8, 1, 0.8], extrapolate: 'clamp' }); // icon pops on active slide
+  const opacity = scrollX.interpolate({ inputRange, outputRange: [0.3, 1, 0.3], extrapolate: 'clamp' });
+  const translateY = scrollX.interpolate({ inputRange, outputRange: [40, 0, 40], extrapolate: 'clamp' });
+  const iconScale = scrollX.interpolate({ inputRange, outputRange: [0.8, 1, 0.8], extrapolate: 'clamp' });
 
   return (
     <View style={styles.slide}>
@@ -165,8 +165,8 @@ function Slide({ item, index, scrollX }: { item: (typeof SLIDES)[0]; index: numb
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.bg },
-  glow1: { position: 'absolute', width: 400, height: 400, borderRadius: 200, backgroundColor: Colors.brand + '12', top: -100, right: -100 }, // top-right ambient glow
-  glow2: { position: 'absolute', width: 350, height: 350, borderRadius: 175, backgroundColor: Colors.brand + '08', bottom: 100, left: -100 }, // bottom-left ambient glow
+  glow1: { position: 'absolute', width: 400, height: 400, borderRadius: 200, backgroundColor: Colors.brand + '12', top: -100, right: -100 },
+  glow2: { position: 'absolute', width: 350, height: 350, borderRadius: 175, backgroundColor: Colors.brand + '08', bottom: 100, left: -100 },
 
   topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 12 },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   skipBtn: { paddingHorizontal: 12, paddingVertical: 6 },
   skipText: { ...Typography.footnote, color: Colors.textSecondary, fontWeight: '600' },
 
-  slide: { width, flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 }, // exactly one screen wide for paging
+  slide: { width, flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
   slideContent: { alignItems: 'center', gap: 28 },
   iconContainer: { padding: 8 },
   iconRingOuter: { width: 160, height: 160, borderRadius: 50, backgroundColor: Colors.brand + '08', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Colors.brand + '15' },
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
 
   footer: { paddingHorizontal: 24, gap: 24 },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 6, alignItems: 'center' },
-  dot: { height: 8, borderRadius: 4, backgroundColor: Colors.brand }, // width is animated
+  dot: { height: 8, borderRadius: 4, backgroundColor: Colors.brand },
 
   cta: { height: 56, borderRadius: Radius.lg, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, overflow: 'hidden' },
   ctaText: { fontSize: 16, fontWeight: '800', color: '#fff', letterSpacing: -0.2 },
