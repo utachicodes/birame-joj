@@ -17,13 +17,34 @@ import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import QRCode from 'react-native-qrcode-svg'; // real QR code generation
+import QRCode from 'react-native-qrcode-svg';
 import { useApp } from '../src/context/AppContext';
 import { useTranslation } from '../src/i18n';
 import { getColors, Radius } from '../src/theme';
 
 const { width } = Dimensions.get('window');
-const CARD_W = width - 40; // card spans most of the screen width
+const CARD_W = width - 40;
+
+type PointsItem = {
+  id: string;
+  label: string;
+  description: string;
+  points: number;
+  icon: keyof typeof Ionicons.glyphMap;
+  color: string;
+  category: string;
+};
+
+const POINTS_CATALOG: PointsItem[] = [
+  { id: 'P1', label: 'Maillot JOJ officiel',     description: 'T-shirt édition limitée Dakar 2026',   points: 500,  icon: 'shirt-outline',          color: '#FF6B35', category: 'Boutique' },
+  { id: 'P2', label: 'Casquette JOJ',             description: 'Casquette brodée JOJ 2026',             points: 250,  icon: 'glasses-outline',        color: '#4A90E2', category: 'Boutique' },
+  { id: 'P3', label: 'Repas Village Athletes',    description: 'Coupon repas au Village des Athlètes',  points: 300,  icon: 'restaurant-outline',     color: '#3FBA7A', category: 'Restauration' },
+  { id: 'P4', label: 'Boisson & Snack',           description: 'Pack boissons + snacks dans tous les sites', points: 150, icon: 'cafe-outline',        color: '#D4AF37', category: 'Restauration' },
+  { id: 'P5', label: 'Navette prioritaire',       description: 'Accès navette express Village ↔ Centre', points: 200, icon: 'bus-outline',           color: '#7B5EA7', category: 'Transport' },
+  { id: 'P6', label: 'Réduction Yango 20%',       description: 'Code promo 20% sur votre prochain Yango', points: 180, icon: 'car-outline',          color: '#3FBDB6', category: 'Transport' },
+  { id: 'P7', label: 'Accès tribune VIP',         description: 'Surclassement tribune VIP — 1 match',   points: 800,  icon: 'star-outline',           color: '#D4AF37', category: 'Événements' },
+  { id: 'P8', label: 'Programme officiel',        description: 'Livret programme papier JOJ 2026',       points: 100,  icon: 'document-text-outline',  color: '#D866A0', category: 'Boutique' },
+];
 
 type PaymentMethod = { id: string; name: string; icon: keyof typeof Ionicons.glyphMap; color: string };
 const METHODS: PaymentMethod[] = [
@@ -42,11 +63,12 @@ export default function WalletScreen() {
   const t = useTranslation(state.language);
   const C = getColors(state.theme);
 
-  const [showTopUp, setShowTopUp] = useState(false); // top-up flow modal
-  const [showPay, setShowPay]     = useState(false); // pay flow modal
-  const [showQR, setShowQR]       = useState(false); // QR code modal
+  const [showTopUp, setShowTopUp]       = useState(false);
+  const [showPay, setShowPay]           = useState(false);
+  const [showQR, setShowQR]             = useState(false);
+  const [showPoints, setShowPoints]     = useState(false);
 
-  // fall back to a guest user if not logged in
+ 
   const user = state.user ?? { name: 'Visiteur', accreditation: 'JOJ-2026-VIS-00000', avatar: 'VT' };
   const s = makeStyles(C);
 
@@ -71,7 +93,7 @@ export default function WalletScreen() {
           <LinearGradient colors={[C.gold, C.gold + 'CC', C.goldLight ?? C.gold]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
           <View style={s.cardPattern}>
             {[0, 1, 2, 3].map((i) => (
-              <View key={i} style={[s.cardCircle, { width: 100 + i * 50, height: 100 + i * 50, borderRadius: (100 + i * 50) / 2, right: -30 - i * 20, top: -20 - i * 10 }]} /> // decorative rings
+              <View key={i} style={[s.cardCircle, { width: 100 + i * 50, height: 100 + i * 50, borderRadius: (100 + i * 50) / 2, right: -30 - i * 20, top: -20 - i * 10 }]} />
             ))}
           </View>
           <View style={s.cardTop}>
@@ -104,6 +126,24 @@ export default function WalletScreen() {
           <ActionItem icon="arrow-down-outline" label={t.receive} color={C.blue}  onPress={() => Alert.alert(t.receive, t.comingSoon)} C={C} />
         </View>
 
+        {/* JOJ Points banner */}
+        <Pressable
+          style={[s.pointsBanner, { backgroundColor: C.gold + '12', borderColor: C.gold + '35' }]}
+          onPress={() => setShowPoints(true)}
+        >
+          <View style={[s.pointsIconBox, { backgroundColor: C.gold + '22' }]}>
+            <Ionicons name="star" size={24} color={C.gold} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[s.pointsTitle, { color: C.text }]}>JOJ Points</Text>
+            <Text style={[s.pointsSub, { color: C.textSecondary }]}>
+              <Text style={{ fontWeight: '800', color: C.gold }}>{state.jojPoints.toLocaleString('fr-FR')} pts</Text>
+              {'  ·  '}Dépenser mes points
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={C.textTertiary} />
+        </Pressable>
+
         {/* QR Pay shortcut banner */}
         <Pressable style={[s.qrPay, { backgroundColor: C.brand + '15', borderColor: C.brand + '30' }]} onPress={() => setShowQR(true)}>
           <View style={[s.qrPayIcon, { backgroundColor: C.brand + '20' }]}>
@@ -122,7 +162,7 @@ export default function WalletScreen() {
           <Text style={[s.txAll, { color: C.brand }]}>Voir tout</Text>
         </View>
         {state.transactions.slice(0, 10).map((tx) => (
-          <TransactionRow key={tx.id} tx={tx} C={C} /> // show last 10 transactions
+          <TransactionRow key={tx.id} tx={tx} C={C} />
         ))}
       </ScrollView>
 
@@ -133,7 +173,7 @@ export default function WalletScreen() {
           onClose={() => setShowTopUp(false)}
           onSuccess={(amount) => {
             const m = METHODS.find((m) => m.id === 'orange')?.name ?? 'Mobile Money';
-            dispatch({ type: 'TOP_UP', payload: { amount, method: m } }); // update balance in store
+            dispatch({ type: 'TOP_UP', payload: { amount, method: m } });
             setShowTopUp(false);
           }}
           C={C}
@@ -147,12 +187,26 @@ export default function WalletScreen() {
           type="pay"
           onClose={() => setShowPay(false)}
           onSuccess={(amount) => {
-            dispatch({ type: 'DEBIT_WALLET', payload: { amount, label: 'Paiement JOJ' } }); // deduct from balance
+            dispatch({ type: 'DEBIT_WALLET', payload: { amount, label: 'Paiement JOJ' } });
             setShowPay(false);
           }}
           C={C}
           t={t}
-          maxAmount={state.walletBalance} // enforce balance cap
+          maxAmount={state.walletBalance}
+        />
+      </Modal>
+
+      {/* Pay with Points modal */}
+      <Modal visible={showPoints} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowPoints(false)}>
+        <PointsShop
+          balance={state.jojPoints}
+          onClose={() => setShowPoints(false)}
+          onRedeem={(item) => {
+            dispatch({ type: 'SPEND_POINTS', payload: item.points });
+            setShowPoints(false);
+            Alert.alert('Échangé !', `"${item.label}" a été ajouté à votre compte.`);
+          }}
+          C={C}
         />
       </Modal>
 
@@ -166,9 +220,9 @@ export default function WalletScreen() {
               {/* Encodes accreditation + wallet payment type */}
               <QRCode
                 value={`JOJ:PAY:${user.accreditation}:WALLET:${Date.now()}`}
-                size={160}             // pixels
-                color="#000000"        // dark modules
-                backgroundColor="#fff" // light background for contrast
+                size={160}            
+                color="#000000"       
+                backgroundColor="#fff"
               />
             </View>
             {/* Accreditation number shown under the QR */}
@@ -203,18 +257,18 @@ function PaymentFlow({
 }) {
   const [step, setStep] = useState<TopUpStep>('method');
   const [selectedMethod, setSelectedMethod] = useState<string>('orange');
-  const [amount, setAmount] = useState(10000); // default preset amount
+  const [amount, setAmount] = useState(10000);
   const [customAmount, setCustomAmount] = useState('');
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
-  const [countdown, setCountdown] = useState(0); // resend OTP countdown
+  const [countdown, setCountdown] = useState(0);
 
   const PRESETS = [5000, 10000, 25000, 50000];
 
   useEffect(() => {
     if (step === 'otp') {
-      setCountdown(30); // 30-second resend window
-      const timer = setTimeout(() => setOtp('123456'), 3000); // auto-fill OTP in demo mode
+      setCountdown(30);
+      const timer = setTimeout(() => setOtp('123456'), 3000);
       const interval = setInterval(() => setCountdown((c) => Math.max(0, c - 1)), 1000);
       return () => {
         clearTimeout(timer);
@@ -226,7 +280,7 @@ function PaymentFlow({
   const handleMethodNext = () => {
     const m = METHODS.find((m) => m.id === selectedMethod);
     if (m?.id === 'card') {
-      setStep('phone'); // card still uses the phone step (card number input)
+      setStep('phone');
     } else {
       setStep('phone');
     }
@@ -256,13 +310,13 @@ function PaymentFlow({
     }
     setStep('processing');
     setTimeout(() => {
-      setStep('success'); // simulate network delay
+      setStep('success');
     }, 2000);
   };
 
   const handleFinish = () => {
     const finalAmount = customAmount ? parseInt(customAmount, 10) : amount;
-    onSuccess(finalAmount); // bubble amount up to parent
+    onSuccess(finalAmount);
   };
 
   const finalAmount = customAmount ? parseInt(customAmount, 10) || 0 : amount;
@@ -285,7 +339,7 @@ function PaymentFlow({
       {/* Step progress bar */}
       <View style={{ flexDirection: 'row', gap: 6, marginBottom: 24 }}>
         {(['method', 'phone', 'otp', 'processing', 'success'] as TopUpStep[]).map((s, i) => (
-          <View key={s} style={{ flex: 1, height: 3, borderRadius: 2, backgroundColor: ['method', 'phone', 'otp', 'processing', 'success'].indexOf(step) >= i ? C.brand : C.border2 }} /> // filled up to current step
+          <View key={s} style={{ flex: 1, height: 3, borderRadius: 2, backgroundColor: ['method', 'phone', 'otp', 'processing', 'success'].indexOf(step) >= i ? C.brand : C.border2 }} />
         ))}
       </View>
 
@@ -302,7 +356,7 @@ function PaymentFlow({
                     flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: Radius.lg,
                     backgroundColor: selectedMethod === m.id ? C.brand + '12' : C.surface2,
                     borderWidth: 1.5,
-                    borderColor: selectedMethod === m.id ? C.brand + '60' : C.border1, // highlight selected
+                    borderColor: selectedMethod === m.id ? C.brand + '60' : C.border1,
                     gap: 12,
                   }}
                 >
@@ -311,9 +365,9 @@ function PaymentFlow({
                   </View>
                   <Text style={{ flex: 1, fontSize: 15, fontWeight: '600', color: C.text }}>{m.name}</Text>
                   {selectedMethod === m.id ? (
-                    <Ionicons name="checkmark-circle" size={22} color={C.brand} /> // selected indicator
+                    <Ionicons name="checkmark-circle" size={22} color={C.brand} />
                   ) : (
-                    <View style={{ width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: C.border2 }} /> // empty radio
+                    <View style={{ width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: C.border2 }} />
                   )}
                 </Pressable>
               ))}
@@ -327,7 +381,7 @@ function PaymentFlow({
               {PRESETS.map((p) => (
                 <Pressable key={p} onPress={() => { setAmount(p); setCustomAmount(''); }} style={{
                   flex: 1, minWidth: '47%', height: 50, borderRadius: Radius.md,
-                  backgroundColor: amount === p && !customAmount ? C.gold + '20' : C.surface2, // highlight active preset
+                  backgroundColor: amount === p && !customAmount ? C.gold + '20' : C.surface2,
                   borderWidth: 1,
                   borderColor: amount === p && !customAmount ? C.gold + '50' : C.border1,
                   alignItems: 'center', justifyContent: 'center',
@@ -377,7 +431,7 @@ function PaymentFlow({
                 <TextInput
                   placeholder="1234 5678 9012 3456"
                   placeholderTextColor={C.textTertiary}
-                  value={phone} // reusing phone state for card number input
+                  value={phone}
                   onChangeText={setPhone}
                   keyboardType="number-pad"
                   style={{ backgroundColor: C.surface2, borderWidth: 1, borderColor: C.border2, borderRadius: Radius.md, paddingHorizontal: 16, height: 52, fontSize: 15, color: C.text, marginBottom: 20 }}
@@ -475,7 +529,7 @@ function ActionItem({
 }
 
 function TransactionRow({ tx, C }: { tx: any; C: ReturnType<typeof getColors> }) {
-  const isCredit = tx.type === 'credit'; // green for incoming, default for outgoing
+  const isCredit = tx.type === 'credit';
   return (
     <View style={{
       flexDirection: 'row', alignItems: 'center', backgroundColor: C.surface1,
@@ -495,6 +549,135 @@ function TransactionRow({ tx, C }: { tx: any; C: ReturnType<typeof getColors> })
   );
 }
 
+function PointsShop({
+  balance,
+  onClose,
+  onRedeem,
+  C,
+}: {
+  balance: number;
+  onClose: () => void;
+  onRedeem: (item: PointsItem) => void;
+  C: ReturnType<typeof getColors>;
+}) {
+  const [activeCategory, setActiveCategory] = useState('Tous');
+  const categories = ['Tous', 'Boutique', 'Restauration', 'Transport', 'Événements'];
+
+  const filtered = activeCategory === 'Tous'
+    ? POINTS_CATALOG
+    : POINTS_CATALOG.filter((i) => i.category === activeCategory);
+
+  return (
+    <View style={{ flex: 1, backgroundColor: C.bg }}>
+      <LinearGradient colors={[C.bg, C.bgDeep ?? C.bg]} style={StyleSheet.absoluteFill} />
+
+      {/* Header */}
+      <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 4 }}>
+        <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: C.border2, alignSelf: 'center', marginBottom: 16 }} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <Text style={{ fontSize: 21, fontWeight: '800', color: C.text }}>Dépenser mes Points</Text>
+          <Pressable onPress={onClose} style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: C.surface2, borderWidth: 1, borderColor: C.border1, alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name="close-outline" size={20} color={C.text} />
+          </Pressable>
+        </View>
+
+        {/* Balance pill */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: C.gold + '15', borderWidth: 1, borderColor: C.gold + '35', borderRadius: Radius.lg, padding: 14, marginBottom: 16 }}>
+          <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: C.gold + '25', alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name="star" size={20} color={C.gold} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 11, fontWeight: '700', letterSpacing: 1, color: C.textTertiary }}>SOLDE POINTS</Text>
+            <Text style={{ fontSize: 24, fontWeight: '900', color: C.gold, letterSpacing: -0.5 }}>
+              {balance.toLocaleString('fr-FR')} pts
+            </Text>
+          </View>
+          <Text style={{ fontSize: 11, color: C.textTertiary, textAlign: 'right' }}>
+            {'Gagnez des points\nen dépensant'}
+          </Text>
+        </View>
+
+        {/* Category filter */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 12 }}>
+          {categories.map((cat) => (
+            <Pressable
+              key={cat}
+              onPress={() => setActiveCategory(cat)}
+              style={{
+                paddingHorizontal: 14, paddingVertical: 8, borderRadius: Radius.full, borderWidth: 1,
+                backgroundColor: activeCategory === cat ? C.gold + '20' : C.surface2,
+                borderColor: activeCategory === cat ? C.gold + '50' : C.border1,
+              }}
+            >
+              <Text style={{ fontSize: 13, fontWeight: '600', color: activeCategory === cat ? C.gold : C.textSecondary }}>
+                {cat}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Items grid */}
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, gap: 10 }} showsVerticalScrollIndicator={false}>
+        {filtered.map((item) => {
+          const canAfford = balance >= item.points;
+          return (
+            <View
+              key={item.id}
+              style={{
+                flexDirection: 'row', alignItems: 'center', gap: 14,
+                backgroundColor: C.surface2, borderWidth: 1,
+                borderColor: canAfford ? C.border1 : C.border1,
+                borderRadius: Radius.lg, padding: 16,
+                opacity: canAfford ? 1 : 0.5,
+              }}
+            >
+              <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: item.color + '20', borderWidth: 1, borderColor: item.color + '30', alignItems: 'center', justifyContent: 'center' }}>
+                <Ionicons name={item.icon} size={22} color={item.color} />
+              </View>
+              <View style={{ flex: 1, gap: 3 }}>
+                <Text style={{ fontSize: 10, fontWeight: '700', letterSpacing: 0.8, color: C.textTertiary }}>
+                  {item.category.toUpperCase()}
+                </Text>
+                <Text style={{ fontSize: 15, fontWeight: '700', color: C.text }}>{item.label}</Text>
+                <Text style={{ fontSize: 12, color: C.textSecondary }}>{item.description}</Text>
+              </View>
+              <Pressable
+                onPress={() => canAfford && onRedeem(item)}
+                disabled={!canAfford}
+                style={{
+                  alignItems: 'center', justifyContent: 'center',
+                  paddingHorizontal: 12, paddingVertical: 8,
+                  borderRadius: Radius.md, overflow: 'hidden',
+                  backgroundColor: canAfford ? 'transparent' : C.surface3,
+                  borderWidth: canAfford ? 0 : 1,
+                  borderColor: C.border2,
+                  minWidth: 70,
+                }}
+              >
+                {canAfford && (
+                  <LinearGradient
+                    colors={[C.gold, C.gold + 'BB']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={StyleSheet.absoluteFill}
+                  />
+                )}
+                <Text style={{ fontSize: 11, fontWeight: '800', color: canAfford ? '#fff' : C.textTertiary }}>
+                  {item.points} pts
+                </Text>
+                {!canAfford && (
+                  <Text style={{ fontSize: 9, color: C.textTertiary, marginTop: 1 }}>insuffisant</Text>
+                )}
+              </Pressable>
+            </View>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
+}
+
 function makeStyles(C: ReturnType<typeof getColors>) {
   return StyleSheet.create({
     container: { flex: 1 },
@@ -503,7 +686,7 @@ function makeStyles(C: ReturnType<typeof getColors>) {
     headerTitle: { fontSize: 21, fontWeight: '800' },
     iconBtn: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
     scroll: { padding: 20, gap: 14 },
-    card: { height: CARD_W * 0.58, borderRadius: Radius.xl, padding: 22, justifyContent: 'space-between', overflow: 'hidden' }, // credit-card proportions
+    card: { height: CARD_W * 0.58, borderRadius: Radius.xl, padding: 22, justifyContent: 'space-between', overflow: 'hidden' },
     cardPattern: { position: 'absolute', right: 0, top: 0 },
     cardCircle: { position: 'absolute', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)' },
     cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
@@ -527,7 +710,11 @@ function makeStyles(C: ReturnType<typeof getColors>) {
     qrModal: { width: width - 60, borderRadius: Radius.xl, padding: 28, alignItems: 'center', gap: 16 },
     qrTitle: { fontSize: 20, fontWeight: '800' },
     qrBox: { width: 180, height: 180, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-    qrAccred: { fontSize: 12, fontFamily: 'monospace' }, // monospace for badge numbers
+    qrAccred: { fontSize: 12, fontFamily: 'monospace' },
     closeQrBtn: { width: '100%', height: 48, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center' },
+    pointsBanner: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: Radius.lg, padding: 16, gap: 14 },
+    pointsIconBox: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+    pointsTitle: { fontSize: 15, fontWeight: '700' },
+    pointsSub: { fontSize: 12, marginTop: 2 },
   });
 }
