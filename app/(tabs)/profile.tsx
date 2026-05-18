@@ -203,6 +203,14 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* Music section */}
+        <View style={s.section}>
+          <Text style={[s.sectionLabel, { color: C.textTertiary }]}>MUSIQUE</Text>
+          <View style={[s.sectionCard, { backgroundColor: C.surface2, borderColor: C.border1 }]}>
+            <NotifRow icon="musical-notes-outline" label="Don't Worry – Drake" value={state.music} onChange={(v) => dispatch({ type: 'SET_MUSIC', payload: v })} color={C.orange} C={C} />
+          </View>
+        </View>
+
         {/* Notifications section */}
         <View style={s.section}>
           <Text style={[s.sectionLabel, { color: C.textTertiary }]}>{t.notifications.toUpperCase()}</Text>

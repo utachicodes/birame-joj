@@ -42,6 +42,7 @@ export interface AppState {
   notifications: boolean;
   liveAlerts: boolean;
   transportAlerts: boolean;
+  music: boolean;
   authError: string | null;
   authLoading: boolean;
   sessionRestored: boolean;
@@ -52,6 +53,7 @@ export interface AppState {
 const KEY_SESSION  = '@joj_session_user_id';
 const KEY_THEME    = '@joj_theme';
 const KEY_LANGUAGE = '@joj_language';
+const KEY_MUSIC    = '@joj_music';
 
 // ─── Resend ───────────────────────────────────────────────────────────────────
 
@@ -130,9 +132,10 @@ type Action =
   | { type: 'SET_NOTIFICATIONS'; payload: boolean }
   | { type: 'SET_LIVE_ALERTS'; payload: boolean }
   | { type: 'SET_TRANSPORT_ALERTS'; payload: boolean }
+  | { type: 'SET_MUSIC'; payload: boolean }
   | { type: 'UPDATE_USER'; payload: Partial<AppUser> }
   | { type: 'SPEND_POINTS'; payload: number }
-  | { type: 'RESTORE_PREFS'; payload: { theme?: 'dark' | 'light'; language?: 'fr' | 'en' | 'ar' } };
+  | { type: 'RESTORE_PREFS'; payload: { theme?: 'dark' | 'light'; language?: 'fr' | 'en' | 'ar'; music?: boolean } };
 
 const initialState: AppState = {
   isLoggedIn: false,
@@ -146,6 +149,7 @@ const initialState: AppState = {
   notifications: true,
   liveAlerts: true,
   transportAlerts: false,
+  music: true,
   authError: null,
   authLoading: false,
   sessionRestored: false,
@@ -204,6 +208,8 @@ function appReducer(state: AppState, action: Action): AppState {
       return { ...state, liveAlerts: action.payload };
     case 'SET_TRANSPORT_ALERTS':
       return { ...state, transportAlerts: action.payload };
+    case 'SET_MUSIC':
+      return { ...state, music: action.payload };
     case 'SPEND_POINTS':
       return { ...state, jojPoints: Math.max(0, state.jojPoints - action.payload) };
     case 'UPDATE_USER':
@@ -214,6 +220,7 @@ function appReducer(state: AppState, action: Action): AppState {
         ...state,
         theme: action.payload.theme ?? state.theme,
         language: action.payload.language ?? state.language,
+        music: action.payload.music ?? state.music,
       };
     default:
       return state;
@@ -243,18 +250,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
       try {
         if (USE_LOCAL_DB) await initDb();
 
-        const [theme, language, sessionUserId] = await Promise.all([
+        const [theme, language, sessionUserId, musicRaw] = await Promise.all([
           AsyncStorage.getItem(KEY_THEME),
           AsyncStorage.getItem(KEY_LANGUAGE),
           AsyncStorage.getItem(KEY_SESSION),
+          AsyncStorage.getItem(KEY_MUSIC),
         ]);
 
-        if (theme || language) {
+        if (theme || language || musicRaw !== null) {
           dispatch({
             type: 'RESTORE_PREFS',
             payload: {
               theme: (theme as 'dark' | 'light') || undefined,
               language: (language as 'fr' | 'en' | 'ar') || undefined,
+              music: musicRaw !== null ? musicRaw === 'true' : undefined,
             },
           });
         }
@@ -294,9 +303,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
-  // Persist theme and language to AsyncStorage (prefs only)
+  // Persist prefs to AsyncStorage
   useEffect(() => { AsyncStorage.setItem(KEY_THEME, state.theme).catch(() => {}); }, [state.theme]);
   useEffect(() => { AsyncStorage.setItem(KEY_LANGUAGE, state.language).catch(() => {}); }, [state.language]);
+  useEffect(() => { AsyncStorage.setItem(KEY_MUSIC, String(state.music)).catch(() => {}); }, [state.music]);
 
   const login = async (email: string, password: string) => {
     dispatch({ type: 'AUTH_LOADING', payload: true });

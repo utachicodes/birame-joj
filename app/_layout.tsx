@@ -7,6 +7,7 @@ import { StyleSheet, View, Text, ScrollView } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { AppProvider, useApp } from '../src/context/AppContext';
 import AppSplash from '../src/components/AppSplash';
+import { useBackgroundMusic } from '../src/hooks/useBackgroundMusic';
 
 SplashScreen.preventAutoHideAsync(); // keep splash visible until we're ready
 
@@ -73,6 +74,7 @@ function AuthGuard() {
 function InnerLayout() {
   const { state } = useApp();
   const [animDone, setAnimDone] = useState(false);
+  useBackgroundMusic(state.music);
   const showSplash = !animDone || !state.sessionRestored;
 
  
