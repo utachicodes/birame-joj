@@ -1,65 +1,52 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from '../services/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface Transaction {
-  id: string;       // unique TX identifier, e.g. "TX001"
+  id: string;
   type: 'credit' | 'debit';
-  label: string;   
-  amount: number;  
-  date: string;     // pre-formatted display string, e.g. "Aujourd'hui · 12:34"
-  icon: string;    
+  label: string;
+  amount: number;
+  date: string;
+  icon: string;
 }
 
 export interface AppUser {
-  name: string;        
-  email: string;       
-  role: string;        
-  country: string;     
-  countryCode: string; 
-  accreditation: string; // generated badge number, e.g. "JOJ-2026-VIS-08421"
-  phone: string;       
-  avatar: string;      
-}
-
-interface StoredAccount {
-  email: string;       
-  password: string;    
+  id: number;
   name: string;
+  email: string;
   role: string;
   country: string;
   countryCode: string;
-  phone: string;
   accreditation: string;
+  phone: string;
+  avatar: string;
 }
 
 export interface AppState {
-  isLoggedIn: boolean;      
-  user: AppUser | null;     
-  theme: 'dark' | 'light'; 
+  isLoggedIn: boolean;
+  user: AppUser | null;
+  theme: 'dark' | 'light';
   language: 'fr' | 'en' | 'ar';
-  walletBalance: number;    
-  jojPoints: number;        
+  walletBalance: number;
+  jojPoints: number;
   transactions: Transaction[];
   cart: Record<string, number>;
-  notifications: boolean;   
-  liveAlerts: boolean;      
-  transportAlerts: boolean; 
-  authError: string | null; 
-  authLoading: boolean;     
-  sessionRestored: boolean; 
+  notifications: boolean;
+  liveAlerts: boolean;
+  transportAlerts: boolean;
+  authError: string | null;
+  authLoading: boolean;
+  sessionRestored: boolean;
 }
 
-// ─── Storage Keys ─────────────────────────────────────────────────────────────
+// ─── Storage Keys (only for prefs + session pointer) ─────────────────────────
 
-const KEY_ACCOUNTS = '@joj_accounts';
-const KEY_SESSION  = '@joj_session_email';
-const KEY_THEME    = '@joj_theme';   
+const KEY_SESSION  = '@joj_session_user_id';
+const KEY_THEME    = '@joj_theme';
 const KEY_LANGUAGE = '@joj_language';
-const walletKey    = (email: string) => `@joj_wallet_${email}`;
-const txKey        = (email: string) => `@joj_tx_${email}`;    
-const pointsKey    = (email: string) => `@joj_points_${email}`;
 
 // ─── Resend ───────────────────────────────────────────────────────────────────
 
@@ -104,45 +91,20 @@ async function sendWelcomeEmail(name: string, email: string, accreditation: stri
       }),
     });
   } catch {
-    // fire-and-forget — don't block registration if email fails
+    // fire-and-forget
   }
 }
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
 
-function makeAvatar(name: string) {
-  return name
-    .split(' ')             
-    .map((n) => n[0] ?? '')
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-}
-
-function generateAccreditation(role: string) {
-  const codes: Record<string, string> = {
-    Visiteur: 'VIS', Athlète: 'ATH', Journaliste: 'JNL', Staff: 'STF', Volontaire: 'VOL',
-  };
-  const code = codes[role] ?? 'VIS';
-  const num = String(Math.floor(10000 + Math.random() * 90000));
-  return `JOJ-2026-${code}-${num}`;
-}
-
-async function getAccounts(): Promise<StoredAccount[]> {
-  try {
-    const raw = await AsyncStorage.getItem(KEY_ACCOUNTS);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-async function saveAccounts(accounts: StoredAccount[]) {
-  await AsyncStorage.setItem(KEY_ACCOUNTS, JSON.stringify(accounts));
+function formatTxDate(isoString: string): string {
+  const d = new Date(isoString);
+  const now = new Date();
+  const isToday = d.toDateString() === now.toDateString();
+  const time = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  return isToday ? `Aujourd'hui · ${time}` : `${d.toLocaleDateString('fr-FR')} · ${time}`;
 }
 
 // ─── Reducer ──────────────────────────────────────────────────────────────────
@@ -156,8 +118,7 @@ type Action =
   | { type: 'SESSION_RESTORED' }
   | { type: 'SET_THEME'; payload: 'dark' | 'light' }
   | { type: 'SET_LANGUAGE'; payload: 'fr' | 'en' | 'ar' }
-  | { type: 'TOP_UP'; payload: { amount: number; method: string } }
-  | { type: 'DEBIT_WALLET'; payload: { amount: number; label: string } }
+  | { type: 'WALLET_UPDATED'; payload: { balance: number; jojPoints: number; tx?: Transaction } }
   | { type: 'ADD_TO_CART'; payload: { itemId: string; quantity: number } }
   | { type: 'REMOVE_FROM_CART'; payload: string }
   | { type: 'CLEAR_CART' }
@@ -169,20 +130,20 @@ type Action =
   | { type: 'RESTORE_PREFS'; payload: { theme?: 'dark' | 'light'; language?: 'fr' | 'en' | 'ar' } };
 
 const initialState: AppState = {
-  isLoggedIn: false,      
+  isLoggedIn: false,
   user: null,
-  theme: 'dark',          
-  language: 'fr',          // French by default — app's primary market
+  theme: 'dark',
+  language: 'fr',
   walletBalance: 0,
   jojPoints: 0,
   transactions: [],
   cart: {},
-  notifications: true,    
-  liveAlerts: true,       
-  transportAlerts: false, 
+  notifications: true,
+  liveAlerts: true,
+  transportAlerts: false,
   authError: null,
   authLoading: false,
-  sessionRestored: false, 
+  sessionRestored: false,
 };
 
 function appReducer(state: AppState, action: Action): AppState {
@@ -195,17 +156,12 @@ function appReducer(state: AppState, action: Action): AppState {
         walletBalance: action.payload.balance,
         jojPoints: action.payload.points,
         transactions: action.payload.transactions,
-        authError: null,       
+        authError: null,
         authLoading: false,
-        sessionRestored: true, 
+        sessionRestored: true,
       };
     case 'LOGOUT':
-      return {
-        ...initialState,       
-        theme: state.theme,     // keep user's display preferences though
-        language: state.language,
-        sessionRestored: true,  // don't re-run the startup check
-      };
+      return { ...initialState, theme: state.theme, language: state.language, sessionRestored: true };
     case 'AUTH_ERROR':
       return { ...state, authError: action.payload, authLoading: false };
     case 'AUTH_LOADING':
@@ -218,39 +174,11 @@ function appReducer(state: AppState, action: Action): AppState {
       return { ...state, theme: action.payload };
     case 'SET_LANGUAGE':
       return { ...state, language: action.payload };
-    case 'TOP_UP': {
-      const newBalance = state.walletBalance + action.payload.amount;
-      const newTx: Transaction = {
-        id: `TX${Date.now()}`,
-        type: 'credit',
-        label: `Rechargement ${action.payload.method}`, // e.g. "Rechargement Orange Money"
-        amount: action.payload.amount,
-        date: "Maintenant",   
-        icon: 'add-circle-outline',
-      };
-      return {
-        ...state,
-        walletBalance: newBalance,
-        transactions: [newTx, ...state.transactions],
-      };
-    }
-    case 'DEBIT_WALLET': {
-      const newTx: Transaction = {
-        id: `TX${Date.now()}`,
-        type: 'debit',
-        label: action.payload.label,
-        amount: action.payload.amount,
-        date: "Maintenant",
-        icon: 'remove-circle-outline',
-      };
-      const spent = action.payload.amount;
-      const pointsEarned = Math.floor(spent / 100);
-      return {
-        ...state,
-        walletBalance: Math.max(0, state.walletBalance - spent),
-        jojPoints: state.jojPoints + pointsEarned,
-        transactions: [newTx, ...state.transactions],
-      };
+    case 'WALLET_UPDATED': {
+      const txs = action.payload.tx
+        ? [action.payload.tx, ...state.transactions]
+        : state.transactions;
+      return { ...state, walletBalance: action.payload.balance, jojPoints: action.payload.jojPoints, transactions: txs };
     }
     case 'ADD_TO_CART': {
       const current = state.cart[action.payload.itemId] || 0;
@@ -260,7 +188,7 @@ function appReducer(state: AppState, action: Action): AppState {
       const newCart = { ...state.cart };
       const qty = newCart[action.payload] || 0;
       if (qty <= 1) delete newCart[action.payload];
-      else newCart[action.payload] = qty - 1;      
+      else newCart[action.payload] = qty - 1;
       return { ...state, cart: newCart };
     }
     case 'CLEAR_CART':
@@ -279,7 +207,7 @@ function appReducer(state: AppState, action: Action): AppState {
     case 'RESTORE_PREFS':
       return {
         ...state,
-        theme: action.payload.theme ?? state.theme,      
+        theme: action.payload.theme ?? state.theme,
         language: action.payload.language ?? state.language,
       };
     default:
@@ -291,11 +219,12 @@ function appReducer(state: AppState, action: Action): AppState {
 
 interface AppContextType {
   state: AppState;
-  dispatch: React.Dispatch<Action>;   
+  dispatch: React.Dispatch<Action>;
   login: (email: string, password: string) => Promise<void>;
   register: (params: { name: string; email: string; password: string; country: string; countryCode: string; role: string; phone?: string }) => Promise<void>;
   logout: () => Promise<void>;
   topUp: (amount: number, method: string) => Promise<void>;
+  debit: (amount: number, label: string, icon?: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -303,11 +232,11 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
- 
+  // Restore prefs + session on startup
   useEffect(() => {
     (async () => {
       try {
-        const [theme, language, sessionEmail] = await Promise.all([
+        const [theme, language, sessionUserId] = await Promise.all([
           AsyncStorage.getItem(KEY_THEME),
           AsyncStorage.getItem(KEY_LANGUAGE),
           AsyncStorage.getItem(KEY_SESSION),
@@ -323,31 +252,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
           });
         }
 
-        if (sessionEmail) {
-          const accounts = await getAccounts();
-          const account = accounts.find((a) => a.email === sessionEmail);
-          if (account) {
-            const [balanceRaw, txRaw, pointsRaw] = await Promise.all([
-              AsyncStorage.getItem(walletKey(sessionEmail)),
-              AsyncStorage.getItem(txKey(sessionEmail)),
-              AsyncStorage.getItem(pointsKey(sessionEmail)),
-            ]);
+        if (sessionUserId) {
+          // Re-fetch live data from MySQL for the stored user ID
+          const userId = parseInt(sessionUserId, 10);
+          const [walletData, txData] = await Promise.all([
+            api.wallet.get(userId),
+            api.wallet.transactions(userId),
+          ]);
+          // We need the user row too — use login won't work without password.
+          // So we store minimal user snapshot in AsyncStorage alongside the ID.
+          const userSnapshot = await AsyncStorage.getItem(`@joj_user_${sessionUserId}`);
+          if (userSnapshot) {
+            const user: AppUser = JSON.parse(userSnapshot);
             dispatch({
               type: 'LOGIN_SUCCESS',
               payload: {
-                user: {
-                  name: account.name,
-                  email: account.email,
-                  role: account.role,
-                  country: account.country,
-                  countryCode: account.countryCode,
-                  accreditation: account.accreditation,
-                  phone: account.phone,
-                  avatar: makeAvatar(account.name),
-                },
-                balance: balanceRaw ? parseInt(balanceRaw, 10) : 0,
-                points: pointsRaw ? parseInt(pointsRaw, 10) : 0,
-                transactions: txRaw ? JSON.parse(txRaw) : [],
+                user,
+                balance: walletData.balance,
+                points: walletData.jojPoints,
+                transactions: txData.map(t => ({
+                  id: t.id,
+                  type: t.type,
+                  label: t.label,
+                  amount: t.amount,
+                  date: formatTxDate(t.created_at),
+                  icon: t.icon,
+                })),
               },
             });
             return;
@@ -360,25 +290,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
- 
-  useEffect(() => {
-    AsyncStorage.setItem(KEY_THEME, state.theme).catch(() => {});
-  }, [state.theme]);
-
-  useEffect(() => {
-    AsyncStorage.setItem(KEY_LANGUAGE, state.language).catch(() => {});
-  }, [state.language]);
-
- 
-  useEffect(() => {
-    if (!state.isLoggedIn || !state.user) return;
-    const email = state.user.email;
-    AsyncStorage.setItem(walletKey(email), String(state.walletBalance)).catch(() => {});
-    AsyncStorage.setItem(pointsKey(email), String(state.jojPoints)).catch(() => {});
-    AsyncStorage.setItem(txKey(email), JSON.stringify(state.transactions)).catch(() => {});
-  }, [state.walletBalance, state.jojPoints, state.transactions, state.isLoggedIn, state.user]);
-
- 
+  // Persist theme and language to AsyncStorage (prefs only)
+  useEffect(() => { AsyncStorage.setItem(KEY_THEME, state.theme).catch(() => {}); }, [state.theme]);
+  useEffect(() => { AsyncStorage.setItem(KEY_LANGUAGE, state.language).catch(() => {}); }, [state.language]);
 
   const login = async (email: string, password: string) => {
     dispatch({ type: 'AUTH_LOADING', payload: true });
@@ -388,42 +302,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
         dispatch({ type: 'AUTH_ERROR', payload: 'Veuillez remplir tous les champs.' });
         return;
       }
-      const accounts = await getAccounts();
-      const account = accounts.find((a) => a.email === normalized);
-      if (!account) {
-        dispatch({ type: 'AUTH_ERROR', payload: 'Aucun compte trouvé avec cet email.' });
-        return;
-      }
-      if (account.password !== password) {
-        dispatch({ type: 'AUTH_ERROR', payload: 'Mot de passe incorrect.' });
-        return;
-      }
-      const [balanceRaw, txRaw, pointsRaw] = await Promise.all([
-        AsyncStorage.getItem(walletKey(normalized)),
-        AsyncStorage.getItem(txKey(normalized)),
-        AsyncStorage.getItem(pointsKey(normalized)),
-      ]);
-      await AsyncStorage.setItem(KEY_SESSION, normalized);
+      const { user: apiUser, wallet } = await api.auth.login(normalized, password);
+      const txData = await api.wallet.transactions(apiUser.id);
+
+      const user: AppUser = { ...apiUser };
+      await AsyncStorage.setItem(KEY_SESSION, String(apiUser.id));
+      await AsyncStorage.setItem(`@joj_user_${apiUser.id}`, JSON.stringify(user));
+
       dispatch({
         type: 'LOGIN_SUCCESS',
         payload: {
-          user: {
-            name: account.name,
-            email: account.email,
-            role: account.role,
-            country: account.country,
-            countryCode: account.countryCode,
-            accreditation: account.accreditation,
-            phone: account.phone,
-            avatar: makeAvatar(account.name),
-          },
-          balance: balanceRaw ? parseInt(balanceRaw, 10) : 0,
-          points: pointsRaw ? parseInt(pointsRaw, 10) : 0,
-          transactions: txRaw ? JSON.parse(txRaw) : [],
+          user,
+          balance: wallet.balance,
+          points: wallet.jojPoints,
+          transactions: txData.map(t => ({
+            id: t.id,
+            type: t.type,
+            label: t.label,
+            amount: t.amount,
+            date: formatTxDate(t.created_at),
+            icon: t.icon,
+          })),
         },
       });
-    } catch {
-      dispatch({ type: 'AUTH_ERROR', payload: 'Une erreur est survenue. Réessayez.' });
+    } catch (err: any) {
+      dispatch({ type: 'AUTH_ERROR', payload: err.message || 'Une erreur est survenue. Réessayez.' });
     }
   };
 
@@ -446,48 +349,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
         dispatch({ type: 'AUTH_ERROR', payload: 'Le mot de passe doit contenir au moins 8 caractères.' });
         return;
       }
-      const accounts = await getAccounts();
-      if (accounts.some((a) => a.email === normalized)) {
-        dispatch({ type: 'AUTH_ERROR', payload: 'Un compte existe déjà avec cet email.' });
-        return;
-      }
-      const accreditation = generateAccreditation(params.role);
-      const newAccount: StoredAccount = {
-        email: normalized,
-        password: params.password,
-        name: params.name.trim(),
-        role: params.role,
-        country: params.country,
-        countryCode: params.countryCode,
-        phone: params.phone ?? '',
-        accreditation,
-      };
-      await saveAccounts([...accounts, newAccount]);
-      await AsyncStorage.setItem(KEY_SESSION, normalized);
-      await AsyncStorage.setItem(walletKey(normalized), '0');
-      await AsyncStorage.setItem(pointsKey(normalized), '0');
-      await AsyncStorage.setItem(txKey(normalized), '[]');
-      sendWelcomeEmail(newAccount.name, newAccount.email, accreditation);
+      const { user: apiUser, wallet } = await api.auth.register({ ...params, email: normalized });
+      const user: AppUser = { ...apiUser };
+
+      await AsyncStorage.setItem(KEY_SESSION, String(apiUser.id));
+      await AsyncStorage.setItem(`@joj_user_${apiUser.id}`, JSON.stringify(user));
+
+      sendWelcomeEmail(user.name, user.email, user.accreditation);
+
       dispatch({
         type: 'LOGIN_SUCCESS',
-        payload: {
-          user: {
-            name: newAccount.name,
-            email: newAccount.email,
-            role: newAccount.role,
-            country: newAccount.country,
-            countryCode: newAccount.countryCode,
-            accreditation: newAccount.accreditation,
-            phone: newAccount.phone,
-            avatar: makeAvatar(newAccount.name),
-          },
-          balance: 0,
-          points: 0,
-          transactions: [],
-        },
+        payload: { user, balance: wallet.balance, points: wallet.jojPoints, transactions: [] },
       });
-    } catch {
-      dispatch({ type: 'AUTH_ERROR', payload: 'Une erreur est survenue. Réessayez.' });
+    } catch (err: any) {
+      dispatch({ type: 'AUTH_ERROR', payload: err.message || 'Une erreur est survenue. Réessayez.' });
     }
   };
 
@@ -497,11 +372,43 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const topUp = async (amount: number, method: string) => {
-    dispatch({ type: 'TOP_UP', payload: { amount, method } });
+    if (!state.user) return;
+    try {
+      const result = await api.wallet.topup(state.user.id, amount, method);
+      const tx: Transaction = {
+        id: result.txRef,
+        type: 'credit',
+        label: `Rechargement ${method}`,
+        amount,
+        date: "Maintenant",
+        icon: 'add-circle-outline',
+      };
+      dispatch({ type: 'WALLET_UPDATED', payload: { balance: result.balance, jojPoints: result.jojPoints, tx } });
+    } catch (err: any) {
+      console.warn('topUp failed:', err.message);
+    }
+  };
+
+  const debit = async (amount: number, label: string, icon?: string) => {
+    if (!state.user) return;
+    try {
+      const result = await api.wallet.debit(state.user.id, amount, label, icon);
+      const tx: Transaction = {
+        id: result.txRef,
+        type: 'debit',
+        label,
+        amount,
+        date: "Maintenant",
+        icon: icon || 'remove-circle-outline',
+      };
+      dispatch({ type: 'WALLET_UPDATED', payload: { balance: result.balance, jojPoints: result.jojPoints, tx } });
+    } catch (err: any) {
+      console.warn('debit failed:', err.message);
+    }
   };
 
   return (
-    <AppContext.Provider value={{ state, dispatch, login, register, logout, topUp }}>
+    <AppContext.Provider value={{ state, dispatch, login, register, logout, topUp, debit }}>
       {children}
     </AppContext.Provider>
   );
