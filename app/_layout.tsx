@@ -94,7 +94,7 @@ function InnerLayout() {
           <Stack.Screen name="auth" />
           <Stack.Screen name="greeting" />
           <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="wallet" options={{ presentation: 'modal' }} /> {/* modal slide-up */}
+          <Stack.Screen name="wallet" options={{ presentation: 'modal' }} />
           <Stack.Screen name="map" />
           <Stack.Screen name="food" />
         </Stack>
