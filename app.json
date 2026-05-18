@@ -34,7 +34,8 @@
           "backgroundColor": "#050A18",
           "image": "./assets/dakarlogo.png"
         }
-      ]
+      ],
+      "expo-sqlite"
     ],
     "scheme": "joj",
     "extra": {
@@ -47,7 +48,7 @@
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/",
+      "url": "https://u.expo.dev/075098d6-4a1a-4d75-b1fa-eb1c9b209692",
       "enabled": true,
       "fallbackToCacheTimeout": 0
     },

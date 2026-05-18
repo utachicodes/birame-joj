@@ -262,7 +262,8 @@ export async function localGetLiveScores() {
 }
 
 export async function localGetMedals() {
-  return db.getAllAsync<any>(
-    'SELECT ROW_NUMBER() OVER (ORDER BY gold DESC, silver DESC, bronze DESC) AS rank, country, country_code AS code, gold, silver, bronze FROM medals ORDER BY gold DESC, silver DESC, bronze DESC'
+  const rows = await db.getAllAsync<any>(
+    'SELECT country, country_code AS code, gold, silver, bronze FROM medals ORDER BY gold DESC, silver DESC, bronze DESC'
   );
+  return rows.map((r, i) => ({ ...r, rank: i + 1 }));
 }
