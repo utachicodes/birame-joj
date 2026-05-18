@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Stack, useRouter, useSegments } from 'expo-router'; // file-based routing
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { GestureHandlerRootView } from 'react-native-gesture-handler'; // required wrapper for gestures
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StyleSheet, View, Text, ScrollView } from 'react-native';
-import * as SplashScreen from 'expo-splash-screen'; // controls the native splash screen
+import * as SplashScreen from 'expo-splash-screen';
 import { AppProvider, useApp } from '../src/context/AppContext';
 import AppSplash from '../src/components/AppSplash';
 
@@ -17,11 +17,11 @@ class ErrorBoundary extends React.Component<
   state = { error: null as Error | null, info: '' };
 
   static getDerivedStateFromError(error: Error) {
-    return { error, info: '' }; // switch to error state on throw
+    return { error, info: '' };
   }
 
   componentDidCatch(error: Error, info: any) {
-    this.setState({ error, info: info?.componentStack || '' }); // capture stack trace
+    this.setState({ error, info: info?.componentStack || '' });
   }
 
   render() {
@@ -39,7 +39,7 @@ class ErrorBoundary extends React.Component<
         </View>
       );
     }
-    return this.props.children; // normal render when no error
+    return this.props.children;
   }
 }
 
@@ -48,37 +48,37 @@ const errStyles = StyleSheet.create({
   scroll: { padding: 24, paddingTop: 80 },
   title: { color: '#FF6B35', fontSize: 22, fontWeight: '800', marginBottom: 12 },
   msg: { color: '#fff', fontSize: 15, marginBottom: 16, lineHeight: 22 },
-  stack: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontFamily: 'monospace' }, // mono for readability
+  stack: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontFamily: 'monospace' },
 });
 
 // Watches auth state and redirects accordingly — must be inside AppProvider
 function AuthGuard() {
   const { state } = useApp();
   const router    = useRouter();
-  const segments  = useSegments(); // current route segments
+  const segments  = useSegments();
 
   useEffect(() => {
-    if (!state.sessionRestored) return; // wait until session is loaded from storage
+    if (!state.sessionRestored) return;
     const inPublic = segments[0] === 'auth' || segments[0] === 'onboarding' || segments[0] === 'greeting';
     if (!state.isLoggedIn && !inPublic) {
-      router.replace('/auth' as any); // not logged in, kick to auth
+      router.replace('/auth' as any);
     } else if (state.isLoggedIn && (segments[0] === 'auth' || segments[0] === 'onboarding')) {
-      router.replace('/(tabs)' as any); // already logged in, skip auth
+      router.replace('/(tabs)' as any);
     }
   }, [state.isLoggedIn, state.sessionRestored]);
 
-  return null; // no UI, just side effects
+  return null;
 }
 
 function InnerLayout() {
   const { state } = useApp();
   const [animDone, setAnimDone] = useState(false);
-  const showSplash = !animDone || !state.sessionRestored; // hide only when both are ready
+  const showSplash = !animDone || !state.sessionRestored;
 
-  // If anim finished before session restored, hide native splash once session arrives
+ 
   useEffect(() => {
     if (animDone && state.sessionRestored) {
-      SplashScreen.hideAsync(); // safe to drop the native splash now
+      SplashScreen.hideAsync();
     }
   }, [animDone, state.sessionRestored]);
 
@@ -98,7 +98,7 @@ function InnerLayout() {
         </Stack>
         {showSplash && (
           <AppSplash
-            onAnimDone={() => setAnimDone(true)} // called when logo animation finishes
+            onAnimDone={() => setAnimDone(true)}
           />
         )}
       </SafeAreaProvider>
@@ -117,5 +117,5 @@ export default function RootLayout() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1 }, // GestureHandlerRootView must fill the screen
+  root: { flex: 1 },
 });
