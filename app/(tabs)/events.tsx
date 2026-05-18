@@ -21,8 +21,9 @@ import { EVENTS, LIVE_SCORES, MEDAL_TABLE, StatLine } from '../../src/data/mock'
 
 type Tab = 'programme' | 'live' | 'medailles';
 type LiveScore = (typeof LIVE_SCORES)[0];
+type EventItem = (typeof EVENTS)[0];
 
-const { height: SCREEN_H } = Dimensions.get('window'); // used to cap the stats sheet height
+const { height: SCREEN_H } = Dimensions.get('window');
 
 const DAYS = [
   { day: 'Auj.', date: '28' },
@@ -49,12 +50,13 @@ export default function EventsScreen() {
   const t = useTranslation(state.language);
   const C = getColors(state.theme);
 
-  const [tab, setTab]           = useState<Tab>('live'); // default to live scores tab
-  const [dayIdx, setDayIdx]     = useState(0);           // selected day index
-  const [sport, setSport]       = useState('all');       // sport filter
-  const [statsScore, setStatsScore] = useState<LiveScore | null>(null); // null = modal closed
+  const [tab, setTab]           = useState<Tab>('live');
+  const [dayIdx, setDayIdx]     = useState(0);          
+  const [sport, setSport]       = useState('all');      
+  const [statsScore, setStatsScore] = useState<LiveScore | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
 
-  // filter events by selected sport
+ 
   const filteredEvents = sport === 'all'
     ? EVENTS
     : EVENTS.filter((e) => e.sport.toLowerCase() === sport.toLowerCase());
@@ -92,7 +94,7 @@ export default function EventsScreen() {
                   style={[
                     s.dayItem,
                     { backgroundColor: C.surface2, borderColor: C.border1 },
-                    i === dayIdx && { backgroundColor: C.brand, borderColor: C.brand }, // active day
+                    i === dayIdx && { backgroundColor: C.brand, borderColor: C.brand },
                   ]}
                 >
                   <Text style={[s.dayName, { color: C.textTertiary }, i === dayIdx && { color: '#fff' }]}>{d.day}</Text>
@@ -110,7 +112,7 @@ export default function EventsScreen() {
                   style={[
                     s.sportPill,
                     { backgroundColor: C.surface1, borderColor: C.border1 },
-                    sp.id === sport && { backgroundColor: C.surface3, borderColor: C.border2 }, // active pill
+                    sp.id === sport && { backgroundColor: C.surface3, borderColor: C.border2 },
                   ]}
                 >
                   <Ionicons name={sp.icon} size={14} color={sp.id === sport ? C.text : C.textTertiary} />
@@ -130,13 +132,13 @@ export default function EventsScreen() {
                   key={e.id}
                   event={e}
                   C={C}
-                  // only live events open the stats modal
-                  onPress={e.status === 'live'
-                    ? () => {
-                        const live = LIVE_SCORES.find((l) => l.sport === e.sport);
-                        if (live) setStatsScore(live);
-                      }
-                    : undefined}
+                  onPress={() => {
+                    if (e.status === 'live') {
+                      const live = LIVE_SCORES.find((l) => l.sport === e.sport);
+                      if (live) { setStatsScore(live); return; }
+                    }
+                    setSelectedEvent(e);
+                  }}
                 />
               ))
             )}
@@ -182,9 +184,81 @@ export default function EventsScreen() {
         )}
       </ScrollView>
 
+      {/* Event detail bottom sheet */}
+      <Modal
+        visible={selectedEvent !== null}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setSelectedEvent(null)}
+      >
+        <Pressable style={s.modalBackdrop} onPress={() => setSelectedEvent(null)} />
+        {selectedEvent && (
+          <View style={[s.statsSheet, { backgroundColor: C.bg, borderColor: C.border1, paddingBottom: insets.bottom + 24 }]}>
+            <View style={[s.sheetHandle, { backgroundColor: C.border2 }]} />
+
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <SportIcon sport={selectedEvent.sport} size={20} />
+              <Text style={{ fontSize: 11, fontWeight: '800', letterSpacing: 1, color: C.brand, flex: 1 }}>
+                {selectedEvent.sport.toUpperCase()}  ·  {selectedEvent.category}
+              </Text>
+              {selectedEvent.status === 'finished' && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: C.surface2, borderRadius: Radius.full, paddingHorizontal: 8, paddingVertical: 3 }}>
+                  <Ionicons name="checkmark" size={11} color={C.textTertiary} />
+                  <Text style={{ fontSize: 10, fontWeight: '700', color: C.textTertiary }}>Terminé</Text>
+                </View>
+              )}
+              {selectedEvent.status === 'upcoming' && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: C.brand + '15', borderRadius: Radius.full, paddingHorizontal: 8, paddingVertical: 3 }}>
+                  <Ionicons name="time-outline" size={11} color={C.brand} />
+                  <Text style={{ fontSize: 10, fontWeight: '700', color: C.brand }}>{selectedEvent.time}</Text>
+                </View>
+              )}
+            </View>
+
+            <Text style={{ fontSize: 22, fontWeight: '900', color: C.text, letterSpacing: -0.5, marginBottom: 4 }}>
+              {selectedEvent.match}
+            </Text>
+            <Text style={{ fontSize: 13, color: C.textSecondary, marginBottom: 20 }}>{selectedEvent.date}</Text>
+
+            <View style={{ gap: 10, marginBottom: 20 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: C.surface2, borderWidth: 1, borderColor: C.border1, borderRadius: Radius.md, padding: 14 }}>
+                <Ionicons name="location-outline" size={18} color={C.brand} />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 11, color: C.textTertiary, fontWeight: '600', marginBottom: 2 }}>LIEU</Text>
+                  <Text style={{ fontSize: 15, fontWeight: '700', color: C.text }}>{selectedEvent.venue}</Text>
+                </View>
+              </View>
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: C.surface2, borderWidth: 1, borderColor: C.border1, borderRadius: Radius.md, padding: 14 }}>
+                  <Ionicons name="time-outline" size={18} color={C.teal} />
+                  <View>
+                    <Text style={{ fontSize: 11, color: C.textTertiary, fontWeight: '600', marginBottom: 2 }}>HEURE</Text>
+                    <Text style={{ fontSize: 15, fontWeight: '700', color: C.text }}>{selectedEvent.time}</Text>
+                  </View>
+                </View>
+                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: C.surface2, borderWidth: 1, borderColor: C.border1, borderRadius: Radius.md, padding: 14 }}>
+                  <Ionicons name="calendar-outline" size={18} color={C.gold} />
+                  <View>
+                    <Text style={{ fontSize: 11, color: C.textTertiary, fontWeight: '600', marginBottom: 2 }}>DATE</Text>
+                    <Text style={{ fontSize: 15, fontWeight: '700', color: C.text }}>{selectedEvent.date}</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            <Pressable
+              style={[s.closeBtn, { backgroundColor: C.surface3, borderColor: C.border2 }]}
+              onPress={() => setSelectedEvent(null)}
+            >
+              <Text style={[s.closeBtnText, { color: C.text }]}>Fermer</Text>
+            </Pressable>
+          </View>
+        )}
+      </Modal>
+
       {/* Stats bottom sheet */}
       <Modal
-        visible={statsScore !== null}  // open when a match is selected
+        visible={statsScore !== null}
         animationType="slide"
         transparent
         onRequestClose={() => setStatsScore(null)}
@@ -242,7 +316,7 @@ export default function EventsScreen() {
 
             <Pressable
               style={[s.closeBtn, { backgroundColor: C.surface3, borderColor: C.border2 }]}
-              onPress={() => setStatsScore(null)} // close sheet
+              onPress={() => setStatsScore(null)}
             >
               <Text style={[s.closeBtnText, { color: C.text }]}>Fermer</Text>
             </Pressable>
@@ -256,7 +330,7 @@ export default function EventsScreen() {
 // Dual-colour progress bar for a single stat line
 function StatBar({ line, C }: { line: StatLine; C: ReturnType<typeof getColors> }) {
   const total   = line.home + line.away;
-  const homePct = total === 0 ? 0.5 : line.home / total; // default 50/50 if no data
+  const homePct = total === 0 ? 0.5 : line.home / total;
 
   return (
     <View style={{ marginBottom: 14 }}>
@@ -290,7 +364,7 @@ function TabBtn({
       style={{
         flexDirection: 'row', alignItems: 'center', gap: 5,
         paddingHorizontal: 12, paddingVertical: 8, borderRadius: Radius.full,
-        backgroundColor: active ? C.surface3 : C.surface1, // darker when active
+        backgroundColor: active ? C.surface3 : C.surface1,
         borderWidth: 1, borderColor: active ? C.border2 : C.border1,
       }}
     >
@@ -311,7 +385,7 @@ function EventCard({
 }: {
   event: (typeof EVENTS)[0];
   C: ReturnType<typeof getColors>;
-  onPress?: () => void; // only provided for live events
+  onPress?: () => void;
 }) {
   return (
     <Pressable
@@ -333,19 +407,19 @@ function EventCard({
       </View>
       <View style={{ alignItems: 'flex-end', gap: 4 }}>
         {event.status === 'live' ? (
-          // red LIVE badge
+         
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: C.liveDot + '20', borderRadius: Radius.full, paddingHorizontal: 8, paddingVertical: 3 }}>
             <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: C.liveDot }} />
             <Text style={{ fontSize: 10, fontWeight: '800', color: C.liveDot, letterSpacing: 0.6 }}>LIVE</Text>
           </View>
         ) : event.status === 'finished' ? (
-          // grey finished badge
+         
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, backgroundColor: C.surface1, borderRadius: Radius.full }}>
             <Ionicons name="checkmark" size={11} color={C.textTertiary} />
             <Text style={{ fontSize: 10, fontWeight: '700', color: C.textTertiary }}>Terminé</Text>
           </View>
         ) : (
-          <Text style={{ fontSize: 15, fontWeight: '700', color: C.text }}>{event.time}</Text> // kickoff time
+          <Text style={{ fontSize: 15, fontWeight: '700', color: C.text }}>{event.time}</Text>
         )}
         {onPress && <Ionicons name="chevron-forward" size={14} color={C.textTertiary} />}
       </View>
@@ -400,7 +474,7 @@ function MedalRow({ row, C }: { row: (typeof MEDAL_TABLE)[0]; C: ReturnType<type
   return (
     <View style={{
       flexDirection: 'row', alignItems: 'center', gap: 12,
-      backgroundColor: row.rank === 1 ? C.gold + '08' : C.surface2, // gold tint for 1st place
+      backgroundColor: row.rank === 1 ? C.gold + '08' : C.surface2,
       borderWidth: 1, borderColor: row.rank === 1 ? C.gold + '40' : C.border1,
       borderRadius: Radius.md, padding: 12, marginBottom: 6,
     }}>
@@ -434,7 +508,7 @@ function makeStyles(C: ReturnType<typeof getColors>) {
     liveHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4, marginBottom: 4 },
     liveDot: { width: 8, height: 8, borderRadius: 4 },
     liveHeaderText: { fontSize: 13, fontWeight: '700' },
-    modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)' }, // semi-transparent backdrop
+    modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)' },
     statsSheet: {
       borderTopLeftRadius: 28, borderTopRightRadius: 28,
       borderWidth: 1, borderBottomWidth: 0,

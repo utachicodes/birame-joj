@@ -34,7 +34,7 @@ export default function ProfileScreen() {
   const [newPassword, setNewPassword]             = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
-  // fall back to a guest object when no one is logged in
+ 
   const user = state.user ?? {
     name: 'Visiteur',
     email: 'visiteur@joj2026.sn',
@@ -43,7 +43,7 @@ export default function ProfileScreen() {
     countryCode: 'SN',
     accreditation: 'JOJ-2026-VIS-00000',
     phone: '',
-    avatar: 'VT', // two-letter initials
+    avatar: 'VT',
   };
 
   const handleSaveProfile = () => {
@@ -66,7 +66,7 @@ export default function ProfileScreen() {
       return;
     }
     if (newPassword !== confirmNewPassword) {
-      Alert.alert(t.error, 'Les mots de passe ne correspondent pas.'); // both fields must match
+      Alert.alert(t.error, 'Les mots de passe ne correspondent pas.');
       return;
     }
     // clear fields so they don't linger in memory
@@ -85,7 +85,7 @@ export default function ProfileScreen() {
         { text: t.cancel, style: 'cancel' },
         {
           text: t.logout,
-          style: 'destructive', // red on iOS
+          style: 'destructive',
           onPress: () => {
             dispatch({ type: 'LOGOUT' });
             router.replace('/auth' as any); // replace so user can't go back
@@ -169,7 +169,7 @@ export default function ProfileScreen() {
                   {state.language === lang.code ? (
                     <Ionicons name="checkmark-circle" size={20} color={C.brand} />
                   ) : (
-                    <View style={[s.radioEmpty, { borderColor: C.border2 }]} /> // empty radio for unselected
+                    <View style={[s.radioEmpty, { borderColor: C.border2 }]} />
                   )}
                 </Pressable>
                 {idx < LANGUAGES.length - 1 && <View style={[s.divider, { backgroundColor: C.border1 }]} />}
@@ -342,7 +342,7 @@ function NotifRow({
       <Switch
         value={value}
         onValueChange={onChange}
-        trackColor={{ false: C.border2, true: color + '60' }} // tinted when on
+        trackColor={{ false: C.border2, true: color + '60' }}
         thumbColor={value ? color : C.textTertiary}
       />
     </View>
@@ -382,7 +382,7 @@ function ModalInput({
         value={value}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
-        secureTextEntry={secureTextEntry} // hides text for password fields
+        secureTextEntry={secureTextEntry}
         placeholderTextColor={C.textTertiary}
       />
     </View>
@@ -407,19 +407,19 @@ function makeStyles(C: ReturnType<typeof getColors>) {
     editBtn: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
     accredCard: { flexDirection: 'row', alignItems: 'center', borderRadius: Radius.lg, padding: 14, gap: 12, borderWidth: 1 },
     accredLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, marginBottom: 2 },
-    accredNum: { fontSize: 13, fontWeight: '700', fontFamily: 'monospace' }, // fixed-width for badge codes
+    accredNum: { fontSize: 13, fontWeight: '700', fontFamily: 'monospace' },
     section: { gap: 8 },
     sectionLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 1, paddingLeft: 4 },
     sectionCard: { borderRadius: Radius.lg, borderWidth: 1, overflow: 'hidden' },
     menuRow: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 },
     menuIconBox: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
     menuLabel: { flex: 1, fontSize: 15, fontWeight: '600' },
-    divider: { height: StyleSheet.hairlineWidth, marginLeft: 66 }, // indented past the icon
+    divider: { height: StyleSheet.hairlineWidth, marginLeft: 66 },
     langRow: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 },
     langAbbrBox: { width: 38, height: 28, borderRadius: 8, backgroundColor: C.surface3, borderWidth: 1, borderColor: C.border2, alignItems: 'center', justifyContent: 'center' },
     langAbbrText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
     langLabel: { flex: 1, fontSize: 15, fontWeight: '600' },
-    radioEmpty: { width: 20, height: 20, borderRadius: 10, borderWidth: 1.5 }, // unselected radio
+    radioEmpty: { width: 20, height: 20, borderRadius: 10, borderWidth: 1.5 },
     logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 52, borderRadius: Radius.lg, borderWidth: 1 },
     logoutText: { fontSize: 15, fontWeight: '700' },
     version: { textAlign: 'center', fontSize: 12, fontWeight: '500', marginTop: 4 },
@@ -429,7 +429,7 @@ function makeStyles(C: ReturnType<typeof getColors>) {
     modalTitle: { fontSize: 21, fontWeight: '800' },
     modalScroll: { paddingBottom: 60, gap: 4 },
     iconBtn: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
-    saveBtn: { height: 56, borderRadius: Radius.lg, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', marginTop: 8 }, // overflow clips gradient
+    saveBtn: { height: 56, borderRadius: Radius.lg, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', marginTop: 8 },
     saveBtnText: { fontSize: 15, fontWeight: '800', color: '#fff' },
     securityNote: { fontSize: 13, lineHeight: 18, marginBottom: 16 },
   });

@@ -19,7 +19,7 @@ import { useTranslation } from '../../src/i18n';
 import { getColors, Radius } from '../../src/theme';
 
 type Tab      = 'yango' | 'navettes' | 'carte';
-type RideStep = 0 | 1 | 2 | 3 | 4; // idle → searching → found → en route → arrived
+type RideStep = 0 | 1 | 2 | 3 | 4;
 
 const LOCATIONS = [
   'Aéroport AIBD',
@@ -71,7 +71,7 @@ const SHUTTLE_ROUTES = [
     name: 'Route D — Village',
     from: 'Centre-Ville Dakar',
     to: 'Village JOJ',
-    available: 3, // almost full
+    available: 3,
     departures: ['14:50', '15:20', '15:50'],
     nextIn: '12 min',
   },
@@ -154,7 +154,7 @@ function YangoTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<typ
   const [toIdx, setToIdx]               = useState(2);
   const [showFromPicker, setShowFromPicker] = useState(false);
   const [showToPicker, setShowToPicker]     = useState(false);
-  const [eta, setEta]                   = useState(12); // minutes until driver arrives
+  const [eta, setEta]                   = useState(12);
   const progressAnim                    = useRef(new Animated.Value(0)).current;
 
   const fromLoc = LOCATIONS[fromIdx];
@@ -164,10 +164,10 @@ function YangoTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<typ
   useEffect(() => {
     if (rideStep === 3) {
       setEta(12);
-      const interval = setInterval(() => setEta((e) => Math.max(0, e - 1)), 1000); // countdown every second
+      const interval = setInterval(() => setEta((e) => Math.max(0, e - 1)), 1000);
       Animated.timing(progressAnim, {
         toValue: 1,
-        duration: 12000, // matches ETA countdown
+        duration: 12000,
         useNativeDriver: false,
       }).start(() => setRideStep(4)); // auto-advance to "arrived"
       return () => clearInterval(interval);
@@ -176,16 +176,16 @@ function YangoTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<typ
 
   const handleCommand = () => {
     setRideStep(1);
-    setTimeout(() => setRideStep(2), 3000); // simulate driver matching delay
+    setTimeout(() => setRideStep(2), 3000);
   };
 
   const handleConfirm = () => setRideStep(3);
-  const handleCancel  = () => { setRideStep(0); progressAnim.setValue(0); }; // reset everything
+  const handleCancel  = () => { setRideStep(0); progressAnim.setValue(0); };
   const handleFinish  = () => { setRideStep(0); progressAnim.setValue(0); };
 
-  const progressWidth = progressAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }); // animated bar width
+  const progressWidth = progressAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] });
 
-  // Location picker overlay (replaces tab content when open)
+ 
   if (showFromPicker || showToPicker) {
     const current = showFromPicker ? fromIdx : toIdx;
     return (
@@ -201,7 +201,7 @@ function YangoTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<typ
               if (showFromPicker) setFromIdx(idx);
               else setToIdx(idx);
               setShowFromPicker(false);
-              setShowToPicker(false); // close picker on selection
+              setShowToPicker(false);
             }}
           >
             <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: C.brand + '15', alignItems: 'center', justifyContent: 'center' }}>
@@ -421,7 +421,7 @@ function NavettesTab({ C, t }: { C: ReturnType<typeof getColors>; t: ReturnType<
 
 // Single shuttle route card with seat availability and departure times
 function ShuttleCard({ route, C }: { route: (typeof SHUTTLE_ROUTES)[0]; C: ReturnType<typeof getColors> }) {
-  // colour-coded availability: green > 10, yellow 5-10, red < 5
+ 
   const seats     = route.available > 10 ? 'good' : route.available > 4 ? 'low' : 'critical';
   const seatColor = seats === 'good' ? C.success : seats === 'low' ? C.warning : C.error;
 
@@ -514,7 +514,7 @@ function CarteTab({
           <Pressable
             key={v.name}
             style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: C.surface2, borderWidth: 1, borderColor: C.border1, borderRadius: Radius.lg, padding: 14, gap: 12 }}
-            onPress={() => router.push('/map' as any)} // all deep-link to the map screen
+            onPress={() => router.push('/map' as any)}
           >
             <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: C.brand + '15', alignItems: 'center', justifyContent: 'center' }}>
               <Ionicons name={v.icon} size={20} color={C.brand} />

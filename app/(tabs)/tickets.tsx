@@ -13,7 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import QRCode from 'react-native-qrcode-svg'; // real QR code, not an image
+import QRCode from 'react-native-qrcode-svg';
 import { useApp } from '../../src/context/AppContext';
 import { useTranslation } from '../../src/i18n';
 import { getColors, Radius } from '../../src/theme';
@@ -26,11 +26,11 @@ export default function TicketsScreen() {
   const t = useTranslation(state.language);
   const C = getColors(state.theme);
 
-  const [selected, setSelected]         = useState<(typeof TICKETS)[0] | null>(null); // null = no modal
+  const [selected, setSelected]         = useState<(typeof TICKETS)[0] | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [ticketCode, setTicketCode]     = useState('');
 
-  // fall back to a guest if not logged in
+ 
   const user = state.user ?? {
     name: 'Visiteur',
     role: 'Visiteur',
@@ -44,13 +44,13 @@ export default function TicketsScreen() {
       Alert.alert('Erreur', 'Veuillez entrer un code de billet.');
       return;
     }
-    setTicketCode('');       // clear the field
+    setTicketCode('');      
     setShowAddModal(false);
-    // In a real app this would hit an API endpoint
+   
     Alert.alert('Billet ajouté !', `Le billet ${ticketCode.toUpperCase()} a été ajouté à votre compte.`);
   };
 
-  // QR value readable by venue scanners
+ 
   const accredQrValue = `JOJ:ACCRED:${user.accreditation}:${user.name.replace(/\s+/g, '_').toUpperCase()}`;
 
   const s = makeStyles(C);
@@ -180,7 +180,7 @@ export default function TicketsScreen() {
                 height: 52,
                 fontSize: 16,
                 color: C.text,
-                fontFamily: 'monospace', // easier to read codes
+                fontFamily: 'monospace',
                 letterSpacing: 1,
               }}
             />
@@ -263,21 +263,21 @@ function TicketModal({
   t: ReturnType<typeof useTranslation>;
 }) {
   const handleShare = () => {
-    // Would use expo-sharing in production
+   
     Alert.alert(t.share, 'Billet partagé !');
   };
 
   const handleDownload = () => {
-    // Would use expo-media-library in production
+   
     Alert.alert(t.download, 'Billet téléchargé dans vos photos.');
   };
 
   const handleNFC = () => {
-    // Would use expo-local-authentication + NFC in production
+   
     Alert.alert(t.nfc, 'Approchez votre téléphone du lecteur NFC.');
   };
 
-  // Structured value readable by entry scanners
+ 
   const qrValue = `JOJ:TICKET:${ticket.id}:${ticket.event.replace(/\s+/g, '_').toUpperCase()}:${ticket.date}:${ticket.seat}`;
 
   return (
