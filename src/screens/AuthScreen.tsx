@@ -5,19 +5,19 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
-import { useSafeAreaInsets } from 'react-native-safe-area-context'; // notch-safe padding
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import GlassInput from '../components/GlassInput';
 import { Colors, Typography, Radius } from '../theme';
 import { useApp } from '../context/AppContext';
 
-type Mode = 'login' | 'register'; // which form is showing
-type Lang = 'FR' | 'EN' | 'AR' | 'WO'; // supported UI languages
+type Mode = 'login' | 'register';
+type Lang = 'FR' | 'EN' | 'AR' | 'WO';
 
-const LANGUAGES: Lang[] = ['FR', 'EN', 'AR', 'WO']; // language picker options
+const LANGUAGES: Lang[] = ['FR', 'EN', 'AR', 'WO'];
 
-const COUNTRIES = [ // list for the country dropdown
+const COUNTRIES = [
   { name: 'Sénégal', code: 'SN' },
   { name: 'France', code: 'FR' },
   { name: 'Maroc', code: 'MA' },
@@ -26,30 +26,30 @@ const COUNTRIES = [ // list for the country dropdown
   { name: 'Algérie', code: 'DZ' },
   { name: 'Mali', code: 'ML' },
   { name: 'Guinée', code: 'GN' },
-  { name: 'Autre', code: 'XX' }, // catch-all for other countries
+  { name: 'Autre', code: 'XX' },
 ];
 
-const ROLES = ['Visiteur', 'Athlète', 'Journaliste', 'Staff', 'Volontaire']; // accreditation types
+const ROLES = ['Visiteur', 'Athlète', 'Journaliste', 'Staff', 'Volontaire'];
 
 export default function AuthScreen() {
-  const insets = useSafeAreaInsets(); // respect device safe area
+  const insets = useSafeAreaInsets();
   const router  = useRouter();
-  const { state, login, register, dispatch } = useApp(); // pull auth actions from context
+  const { state, login, register, dispatch } = useApp();
 
-  const [mode, setMode]           = useState<Mode>('login'); // default to login tab
-  const [lang, setLang]           = useState<Lang>('FR'); // default language
+  const [mode, setMode]           = useState<Mode>('login');
+  const [lang, setLang]           = useState<Lang>('FR');
   const [email, setEmail]         = useState('');
   const [password, setPassword]   = useState('');
-  const [showPass, setShowPass]   = useState(false); // toggle password visibility
+  const [showPass, setShowPass]   = useState(false);
   const [name, setName]           = useState('');
   const [phone, setPhone]         = useState('');
-  const [role, setRole]           = useState('Visiteur'); // default role
-  const [country, setCountry]     = useState(COUNTRIES[0]); // default to Senegal
-  const [showCountry, setShowCountry] = useState(false); // country dropdown open state
-  const [showRole, setShowRole]   = useState(false); // role dropdown open state
+  const [role, setRole]           = useState('Visiteur');
+  const [country, setCountry]     = useState(COUNTRIES[0]);
+  const [showCountry, setShowCountry] = useState(false);
+  const [showRole, setShowRole]   = useState(false);
 
   const handleAuth = async () => {
-    dispatch({ type: 'CLEAR_AUTH_ERROR' }); // wipe previous error before trying
+    dispatch({ type: 'CLEAR_AUTH_ERROR' });
     if (mode === 'login') {
       await login(email, password);
     } else {
@@ -57,10 +57,10 @@ export default function AuthScreen() {
     }
   };
 
-  // Navigate once logged in
+ 
   React.useEffect(() => {
     if (state.isLoggedIn) {
-      router.replace('/(tabs)' as any); // send user to main app
+      router.replace('/(tabs)' as any);
     }
   }, [state.isLoggedIn]);
 
@@ -75,7 +75,7 @@ export default function AuthScreen() {
         <ScrollView
           contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 32 }]}
           showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled" // taps on buttons still work while keyboard is up
+          keyboardShouldPersistTaps="handled"
         >
           <View style={styles.langRow}>
             {LANGUAGES.map((l) => (
@@ -105,7 +105,7 @@ export default function AuthScreen() {
               </Pressable>
             </View>
 
-            {!!state.authError && ( // show error only when one exists
+            {!!state.authError && (
               <View style={styles.errorBox}>
                 <Ionicons name="alert-circle-outline" size={16} color={Colors.error} />
                 <Text style={styles.errorText}>{state.authError}</Text>
@@ -113,7 +113,7 @@ export default function AuthScreen() {
             )}
 
             <View style={styles.form}>
-              {mode === 'register' && ( // extra fields only for sign-up
+              {mode === 'register' && (
                 <>
                   <GlassInput
                     label="Nom complet *"
@@ -181,7 +181,7 @@ export default function AuthScreen() {
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
-                autoCapitalize="none" // emails are always lowercase
+                autoCapitalize="none"
               />
               <GlassInput
                 label="Mot de passe *"
@@ -189,12 +189,12 @@ export default function AuthScreen() {
                 placeholder={mode === 'register' ? 'Minimum 8 caractères' : '••••••••'}
                 value={password}
                 onChangeText={setPassword}
-                secureTextEntry={!showPass} // hide/show based on toggle
+                secureTextEntry={!showPass}
                 rightIcon={showPass ? 'eye-off-outline' : 'eye-outline'}
                 onRightIconPress={() => setShowPass(!showPass)}
               />
 
-              {mode === 'login' && ( // forgot password only makes sense on login
+              {mode === 'login' && (
                 <Pressable style={styles.forgotRow}>
                   <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
                 </Pressable>
@@ -203,12 +203,12 @@ export default function AuthScreen() {
               <Pressable style={[styles.cta, state.authLoading && { opacity: 0.7 }]} onPress={handleAuth} disabled={state.authLoading}> {/* dim while loading */}
                 <LinearGradient colors={[Colors.brand, Colors.brandDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
                 {state.authLoading
-                  ? <ActivityIndicator color="#fff" /> // spinner during request
+                  ? <ActivityIndicator color="#fff" />
                   : <Text style={styles.ctaText}>{mode === 'login' ? 'Se connecter' : 'Créer mon compte'}</Text>
                 }
               </Pressable>
 
-              {mode === 'login' && ( // biometrics only on login screen
+              {mode === 'login' && (
                 <Pressable style={styles.bioBtn}>
                   <Ionicons name="finger-print-outline" size={22} color={Colors.brand} />
                   <Text style={styles.bioText}>Face ID / Empreinte digitale</Text>
@@ -252,13 +252,13 @@ function SocialBtn({ icon, label }: { icon: any; label: string }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.bg },
-  glow1: { position: 'absolute', width: 360, height: 360, borderRadius: 180, backgroundColor: Colors.brand + '10', top: -80, right: -80 }, // brand glow, top-right
-  glow2: { position: 'absolute', width: 280, height: 280, borderRadius: 140, backgroundColor: Colors.purple + '12', bottom: 120, left: -60 }, // purple glow, bottom-left
+  glow1: { position: 'absolute', width: 360, height: 360, borderRadius: 180, backgroundColor: Colors.brand + '10', top: -80, right: -80 },
+  glow2: { position: 'absolute', width: 280, height: 280, borderRadius: 140, backgroundColor: Colors.purple + '12', bottom: 120, left: -60 },
   scroll: { paddingHorizontal: 24, gap: 24 },
 
-  langRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: 6 }, // right-aligned pill row
+  langRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: 6 },
   langPill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: Radius.full, borderWidth: 1, borderColor: Colors.border1, backgroundColor: Colors.surface1 },
-  langPillActive: { backgroundColor: Colors.brand + '15', borderColor: Colors.brand + '50' }, // highlight active language
+  langPillActive: { backgroundColor: Colors.brand + '15', borderColor: Colors.brand + '50' },
   langText: { fontSize: 11, fontWeight: '700', color: Colors.textTertiary, letterSpacing: 0.5 },
   langTextActive: { color: Colors.brand },
 
@@ -268,10 +268,10 @@ const styles = StyleSheet.create({
   appName: { fontSize: 22, fontWeight: '900', color: Colors.text, letterSpacing: -0.4, marginTop: 6 },
   appTagline: { ...Typography.footnote, color: Colors.textTertiary },
 
-  card: { borderRadius: Radius.xl, padding: 22, gap: 20, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1 }, // glass-like form card
-  tabRow: { flexDirection: 'row', backgroundColor: Colors.surface1, borderRadius: Radius.md, padding: 4 }, // segmented control wrapper
+  card: { borderRadius: Radius.xl, padding: 22, gap: 20, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1 },
+  tabRow: { flexDirection: 'row', backgroundColor: Colors.surface1, borderRadius: Radius.md, padding: 4 },
   tab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: Radius.sm },
-  tabActive: { backgroundColor: Colors.surface3 }, // selected tab bg
+  tabActive: { backgroundColor: Colors.surface3 },
   tabText: { ...Typography.callout, color: Colors.textTertiary, fontWeight: '600' },
   tabTextActive: { color: Colors.text },
 
@@ -280,18 +280,18 @@ const styles = StyleSheet.create({
 
   form: { gap: 14 },
   fieldLabel: { fontSize: 12, fontWeight: '600', color: Colors.textSecondary, marginBottom: 6 },
-  picker: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: Colors.surface1, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.md, padding: 14 }, // custom select trigger
+  picker: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: Colors.surface1, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.md, padding: 14 },
   pickerText: { flex: 1, color: Colors.text, fontSize: 15 },
-  dropdown: { backgroundColor: Colors.surface3, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.md, marginTop: 4, overflow: 'hidden' }, // dropdown list container
+  dropdown: { backgroundColor: Colors.surface3, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.md, marginTop: 4, overflow: 'hidden' },
   dropItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 12, paddingHorizontal: 14 },
-  dropItemActive: { backgroundColor: Colors.brand + '15' }, // highlight selected item
+  dropItemActive: { backgroundColor: Colors.brand + '15' },
   dropText: { fontSize: 14, color: Colors.textSecondary },
   dropTextActive: { color: Colors.text, fontWeight: '600' },
 
   forgotRow: { alignItems: 'flex-end' },
   forgotText: { ...Typography.footnote, color: Colors.brand, fontWeight: '600' },
 
-  cta: { height: 56, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', marginTop: 4 }, // main submit button
+  cta: { height: 56, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', marginTop: 4 },
   ctaText: { fontSize: 16, fontWeight: '800', color: '#fff', letterSpacing: -0.2 },
 
   bioBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 50, borderRadius: Radius.md, backgroundColor: Colors.brand + '12', borderWidth: 1, borderColor: Colors.brand + '25' },
@@ -306,5 +306,5 @@ const styles = StyleSheet.create({
   socialLabel: { ...Typography.caption, fontWeight: '600' },
 
   legal: { ...Typography.caption, color: Colors.textTertiary, textAlign: 'center', lineHeight: 17 },
-  legalLink: { color: Colors.brand }, // tappable link style
+  legalLink: { color: Colors.brand },
 });
