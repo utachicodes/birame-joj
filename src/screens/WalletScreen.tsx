@@ -9,12 +9,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors, Typography, Radius } from '../theme';
 import { useApp } from '../context/AppContext';
 
-const { width } = Dimensions.get('window'); // screen width for card sizing
-const CARD_W = width - 40; // card is full width minus side padding
+const { width } = Dimensions.get('window');
+const CARD_W = width - 40;
 
 const TOP_UP_METHODS: Array<{
   id: string; name: string; icon: keyof typeof Ionicons.glyphMap; color: string;
-}> = [ // all supported recharge methods
+}> = [
   { id: 'orange',   name: 'Orange Money',    icon: 'phone-portrait-outline', color: '#FF6B00' },
   { id: 'wave',     name: 'Wave',            icon: 'water-outline',          color: '#1DC7FF' },
   { id: 'card',     name: 'Carte bancaire',  icon: 'card-outline',           color: Colors.blue },
@@ -24,7 +24,7 @@ const TOP_UP_METHODS: Array<{
 
 const QUICK_ACTIONS: Array<{
   id: string; icon: keyof typeof Ionicons.glyphMap; label: string; color: string;
-}> = [ // shortcut buttons below the card
+}> = [
   { id: 'top-up',  icon: 'add-outline',       label: 'Recharger', color: Colors.gold  },
   { id: 'send',    icon: 'arrow-up-outline',   label: 'Envoyer',   color: Colors.teal  },
   { id: 'pay',     icon: 'qr-code-outline',    label: 'Payer',     color: Colors.brand },
@@ -33,12 +33,12 @@ const QUICK_ACTIONS: Array<{
 
 export default function WalletScreen() {
   const insets = useSafeAreaInsets();
-  const { state, topUp } = useApp(); // topUp triggers context action
-  const [showTopUp, setShowTopUp]       = useState(false); // top-up modal toggle
-  const [showCardInfo, setShowCardInfo] = useState(false); // card info modal toggle
+  const { state, topUp } = useApp();
+  const [showTopUp, setShowTopUp]       = useState(false);
+  const [showCardInfo, setShowCardInfo] = useState(false);
 
   const user = state.user;
-  const cardLastFour = user?.accreditation.slice(-4) ?? '0000'; // last 4 chars of accreditation ID
+  const cardLastFour = user?.accreditation.slice(-4) ?? '0000';
 
   return (
     <View style={styles.container}>
@@ -61,7 +61,7 @@ export default function WalletScreen() {
           <LinearGradient colors={[Colors.gold, '#A88A2C', Colors.gold]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} /> {/* gold gradient */}
           <View style={styles.cardPattern}> {/* decorative circles overlay */}
             {[0, 1, 2, 3].map((i) => (
-              <View key={i} style={[styles.cardCircle, { width: 100 + i * 50, height: 100 + i * 50, borderRadius: (100 + i * 50) / 2, right: -30 - i * 20, top: -20 - i * 10 }]} /> // concentric rings
+              <View key={i} style={[styles.cardCircle, { width: 100 + i * 50, height: 100 + i * 50, borderRadius: (100 + i * 50) / 2, right: -30 - i * 20, top: -20 - i * 10 }]} />
             ))}
           </View>
           <View style={styles.cardTop}>
@@ -152,7 +152,7 @@ export default function WalletScreen() {
         <View style={styles.txHeader}>
           <Text style={styles.sectionLabel}>HISTORIQUE</Text>
         </View>
-        {state.transactions.length === 0 ? ( // empty state
+        {state.transactions.length === 0 ? (
           <View style={styles.emptyTx}>
             <Ionicons name="receipt-outline" size={32} color={Colors.textTertiary} />
             <Text style={styles.emptyTxText}>Aucune transaction</Text>
@@ -167,7 +167,7 @@ export default function WalletScreen() {
         <TopUpModal
           onClose={() => setShowTopUp(false)}
           onConfirm={async (amount, method) => {
-            await topUp(amount, method); // call context action
+            await topUp(amount, method);
             setShowTopUp(false);
           }}
         />
@@ -182,7 +182,7 @@ export default function WalletScreen() {
 }
 
 function TransactionRow({ tx }: { tx: { id: string; type: 'credit' | 'debit'; label: string; amount: number; date: string; icon: string } }) {
-  const isCredit = tx.type === 'credit'; // true = money in
+  const isCredit = tx.type === 'credit';
   return (
     <View style={styles.tx}>
       <View style={[styles.txIcon, { backgroundColor: isCredit ? Colors.success + '15' : Colors.surface3 }]}> {/* green bg for credits */}
@@ -200,16 +200,16 @@ function TransactionRow({ tx }: { tx: { id: string; type: 'credit' | 'debit'; la
 }
 
 function TopUpModal({ onClose, onConfirm }: { onClose: () => void; onConfirm: (amount: number, method: string) => Promise<void> }) {
-  const [amount, setAmount] = useState(10000); // default preset amount
-  const [method, setMethod] = useState('orange'); // default payment method
+  const [amount, setAmount] = useState(10000);
+  const [method, setMethod] = useState('orange');
   const [loading, setLoading] = useState(false);
-  const PRESETS = [5000, 10000, 25000, 50000]; // quick-select amounts
+  const PRESETS = [5000, 10000, 25000, 50000];
 
-  const methodLabel = TOP_UP_METHODS.find((m) => m.id === method)?.name ?? ''; // human-readable method name
+  const methodLabel = TOP_UP_METHODS.find((m) => m.id === method)?.name ?? '';
 
   const handleConfirm = async () => {
     setLoading(true);
-    await onConfirm(amount, methodLabel); // pass amount and label to parent
+    await onConfirm(amount, methodLabel);
     setLoading(false);
   };
 
@@ -251,8 +251,8 @@ function TopUpModal({ onClose, onConfirm }: { onClose: () => void; onConfirm: (a
                 </View>
                 <Text style={styles.methodName}>{m.name}</Text>
                 {method === m.id
-                  ? <Ionicons name="checkmark-circle" size={20} color={Colors.brand} /> // selected
-                  : <View style={styles.methodCheck} /> // empty radio circle
+                  ? <Ionicons name="checkmark-circle" size={20} color={Colors.brand} />
+                  : <View style={styles.methodCheck} />
                 }
               </Pressable>
               {i < TOP_UP_METHODS.length - 1 && <View style={styles.methodDivider} />}
@@ -260,7 +260,7 @@ function TopUpModal({ onClose, onConfirm }: { onClose: () => void; onConfirm: (a
           ))}
         </View>
 
-        {method === 'transfer' && ( // show bank details only for wire transfer
+        {method === 'transfer' && (
           <View style={styles.transferInfo}>
             <Text style={styles.transferTitle}>Virement bancaire</Text>
             <Text style={styles.transferLine}>Banque : BIS — Banque de l'Infrastructure du Sport</Text>
@@ -272,7 +272,7 @@ function TopUpModal({ onClose, onConfirm }: { onClose: () => void; onConfirm: (a
         )}
       </ScrollView>
 
-      {method !== 'transfer' && ( // no confirm button for wire — user just reads bank details
+      {method !== 'transfer' && (
         <View style={styles.modalFooter}>
           <Pressable style={[styles.confirmBtn, loading && { opacity: 0.7 }]} onPress={handleConfirm} disabled={loading}>
             <LinearGradient colors={[Colors.gold, '#A88A2C']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
@@ -286,7 +286,7 @@ function TopUpModal({ onClose, onConfirm }: { onClose: () => void; onConfirm: (a
   );
 }
 
-const CARD_INFO_SECTIONS = [ // FAQ-style content for the card explainer modal
+const CARD_INFO_SECTIONS = [
   {
     icon: 'card-outline' as const,
     color: Colors.gold,
@@ -345,7 +345,7 @@ function CardInfoModal({ onClose }: { onClose: () => void }) {
           <Text style={styles.cardInfoHeroSub}>Paiements 100% cashless aux Jeux de la Francophonie</Text>
         </View>
 
-        {CARD_INFO_SECTIONS.map((s) => ( // render each FAQ section
+        {CARD_INFO_SECTIONS.map((s) => (
           <View key={s.title} style={styles.cardInfoRow}>
             <View style={[styles.cardInfoIcon, { backgroundColor: s.color + '18', borderColor: s.color + '30' }]}>
               <Ionicons name={s.icon} size={20} color={s.color} />
@@ -370,9 +370,9 @@ const styles = StyleSheet.create({
   iconBtn: { width: 36, height: 36, borderRadius: 12, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, alignItems: 'center', justifyContent: 'center' },
   scroll: { padding: 20, gap: 14 },
 
-  card: { width: CARD_W, height: CARD_W * 0.58, borderRadius: Radius.xl, padding: 22, justifyContent: 'space-between', overflow: 'hidden' }, // credit card proportions
+  card: { width: CARD_W, height: CARD_W * 0.58, borderRadius: Radius.xl, padding: 22, justifyContent: 'space-between', overflow: 'hidden' },
   cardPattern: { position: 'absolute', right: 0, top: 0 },
-  cardCircle: { position: 'absolute', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)' }, // subtle decorative ring
+  cardCircle: { position: 'absolute', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)' },
   cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   cardLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 1.6, color: 'rgba(255,255,255,0.85)', marginBottom: 6 },
   cardName: { fontSize: 15, fontWeight: '700', color: '#fff' },
@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
   cardBalance: { fontSize: 30, fontWeight: '900', color: '#fff' },
   cardCcy: { fontSize: 14, fontWeight: '600', color: 'rgba(255,255,255,0.85)' },
   cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  cardNum: { fontSize: 13, color: 'rgba(255,255,255,0.85)', fontFamily: 'monospace', letterSpacing: 1 }, // monospace for card digits
+  cardNum: { fontSize: 13, color: 'rgba(255,255,255,0.85)', fontFamily: 'monospace', letterSpacing: 1 },
   cardNfc: { width: 32, height: 32, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' },
 
   pointsStrip: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.gold + '30', borderRadius: Radius.lg, padding: 12 },
@@ -408,11 +408,11 @@ const styles = StyleSheet.create({
 
   methodsList: { backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.lg, overflow: 'hidden' },
   methodRow: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 },
-  methodRowActive: { backgroundColor: Colors.surface3 }, // selected method highlight
+  methodRowActive: { backgroundColor: Colors.surface3 },
   methodDivider: { height: StyleSheet.hairlineWidth, backgroundColor: Colors.border1, marginHorizontal: 14 },
   methodIconBox: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   methodName: { ...Typography.callout, fontWeight: '600', flex: 1 },
-  methodCheck: { width: 20, height: 20, borderRadius: 10, borderWidth: 1.5, borderColor: Colors.border2 }, // unselected radio circle
+  methodCheck: { width: 20, height: 20, borderRadius: 10, borderWidth: 1.5, borderColor: Colors.border2 },
 
   tx: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface1, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.md, padding: 14, gap: 12, marginBottom: 6 },
   txIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
@@ -420,20 +420,20 @@ const styles = StyleSheet.create({
   txLabel: { ...Typography.callout, fontWeight: '600' },
   txDate: { ...Typography.caption, color: Colors.textTertiary },
   txAmount: { ...Typography.callout, fontWeight: '700' },
-  txCredit: { color: Colors.success }, // green for money in
-  txDebit: { color: Colors.text }, // normal color for money out
+  txCredit: { color: Colors.success },
+  txDebit: { color: Colors.text },
 
   modal: { flex: 1, paddingHorizontal: 20, paddingTop: 12 },
   modalHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border2, alignSelf: 'center', marginBottom: 14 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   modalTitle: { ...Typography.title2, fontWeight: '800' },
-  modalScroll: { paddingBottom: 120 }, // space for fixed footer button
+  modalScroll: { paddingBottom: 120 },
   amountDisplay: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', paddingVertical: 24, gap: 6 },
-  amountValue: { fontSize: 48, fontWeight: '900', color: Colors.text, letterSpacing: -1 }, // big bold amount
+  amountValue: { fontSize: 48, fontWeight: '900', color: Colors.text, letterSpacing: -1 },
   amountCcy: { fontSize: 18, fontWeight: '700', color: Colors.textSecondary },
   presetGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   presetBtn: { flex: 1, minWidth: '47%', height: 50, borderRadius: Radius.md, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, alignItems: 'center', justifyContent: 'center' },
-  presetBtnActive: { backgroundColor: Colors.gold + '20', borderColor: Colors.gold + '50' }, // gold tint when selected
+  presetBtnActive: { backgroundColor: Colors.gold + '20', borderColor: Colors.gold + '50' },
   presetText: { ...Typography.callout, fontWeight: '700' },
   presetTextActive: { color: Colors.gold },
   modalFooter: { paddingVertical: 16 },
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
 
   transferInfo: { backgroundColor: Colors.teal + '12', borderWidth: 1, borderColor: Colors.teal + '30', borderRadius: Radius.lg, padding: 16, gap: 6, marginTop: 8 },
   transferTitle: { fontSize: 14, fontWeight: '800', color: Colors.teal, marginBottom: 4 },
-  transferLine: { fontSize: 13, color: Colors.text, fontFamily: 'monospace' }, // bank details in monospace
+  transferLine: { fontSize: 13, color: Colors.text, fontFamily: 'monospace' },
   transferNote: { fontSize: 12, color: Colors.textTertiary, marginTop: 8, lineHeight: 17 },
 
   cardInfoHero: { borderRadius: Radius.xl, padding: 28, alignItems: 'center', gap: 10, overflow: 'hidden', marginBottom: 4 },
