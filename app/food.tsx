@@ -63,7 +63,7 @@ const PAYMENT_METHODS = [
 export default function FoodScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { state, dispatch } = useApp();
+  const { state, dispatch, debit } = useApp();
   const t = useTranslation(state.language);
   const C = getColors(state.theme);
 
@@ -111,7 +111,7 @@ export default function FoodScreen() {
 
   const handleOrderComplete = () => {
     const orderNum = Math.floor(Math.random() * 9000) + 1000;
-    dispatch({ type: 'DEBIT_WALLET', payload: { amount: total, label: `Commande JOJ #${orderNum}` } });
+    debit(total, `Commande JOJ #${orderNum}`, 'restaurant-outline');
     setCart({});
     setShowCheckout(false);
     setCheckoutStep('method');

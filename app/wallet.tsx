@@ -59,7 +59,7 @@ type FlowType = 'topup' | 'pay';
 export default function WalletScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { state, dispatch } = useApp();
+  const { state, dispatch, topUp, debit } = useApp();
   const t = useTranslation(state.language);
   const C = getColors(state.theme);
 
@@ -173,7 +173,7 @@ export default function WalletScreen() {
           onClose={() => setShowTopUp(false)}
           onSuccess={(amount) => {
             const m = METHODS.find((m) => m.id === 'orange')?.name ?? 'Mobile Money';
-            dispatch({ type: 'TOP_UP', payload: { amount, method: m } });
+            topUp(amount, m);
             setShowTopUp(false);
           }}
           C={C}
@@ -187,7 +187,7 @@ export default function WalletScreen() {
           type="pay"
           onClose={() => setShowPay(false)}
           onSuccess={(amount) => {
-            dispatch({ type: 'DEBIT_WALLET', payload: { amount, label: 'Paiement JOJ' } });
+            debit(amount, 'Paiement JOJ', 'qr-code-outline');
             setShowPay(false);
           }}
           C={C}
