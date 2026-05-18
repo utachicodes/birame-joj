@@ -14,7 +14,6 @@ import {
   KeyboardAvoidingView,
   Image,
 } from 'react-native';
-import QRCode from 'react-native-qrcode-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -86,12 +85,10 @@ export default function AuthScreen() {
   };
 
  
-  const dot0W = scrollX.interpolate({ inputRange: [0, W, 2 * W], outputRange: [24, 8, 8], extrapolate: 'clamp' });
-  const dot0O = scrollX.interpolate({ inputRange: [0, W, 2 * W], outputRange: [1, 0.35, 0.35], extrapolate: 'clamp' });
-  const dot1W = scrollX.interpolate({ inputRange: [0, W, 2 * W], outputRange: [8, 24, 8], extrapolate: 'clamp' });
-  const dot1O = scrollX.interpolate({ inputRange: [0, W, 2 * W], outputRange: [0.35, 1, 0.35], extrapolate: 'clamp' });
-  const dot2W = scrollX.interpolate({ inputRange: [0, W, 2 * W], outputRange: [8, 8, 24], extrapolate: 'clamp' });
-  const dot2O = scrollX.interpolate({ inputRange: [0, W, 2 * W], outputRange: [0.35, 0.35, 1], extrapolate: 'clamp' });
+  const dot0W = scrollX.interpolate({ inputRange: [0, W], outputRange: [24, 8], extrapolate: 'clamp' });
+  const dot0O = scrollX.interpolate({ inputRange: [0, W], outputRange: [1, 0.35], extrapolate: 'clamp' });
+  const dot1W = scrollX.interpolate({ inputRange: [0, W], outputRange: [8, 24], extrapolate: 'clamp' });
+  const dot1O = scrollX.interpolate({ inputRange: [0, W], outputRange: [0.35, 1], extrapolate: 'clamp' });
 
   return (
     <View style={s.root}>
@@ -258,34 +255,6 @@ export default function AuthScreen() {
               </ScrollView>
             </View>
 
-            {/* Page 2 – QR Test */}
-            <View style={{ width: W, height: pagerH }}>
-              <ScrollView
-                contentContainerStyle={[s.pageContent, { minHeight: pagerH, alignItems: 'center' }]}
-                showsVerticalScrollIndicator={false}
-              >
-                <View style={s.pageHead}>
-                  <Text style={[s.pageTitle, { textAlign: 'center' }]}>Test the App</Text>
-                  <Text style={[s.pageSub, { textAlign: 'center' }]}>Scan with Expo Go to try it now</Text>
-                </View>
-
-                <View style={s.qrWrap}>
-                  <QRCode
-                    value="exp://u.expo.dev/075098d6-4a1a-4d75-b1fa-eb1c9b209692"
-                    size={200}
-                    backgroundColor="transparent"
-                    color="#FFFFFF"
-                  />
-                </View>
-
-                <Text style={s.qrHint}>Open Expo Go → Scan QR</Text>
-
-                <Pressable onPress={() => goTo(0)} style={[s.switchRow, { marginTop: 20 }]}>
-                  <Text style={s.switchBase}>Ready?{'  '}</Text>
-                  <Text style={s.switchAccent}>Sign in</Text>
-                </Pressable>
-              </ScrollView>
-            </View>
           </ScrollView>
         </View>
 
@@ -293,7 +262,6 @@ export default function AuthScreen() {
         <View style={[s.dots, { paddingBottom: insets.bottom + 20 }]}>
           <Animated.View style={[s.dot, { width: dot0W, opacity: dot0O }]} />
           <Animated.View style={[s.dot, { width: dot1W, opacity: dot1O }]} />
-          <Animated.View style={[s.dot, { width: dot2W, opacity: dot2O }]} />
         </View>
       </KeyboardAvoidingView>
     </View>
@@ -602,21 +570,5 @@ const s = StyleSheet.create({
     height: 6,
     borderRadius: 3,
     backgroundColor: '#FF6B35',
-  },
-  qrWrap: {
-    padding: 20,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.10)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  qrHint: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: 'rgba(255,255,255,0.35)',
-    letterSpacing: 0.2,
-    marginTop: 4,
   },
 });
