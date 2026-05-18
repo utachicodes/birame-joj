@@ -11,16 +11,16 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import CountryBadge from '../components/CountryBadge'; // flag badge for user country
+import CountryBadge from '../components/CountryBadge';
 import { Colors, Typography, Radius } from '../theme';
-import { TICKETS } from '../data/mock'; // static ticket fixtures
+import { TICKETS } from '../data/mock';
 import { useApp } from '../context/AppContext';
 
 export default function TicketsScreen() {
   const insets = useSafeAreaInsets();
   const { state } = useApp();
   const user = state.user;
-  const [selected, setSelected] = useState<(typeof TICKETS)[0] | null>(null); // ticket open in modal
+  const [selected, setSelected] = useState<(typeof TICKETS)[0] | null>(null);
 
   return (
     <View style={styles.container}>
@@ -49,7 +49,7 @@ export default function TicketsScreen() {
           <LinearGradient colors={[Colors.brand, Colors.brandDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
           <View style={styles.accredPattern}> {/* decorative rings overlay */}
             {[0, 1, 2].map((i) => (
-              <View key={i} style={[styles.accredCircle, { width: 160 + i * 60, height: 160 + i * 60, borderRadius: (160 + i * 60) / 2, right: -50 - i * 20, top: -30 - i * 15 }]} /> // concentric circles, each bigger
+              <View key={i} style={[styles.accredCircle, { width: 160 + i * 60, height: 160 + i * 60, borderRadius: (160 + i * 60) / 2, right: -50 - i * 20, top: -30 - i * 15 }]} />
             ))}
           </View>
           <View style={styles.accredHead}> {/* "official accreditation" label row */}
@@ -78,7 +78,7 @@ export default function TicketsScreen() {
         <Text style={styles.sectionLabel}>BILLETS &amp; PASS</Text>
 
         {TICKETS.map((t) => (
-          <TicketCard key={t.id} ticket={t} onPress={() => setSelected(t)} /> // open modal on press
+          <TicketCard key={t.id} ticket={t} onPress={() => setSelected(t)} />
         ))}
 
         <Pressable style={styles.addCard}> {/* manual ticket entry row */}
@@ -169,7 +169,7 @@ function TicketModal({ ticket, onClose }: { ticket: (typeof TICKETS)[0]; onClose
 
           <View style={styles.modalDivider}> {/* dotted tear line between info and QR */}
             {[...Array(20)].map((_, i) => (
-              <View key={i} style={styles.modalPerf} /> // each dot in the perforation
+              <View key={i} style={styles.modalPerf} />
             ))}
           </View>
 
@@ -220,10 +220,10 @@ const styles = StyleSheet.create({
   iconBtn: { width: 36, height: 36, borderRadius: 12, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, alignItems: 'center', justifyContent: 'center' },
   scroll: { padding: 20, gap: 12 },
 
-  // Accreditation
+ 
   accred: { borderRadius: Radius.xl, padding: 22, overflow: 'hidden', gap: 14, marginBottom: 8 },
   accredPattern: { position: 'absolute', right: 0, top: 0 },
-  accredCircle: { position: 'absolute', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)' }, // faint ring
+  accredCircle: { position: 'absolute', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)' },
   accredHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   accredHeadText: { fontSize: 10, fontWeight: '800', letterSpacing: 1.4, color: 'rgba(255,255,255,0.85)' },
   accredName: { fontSize: 22, fontWeight: '800', color: '#fff', letterSpacing: -0.4 },
@@ -232,14 +232,14 @@ const styles = StyleSheet.create({
   accredCountry: { fontSize: 12, color: 'rgba(255,255,255,0.85)' },
   accredFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 6 },
   accredFooterLabel: { fontSize: 9, fontWeight: '700', letterSpacing: 1, color: 'rgba(255,255,255,0.7)' },
-  accredNum: { fontSize: 13, fontWeight: '700', color: '#fff', fontFamily: 'monospace', marginTop: 2 }, // monospace for ID
+  accredNum: { fontSize: 13, fontWeight: '700', color: '#fff', fontFamily: 'monospace', marginTop: 2 },
   accredQr: { width: 56, height: 56, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' },
 
   sectionLabel: { ...Typography.label, marginTop: 8, marginBottom: 4 },
 
-  // Ticket card
+ 
   card: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, borderRadius: Radius.lg, padding: 14, gap: 12 },
-  cardLeft: { alignItems: 'center', gap: 8, width: 60 }, // fixed width left column
+  cardLeft: { alignItems: 'center', gap: 8, width: 60 },
   cardIconWrap: { width: 44, height: 44, borderRadius: 12, backgroundColor: Colors.brand + '15', borderWidth: 1, borderColor: Colors.brand + '30', alignItems: 'center', justifyContent: 'center' },
   cardCat: { fontSize: 9, fontWeight: '800', letterSpacing: 1, color: Colors.brand },
   cardDivider: { width: StyleSheet.hairlineWidth, height: 60, backgroundColor: Colors.border1 },
@@ -250,40 +250,40 @@ const styles = StyleSheet.create({
   cardMetaItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   cardMetaText: { fontSize: 11, color: Colors.textTertiary, fontWeight: '500' },
   statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', borderRadius: Radius.full, paddingHorizontal: 7, paddingVertical: 2, marginTop: 4 },
-  statusActive: { backgroundColor: Colors.success + '18' }, // green tint
-  statusUpcoming: { backgroundColor: Colors.warning + '18' }, // amber tint
-  statusDot: { width: 5, height: 5, borderRadius: 3 }, // small indicator dot
+  statusActive: { backgroundColor: Colors.success + '18' },
+  statusUpcoming: { backgroundColor: Colors.warning + '18' },
+  statusDot: { width: 5, height: 5, borderRadius: 3 },
   statusText: { fontSize: 10, fontWeight: '700' },
 
-  // Add card
-  addCard: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: Colors.surface1, borderWidth: 1, borderColor: Colors.border1, borderStyle: 'dashed', borderRadius: Radius.lg, padding: 16, marginTop: 4 }, // dashed = placeholder feel
+ 
+  addCard: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: Colors.surface1, borderWidth: 1, borderColor: Colors.border1, borderStyle: 'dashed', borderRadius: Radius.lg, padding: 16, marginTop: 4 },
   addIconRing: { width: 44, height: 44, borderRadius: 12, borderWidth: 1.5, borderColor: Colors.border2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
   addTitle: { ...Typography.callout, fontWeight: '600' },
   addSub: { ...Typography.caption, color: Colors.textTertiary },
 
-  // Modal
+ 
   modal: { flex: 1, paddingHorizontal: 20, paddingTop: 12 },
   modalHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border2, alignSelf: 'center', marginBottom: 14 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   modalTitle: { ...Typography.title2, fontWeight: '800' },
   modalScroll: { paddingBottom: 40, gap: 14 },
-  modalTicket: { borderRadius: Radius.xl, padding: 24, gap: 14, overflow: 'hidden' }, // ticket body
+  modalTicket: { borderRadius: Radius.xl, padding: 24, gap: 14, overflow: 'hidden' },
   modalTicketHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   modalTicketIconWrap: { width: 44, height: 44, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' },
   modalTicketCat: { fontSize: 10, fontWeight: '800', letterSpacing: 1.4, color: 'rgba(255,255,255,0.85)' },
   modalTicketEvent: { fontSize: 22, fontWeight: '800', color: '#fff', lineHeight: 26 },
   modalTicketVenue: { fontSize: 14, color: 'rgba(255,255,255,0.85)' },
-  modalMeta: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.18)', borderRadius: Radius.md, padding: 12, marginTop: 4 }, // dark pill for meta
+  modalMeta: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.18)', borderRadius: Radius.md, padding: 12, marginTop: 4 },
   modalMetaItem: { flex: 1, alignItems: 'center', gap: 4 },
   modalMetaDivider: { width: StyleSheet.hairlineWidth, height: 32, backgroundColor: 'rgba(255,255,255,0.2)' },
   modalMetaLabel: { fontSize: 9, fontWeight: '700', letterSpacing: 1, color: 'rgba(255,255,255,0.7)' },
   modalMetaValue: { fontSize: 12, fontWeight: '700', color: '#fff' },
-  modalDivider: { flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: -24, paddingHorizontal: 16, paddingVertical: 8 }, // bleed to edges for tear-line effect
-  modalPerf: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(0,0,0,0.18)' }, // single perforation dot
+  modalDivider: { flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: -24, paddingHorizontal: 16, paddingVertical: 8 },
+  modalPerf: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(0,0,0,0.18)' },
   modalQrWrap: { alignItems: 'center', gap: 8 },
-  modalQrInner: { width: 160, height: 160, borderRadius: 18, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }, // white QR container
+  modalQrInner: { width: 160, height: 160, borderRadius: 18, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
   modalQrNote: { fontSize: 13, color: 'rgba(255,255,255,0.85)', fontWeight: '500' },
-  modalQrId: { fontSize: 11, fontFamily: 'monospace', color: 'rgba(255,255,255,0.55)' }, // faint ID below QR
+  modalQrId: { fontSize: 11, fontFamily: 'monospace', color: 'rgba(255,255,255,0.55)' },
   modalActions: { flexDirection: 'row', gap: 10 },
   actionBtn: { flex: 1, height: 56, borderRadius: Radius.lg, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border1, alignItems: 'center', justifyContent: 'center', gap: 4 },
   actionBtnText: { ...Typography.caption, fontWeight: '600' },

@@ -33,8 +33,8 @@ const SHUTTLE_ROUTES = [
 ];
 
 export default function TransportScreen() {
-  const insets = useSafeAreaInsets(); // safe area for the notch
-  const [tab, setTab] = useState<Tab>('overview'); // default to overview
+  const insets = useSafeAreaInsets();
+  const [tab, setTab] = useState<Tab>('overview');
 
   return (
     <View style={styles.container}>
@@ -259,7 +259,7 @@ function ShuttlesTab() {
 
 // card for one shuttle route with departure times
 function ShuttleCard({ route }: { route: (typeof SHUTTLE_ROUTES)[0] }) {
-  const seats = route.available > 10 ? 'good' : 'low'; // threshold for seat availability color
+  const seats = route.available > 10 ? 'good' : 'low';
   return (
     <View style={styles.shuttleCard}>
       <View style={styles.shuttleHeader}>
@@ -282,7 +282,7 @@ function ShuttleCard({ route }: { route: (typeof SHUTTLE_ROUTES)[0] }) {
       </View>
       <View style={styles.deptRow}>
         {route.departures.map((d, i) => (
-          // first departure gets the brand color highlight
+         
           <Pressable key={i} style={[styles.deptChip, i === 0 && styles.deptChipNext]}>
             <Text style={[styles.deptTime, i === 0 && { color: '#fff' }]}>{d}</Text>
             {i === 0 && <Text style={styles.deptNext}>PROCHAIN</Text>} {/* label next departure */}
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
   emergencyBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 8, borderRadius: Radius.full, backgroundColor: Colors.error },
   emergencyBtnText: { fontSize: 12, fontWeight: '800', color: '#fff' },
 
-  // Yango
+ 
   yangoHero: { borderRadius: Radius.lg, overflow: 'hidden' },
   yangoHeroContent: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 18 },
   yangoHeroIcon: { width: 52, height: 52, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' },
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
   bookBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 50, borderRadius: Radius.md, overflow: 'hidden' },
   bookBtnText: { fontSize: 15, fontWeight: '700', color: '#fff' },
 
-  // Shuttles
+ 
   shuttleInfo: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: Colors.teal + '10', borderWidth: 1, borderColor: Colors.teal + '25', borderRadius: Radius.lg, padding: 14, gap: 12 },
   shuttleInfoIcon: { width: 36, height: 36, borderRadius: 10, backgroundColor: Colors.teal + '20', alignItems: 'center', justifyContent: 'center' },
   shuttleInfoTitle: { ...Typography.callout, fontWeight: '700' },

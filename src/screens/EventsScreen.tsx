@@ -41,9 +41,9 @@ const SPORTS = [
 
 export default function EventsScreen() {
   const insets = useSafeAreaInsets(); // safe area so notch doesn't clip header
-  const [tab, setTab] = useState<Tab>('live'); // start on live tab
-  const [dayIdx, setDayIdx] = useState(0); // which day is selected in picker
-  const [sport, setSport] = useState('all'); // active sport filter
+  const [tab, setTab] = useState<Tab>('live');
+  const [dayIdx, setDayIdx] = useState(0);
+  const [sport, setSport] = useState('all');
 
   return (
     <View style={styles.container}>
@@ -60,7 +60,7 @@ export default function EventsScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 100 }]} // leave room for tab bar
+        contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 100 }]}
         showsVerticalScrollIndicator={false}
       >
         {tab === 'programme' && (
@@ -166,7 +166,7 @@ function EventCard({ event }: { event: (typeof EVENTS)[0] }) {
             <Text style={styles.finishedText}>Terminé</Text>
           </View>
         ) : (
-          <Text style={styles.eventTimeText}>{event.time}</Text> // upcoming, show time
+          <Text style={styles.eventTimeText}>{event.time}</Text>
         )}
       </View>
     </Pressable>
@@ -210,7 +210,7 @@ function FullLive({ score }: { score: (typeof LIVE_SCORES)[0] }) {
 
 // single row in the medal table
 function MedalRow({ row }: { row: (typeof MEDAL_TABLE)[0] }) {
-  const total = row.gold + row.silver + row.bronze; // compute total here, not in data
+  const total = row.gold + row.silver + row.bronze;
   return (
     <View style={[styles.medalRow, row.rank === 1 && styles.medalRowFirst]}> {/* gold tint for top ranked */}
       <Text style={[styles.medalRank, row.rank === 1 && styles.medalRankFirst]}>{row.rank}</Text>
