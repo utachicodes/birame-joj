@@ -903,18 +903,36 @@
       <p class="sub a3">Scan the QR code with <strong>Expo Go</strong> on your phone to install and test the app instantly — no App Store needed.</p>
 
       <div class="a4" style="display:flex;gap:32px;align-items:flex-start;width:100%;max-width:960px;">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:16px;flex-shrink:0;">
-          <div style="background:#fff;border:1px solid var(--b2);border-radius:20px;padding:20px;box-shadow:0 4px 24px rgba(0,0,0,0.07);">
-            <img
-              src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=0D1117&bgcolor=ffffff&data=https%3A%2F%2Fexpo.dev%2Faccounts%2Fabdoullah2025%2Fprojects%2Fjoj-superapp%2Fbuilds%2F3bcffbd6-60b1-4d52-a4cf-610b3b102daa&qzone=1"
-              width="200" height="200"
-              alt="Expo Go QR code"
-              style="display:block;border-radius:8px;"
-            />
+        <div style="display:flex;gap:20px;flex-shrink:0;">
+          <!-- EAS Build QR (iOS & Android) -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+            <div style="background:#fff;border:1px solid var(--b2);border-radius:20px;padding:16px;box-shadow:0 4px 24px rgba(0,0,0,0.07);">
+              <img
+                src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&color=0D1117&bgcolor=ffffff&data=https%3A%2F%2Fexpo.dev%2Faccounts%2Fabdoullah2025%2Fprojects%2Fjoj-superapp%2Fbuilds%2F3bcffbd6-60b1-4d52-a4cf-610b3b102daa&qzone=1"
+                width="180" height="180"
+                alt="EAS Build QR code"
+                style="display:block;border-radius:8px;"
+              />
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(217,78,24,.08);border:1px solid rgba(217,78,24,.20);border-radius:100px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span style="font-size:11px;font-weight:600;color:var(--or);">EAS Build · iOS &amp; Android</span>
+            </div>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(217,78,24,.08);border:1px solid rgba(217,78,24,.20);border-radius:100px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            <span style="font-size:12px;font-weight:600;color:var(--or);">Expo Go · iOS &amp; Android</span>
+          <!-- Dev Server QR (iPhone / Expo Go local) -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+            <div style="background:#fff;border:1px solid var(--b2);border-radius:20px;padding:16px;box-shadow:0 4px 24px rgba(0,0,0,0.07);">
+              <img
+                src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&color=0D1117&bgcolor=ffffff&data=exp%3A%2F%2F10.192.33.192%3A8081&qzone=1"
+                width="180" height="180"
+                alt="Expo Go local dev QR code"
+                style="display:block;border-radius:8px;"
+              />
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(0,122,255,.08);border:1px solid rgba(0,122,255,.25);border-radius:100px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2"><path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+              <span style="font-size:11px;font-weight:600;color:#007AFF;">iPhone · Local Dev</span>
+            </div>
           </div>
         </div>
 
@@ -935,7 +953,7 @@
             </div>
             <div>
               <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:var(--tx);">Step 2 — Scan the QR</p>
-              <p style="margin:0;font-size:12px;color:var(--t2);line-height:1.6;">Open Expo Go and tap <strong>Scan QR Code</strong>, then point your camera at the code on the left.</p>
+              <p style="margin:0;font-size:12px;color:var(--t2);line-height:1.6;">Open Expo Go and tap <strong>Scan QR Code</strong>. Use the <strong>left QR</strong> for the EAS build, or the <strong>right QR</strong> on iPhone to connect to the live dev server.</p>
             </div>
           </div>
 
